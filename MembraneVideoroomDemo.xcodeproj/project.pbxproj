@@ -11,6 +11,14 @@
 		3BCCBEC12795619500A0AD4C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCCBEC02795619500A0AD4C /* ContentView.swift */; };
 		3BCCBEC32795619600A0AD4C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3BCCBEC22795619600A0AD4C /* Assets.xcassets */; };
 		3BCCBEC62795619600A0AD4C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3BCCBEC52795619600A0AD4C /* Preview Assets.xcassets */; };
+		3BCCBEEC27956D2E00A0AD4C /* EventTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCCBEE527956D2D00A0AD4C /* EventTransport.swift */; };
+		3BCCBEED27956D2E00A0AD4C /* MembraneRTC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCCBEE627956D2D00A0AD4C /* MembraneRTC.swift */; };
+		3BCCBEEE27956D2E00A0AD4C /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCCBEE827956D2E00A0AD4C /* Event.swift */; };
+		3BCCBEEF27956D2E00A0AD4C /* TrackContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCCBEEB27956D2E00A0AD4C /* TrackContext.swift */; };
+		3BCCBEF027956D2E00A0AD4C /* Peer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCCBEEA27956D2E00A0AD4C /* Peer.swift */; };
+		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; };
+		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
+		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +27,11 @@
 		3BCCBEC02795619500A0AD4C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3BCCBEC22795619600A0AD4C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3BCCBEC52795619600A0AD4C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		3BCCBEE527956D2D00A0AD4C /* EventTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTransport.swift; sourceTree = "<group>"; };
+		3BCCBEE627956D2D00A0AD4C /* MembraneRTC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembraneRTC.swift; sourceTree = "<group>"; };
+		3BCCBEE827956D2E00A0AD4C /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		3BCCBEEA27956D2E00A0AD4C /* Peer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Peer.swift; sourceTree = "<group>"; };
+		3BCCBEEB27956D2E00A0AD4C /* TrackContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackContext.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -26,6 +39,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */,
+				3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */,
+				3BCCBEF92795701600A0AD4C /* Promises in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,6 +67,7 @@
 		3BCCBEBD2795619500A0AD4C /* MembraneVideoroomDemo */ = {
 			isa = PBXGroup;
 			children = (
+				3BCCBEE427956D2D00A0AD4C /* MembraneRTC */,
 				3BCCBEBE2795619500A0AD4C /* MembraneVideoroomDemoApp.swift */,
 				3BCCBEC02795619500A0AD4C /* ContentView.swift */,
 				3BCCBEC22795619600A0AD4C /* Assets.xcassets */,
@@ -65,6 +82,34 @@
 				3BCCBEC52795619600A0AD4C /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		3BCCBEE427956D2D00A0AD4C /* MembraneRTC */ = {
+			isa = PBXGroup;
+			children = (
+				3BCCBEE927956D2E00A0AD4C /* Types */,
+				3BCCBEE627956D2D00A0AD4C /* MembraneRTC.swift */,
+				3BCCBEE727956D2D00A0AD4C /* Events */,
+				3BCCBEE527956D2D00A0AD4C /* EventTransport.swift */,
+			);
+			path = MembraneRTC;
+			sourceTree = "<group>";
+		};
+		3BCCBEE727956D2D00A0AD4C /* Events */ = {
+			isa = PBXGroup;
+			children = (
+				3BCCBEE827956D2E00A0AD4C /* Event.swift */,
+			);
+			path = Events;
+			sourceTree = "<group>";
+		};
+		3BCCBEE927956D2E00A0AD4C /* Types */ = {
+			isa = PBXGroup;
+			children = (
+				3BCCBEEB27956D2E00A0AD4C /* TrackContext.swift */,
+				3BCCBEEA27956D2E00A0AD4C /* Peer.swift */,
+			);
+			path = Types;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -83,6 +128,11 @@
 			dependencies = (
 			);
 			name = MembraneVideoroomDemo;
+			packageProductDependencies = (
+				3BCCBEF227956DF600A0AD4C /* WebRTC */,
+				3BCCBEF527956E1500A0AD4C /* Logging */,
+				3BCCBEF82795701600A0AD4C /* Promises */,
+			);
 			productName = MembraneVideoroomDemo;
 			productReference = 3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */;
 			productType = "com.apple.product-type.application";
@@ -111,6 +161,11 @@
 				Base,
 			);
 			mainGroup = 3BCCBEB22795619500A0AD4C;
+			packageReferences = (
+				3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */,
+				3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */,
+				3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */,
+			);
 			productRefGroup = 3BCCBEBC2795619500A0AD4C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -138,6 +193,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				3BCCBEC12795619500A0AD4C /* ContentView.swift in Sources */,
+				3BCCBEEE27956D2E00A0AD4C /* Event.swift in Sources */,
+				3BCCBEEF27956D2E00A0AD4C /* TrackContext.swift in Sources */,
+				3BCCBEED27956D2E00A0AD4C /* MembraneRTC.swift in Sources */,
+				3BCCBEF027956D2E00A0AD4C /* Peer.swift in Sources */,
+				3BCCBEEC27956D2E00A0AD4C /* EventTransport.swift in Sources */,
 				3BCCBEBF2795619500A0AD4C /* MembraneVideoroomDemoApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -339,6 +399,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/webrtc-sdk/Specs.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 93.0.0;
+			};
+		};
+		3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-log.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/promises.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3BCCBEF227956DF600A0AD4C /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */;
+			productName = WebRTC;
+		};
+		3BCCBEF527956E1500A0AD4C /* Logging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */;
+			productName = Logging;
+		};
+		3BCCBEF82795701600A0AD4C /* Promises */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */;
+			productName = Promises;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3BCCBEB32795619500A0AD4C /* Project object */;
 }

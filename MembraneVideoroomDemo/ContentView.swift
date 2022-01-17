@@ -7,10 +7,20 @@
 
 import SwiftUI
 
+
 struct ContentView: View {
+    @EnvironmentObject var appCtrl: AppController
+    
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        ZStack {
+            Color.blue.ignoresSafeArea()
+            
+            if let room = appCtrl.room {
+                RoomView(room)
+            } else {
+                ConnectView()
+            }
+        }.foregroundColor(Color.white)
     }
 }
 
