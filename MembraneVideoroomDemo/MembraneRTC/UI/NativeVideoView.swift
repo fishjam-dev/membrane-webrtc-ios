@@ -67,14 +67,14 @@ public class NativeVideoView: NativeView {
     public var track: VideoTrack? {
         didSet {
             if let oldValue = oldValue {
-                oldValue.removeRenderer(rendererView)
-                oldValue.notify { $0.track(oldValue, didDetach: self) }
+                oldValue.remove(rendererView)
+                // oldValue.notify { $0.track(oldValue, didDetach: self) }
             }
-            track?.addRenderer(rendererView)
-            track?.notify { [weak track] in
-                guard let track = track else { return }
-                $0.track(track, didAttach: self)
-            }
+            track?.add(rendererView)
+            // track?.notify { [weak track] in
+            //     guard let track = track else { return }
+            //     $0.track(track, didAttach: self)
+            // }
         }
     }
 

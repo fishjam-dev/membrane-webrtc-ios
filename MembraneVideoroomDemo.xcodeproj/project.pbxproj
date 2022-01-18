@@ -7,6 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1BF2796C42B0095941F /* RoomView.swift */; };
+		3B16A1DD2796C42B0095941F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B16A1C02796C42B0095941F /* Assets.xcassets */; };
+		3B16A1DE2796C42B0095941F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B16A1C22796C42B0095941F /* Preview Assets.xcassets */; };
+		3B16A1DF2796C42B0095941F /* MembraneVideoroomDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1C32796C42B0095941F /* MembraneVideoroomDemoApp.swift */; };
+		3B16A1E02796C42B0095941F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1C52796C42B0095941F /* Extensions.swift */; };
+		3B16A1E12796C42B0095941F /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1C72796C42B0095941F /* App.swift */; };
+		3B16A1E22796C42B0095941F /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1C92796C42B0095941F /* ConnectView.swift */; };
+		3B16A1E32796C42B0095941F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1CA2796C42B0095941F /* ContentView.swift */; };
+		3B16A1E42796C42B0095941F /* SwiftUIVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1CD2796C42B0095941F /* SwiftUIVideoView.swift */; };
+		3B16A1E52796C42B0095941F /* NativeVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1CE2796C42B0095941F /* NativeVideoView.swift */; };
+		3B16A1E62796C42B0095941F /* TrackContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1D02796C42B0095941F /* TrackContext.swift */; };
+		3B16A1E72796C42B0095941F /* Peer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1D12796C42B0095941F /* Peer.swift */; };
+		3B16A1E82796C42B0095941F /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1D22796C42B0095941F /* ConnectionManager.swift */; };
+		3B16A1E92796C42B0095941F /* MembraneRTC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1D32796C42B0095941F /* MembraneRTC.swift */; };
+		3B16A1EA2796C42B0095941F /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1D52796C42B0095941F /* Event.swift */; };
+		3B16A1EB2796C42B0095941F /* MembraneRTCDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1D62796C42B0095941F /* MembraneRTCDelegate.swift */; };
+		3B16A1EC2796C42B0095941F /* EventTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1D72796C42B0095941F /* EventTransport.swift */; };
+		3B16A1ED2796C42B0095941F /* VideoCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1D92796C42B0095941F /* VideoCapturer.swift */; };
+		3B16A1EE2796C42B0095941F /* LocalVideoTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1DA2796C42B0095941F /* LocalVideoTrack.swift */; };
+		3B16A1EF2796C42B0095941F /* CameraCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1DB2796C42B0095941F /* CameraCapturer.swift */; };
 		3BCCBEBF2795619500A0AD4C /* MembraneVideoroomDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCCBEBE2795619500A0AD4C /* MembraneVideoroomDemoApp.swift */; };
 		3BCCBEC12795619500A0AD4C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCCBEC02795619500A0AD4C /* ContentView.swift */; };
 		3BCCBEC32795619600A0AD4C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3BCCBEC22795619600A0AD4C /* Assets.xcassets */; };
@@ -22,6 +42,26 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3B16A1BF2796C42B0095941F /* RoomView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
+		3B16A1C02796C42B0095941F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3B16A1C22796C42B0095941F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		3B16A1C32796C42B0095941F /* MembraneVideoroomDemoApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MembraneVideoroomDemoApp.swift; sourceTree = "<group>"; };
+		3B16A1C52796C42B0095941F /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		3B16A1C72796C42B0095941F /* App.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		3B16A1C92796C42B0095941F /* ConnectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
+		3B16A1CA2796C42B0095941F /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		3B16A1CD2796C42B0095941F /* SwiftUIVideoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIVideoView.swift; sourceTree = "<group>"; };
+		3B16A1CE2796C42B0095941F /* NativeVideoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NativeVideoView.swift; sourceTree = "<group>"; };
+		3B16A1D02796C42B0095941F /* TrackContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrackContext.swift; sourceTree = "<group>"; };
+		3B16A1D12796C42B0095941F /* Peer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Peer.swift; sourceTree = "<group>"; };
+		3B16A1D22796C42B0095941F /* ConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
+		3B16A1D32796C42B0095941F /* MembraneRTC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MembraneRTC.swift; sourceTree = "<group>"; };
+		3B16A1D52796C42B0095941F /* Event.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		3B16A1D62796C42B0095941F /* MembraneRTCDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MembraneRTCDelegate.swift; sourceTree = "<group>"; };
+		3B16A1D72796C42B0095941F /* EventTransport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventTransport.swift; sourceTree = "<group>"; };
+		3B16A1D92796C42B0095941F /* VideoCapturer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoCapturer.swift; sourceTree = "<group>"; };
+		3B16A1DA2796C42B0095941F /* LocalVideoTrack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalVideoTrack.swift; sourceTree = "<group>"; };
+		3B16A1DB2796C42B0095941F /* CameraCapturer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraCapturer.swift; sourceTree = "<group>"; };
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BCCBEBE2795619500A0AD4C /* MembraneVideoroomDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembraneVideoroomDemoApp.swift; sourceTree = "<group>"; };
 		3BCCBEC02795619500A0AD4C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -48,10 +88,110 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3B16A1BE2796C42B0095941F /* MembraneVideoroomDemo */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1BF2796C42B0095941F /* RoomView.swift */,
+				3B16A1C02796C42B0095941F /* Assets.xcassets */,
+				3B16A1C12796C42B0095941F /* Preview Content */,
+				3B16A1C32796C42B0095941F /* MembraneVideoroomDemoApp.swift */,
+				3B16A1C42796C42B0095941F /* Utilities */,
+				3B16A1C62796C42B0095941F /* Controllers */,
+				3B16A1C82796C42B0095941F /* Views */,
+				3B16A1CA2796C42B0095941F /* ContentView.swift */,
+				3B16A1CB2796C42B0095941F /* MembraneRTC */,
+			);
+			path = MembraneVideoroomDemo;
+			sourceTree = "<group>";
+		};
+		3B16A1C12796C42B0095941F /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1C22796C42B0095941F /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		3B16A1C42796C42B0095941F /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1C52796C42B0095941F /* Extensions.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		3B16A1C62796C42B0095941F /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1C72796C42B0095941F /* App.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		3B16A1C82796C42B0095941F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1C92796C42B0095941F /* ConnectView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		3B16A1CB2796C42B0095941F /* MembraneRTC */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1CC2796C42B0095941F /* UI */,
+				3B16A1CF2796C42B0095941F /* Types */,
+				3B16A1D22796C42B0095941F /* ConnectionManager.swift */,
+				3B16A1D32796C42B0095941F /* MembraneRTC.swift */,
+				3B16A1D42796C42B0095941F /* Events */,
+				3B16A1D62796C42B0095941F /* MembraneRTCDelegate.swift */,
+				3B16A1D72796C42B0095941F /* EventTransport.swift */,
+				3B16A1D82796C42B0095941F /* Media */,
+			);
+			path = MembraneRTC;
+			sourceTree = "<group>";
+		};
+		3B16A1CC2796C42B0095941F /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1CD2796C42B0095941F /* SwiftUIVideoView.swift */,
+				3B16A1CE2796C42B0095941F /* NativeVideoView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		3B16A1CF2796C42B0095941F /* Types */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1D02796C42B0095941F /* TrackContext.swift */,
+				3B16A1D12796C42B0095941F /* Peer.swift */,
+			);
+			path = Types;
+			sourceTree = "<group>";
+		};
+		3B16A1D42796C42B0095941F /* Events */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1D52796C42B0095941F /* Event.swift */,
+			);
+			path = Events;
+			sourceTree = "<group>";
+		};
+		3B16A1D82796C42B0095941F /* Media */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1D92796C42B0095941F /* VideoCapturer.swift */,
+				3B16A1DA2796C42B0095941F /* LocalVideoTrack.swift */,
+				3B16A1DB2796C42B0095941F /* CameraCapturer.swift */,
+			);
+			path = Media;
+			sourceTree = "<group>";
+		};
 		3BCCBEB22795619500A0AD4C = {
 			isa = PBXGroup;
 			children = (
 				3BCCBEBD2795619500A0AD4C /* MembraneVideoroomDemo */,
+				3B16A1BE2796C42B0095941F /* MembraneVideoroomDemo */,
 				3BCCBEBC2795619500A0AD4C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -180,7 +320,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3B16A1DE2796C42B0095941F /* Preview Assets.xcassets in Resources */,
 				3BCCBEC62795619600A0AD4C /* Preview Assets.xcassets in Resources */,
+				3B16A1DD2796C42B0095941F /* Assets.xcassets in Resources */,
 				3BCCBEC32795619600A0AD4C /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -192,11 +334,29 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3B16A1EF2796C42B0095941F /* CameraCapturer.swift in Sources */,
+				3B16A1EB2796C42B0095941F /* MembraneRTCDelegate.swift in Sources */,
 				3BCCBEC12795619500A0AD4C /* ContentView.swift in Sources */,
+				3B16A1EC2796C42B0095941F /* EventTransport.swift in Sources */,
+				3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */,
+				3B16A1E12796C42B0095941F /* App.swift in Sources */,
+				3B16A1E52796C42B0095941F /* NativeVideoView.swift in Sources */,
+				3B16A1EA2796C42B0095941F /* Event.swift in Sources */,
+				3B16A1EE2796C42B0095941F /* LocalVideoTrack.swift in Sources */,
 				3BCCBEEE27956D2E00A0AD4C /* Event.swift in Sources */,
+				3B16A1E42796C42B0095941F /* SwiftUIVideoView.swift in Sources */,
+				3B16A1DF2796C42B0095941F /* MembraneVideoroomDemoApp.swift in Sources */,
+				3B16A1E62796C42B0095941F /* TrackContext.swift in Sources */,
+				3B16A1ED2796C42B0095941F /* VideoCapturer.swift in Sources */,
 				3BCCBEEF27956D2E00A0AD4C /* TrackContext.swift in Sources */,
+				3B16A1E02796C42B0095941F /* Extensions.swift in Sources */,
 				3BCCBEED27956D2E00A0AD4C /* MembraneRTC.swift in Sources */,
+				3B16A1E92796C42B0095941F /* MembraneRTC.swift in Sources */,
+				3B16A1E72796C42B0095941F /* Peer.swift in Sources */,
 				3BCCBEF027956D2E00A0AD4C /* Peer.swift in Sources */,
+				3B16A1E82796C42B0095941F /* ConnectionManager.swift in Sources */,
+				3B16A1E22796C42B0095941F /* ConnectView.swift in Sources */,
+				3B16A1E32796C42B0095941F /* ContentView.swift in Sources */,
 				3BCCBEEC27956D2E00A0AD4C /* EventTransport.swift in Sources */,
 				3BCCBEBF2795619500A0AD4C /* MembraneVideoroomDemoApp.swift in Sources */,
 			);
