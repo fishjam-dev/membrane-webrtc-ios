@@ -9,6 +9,7 @@ import Foundation
 
 
 public protocol EventTransport {
-    func receiveEvent(data: Data) -> Event;
+    // TODO: this should return non-nil event, leave it for now
+    func receiveEvent(data: Data) -> Event?;
     func sendEvent(event: Event);
 }

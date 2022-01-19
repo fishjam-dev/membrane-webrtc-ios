@@ -1,6 +1,6 @@
 import WebRTC
 
 protocol VideoCapturer {
-    func startCapturing(); 
-    func stopCapturing();
+    func startCapture();
+    func stopCapture();
 }

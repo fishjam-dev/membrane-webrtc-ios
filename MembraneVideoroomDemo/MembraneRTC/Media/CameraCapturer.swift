@@ -3,11 +3,11 @@ import WebRTC
 class CameraCapturer: VideoCapturer {
     private let capturer: RTCCameraVideoCapturer
     
-    init(_ delegate: RTCVideoCaptureDelegate) {
+    init(_ delegate: RTCVideoCapturerDelegate) {
         self.capturer = RTCCameraVideoCapturer(delegate: delegate)
     }
     
-    public override func startCapture() {
+    public func startCapture() {
         guard
            let frontCamera = (RTCCameraVideoCapturer.captureDevices().first { $0.position == .front }),
         
@@ -28,7 +28,7 @@ class CameraCapturer: VideoCapturer {
                               fps: Int(fps.maxFrameRate))
     }
     
-    public override func stopCapture() {
+    public func stopCapture() {
         self.capturer.stopCapture()
     }
 }

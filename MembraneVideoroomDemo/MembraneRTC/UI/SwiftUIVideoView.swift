@@ -1,7 +1,9 @@
 import Foundation
 import UIKit
+import SwiftUI
+import WebRTC
 
-class SwiftUIVideoView: UIViewRepresentable {
+public struct SwiftUIVideoView: UIViewRepresentable {
   let track: RTCVideoTrack
   let fit: NativeVideoView.BoxFit
   let mirror: Bool
@@ -15,25 +17,25 @@ class SwiftUIVideoView: UIViewRepresentable {
     self.track = track
     self.fit = fit
     self.mirror = mirror
-    self.dimensions = dimensions
+    self._dimensions = dimensions
     
 
     // TODO: here we should probably handle some resizing of track, this is at least what the LiveKit does...
   }
 
-  public func makeUIView(context: Context) -> VideoView {
+  public func makeUIView(context: Context) -> NativeVideoView {
     let view = NativeVideoView()
     updateUIView(view, context: context)
     return view
   }
 
-  public func updateUIView(_ videoView: VideoView, context: Context) {
+  public func updateUIView(_ videoView: NativeVideoView, context: Context) {
     videoView.track = track
-    videoView.mode = mode
-    videoView.mirrored = mirrored
+    videoView.fit = fit
+    videoView.mirror = mirror
   }
 
-  public static func dismantleUIView(_ videoView: VideoView, coordinator: ()) {
+  public static func dismantleUIView(_ videoView: NativeVideoView, coordinator: ()) {
     videoView.track = nil
   }
 }

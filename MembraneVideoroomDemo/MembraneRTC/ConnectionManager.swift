@@ -15,7 +15,7 @@ extension ConnectionManager {
         let decoderFactory = RTCDefaultVideoDecoderFactory()
         
         return RTCPeerConnectionFactory(encoderFactory: encoderFactory, decoderFactory: decoderFactory)
-    }
+    }()
     
     internal static func createPeerConnection(_ configuration: RTCConfiguration, constraints: RTCMediaConstraints) -> RTCPeerConnection? {
         DispatchQueue.webRTC.sync {

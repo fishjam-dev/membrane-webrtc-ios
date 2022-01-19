@@ -1,29 +1,27 @@
-
-
-
+import WebRTC
 
 public class LocalVideoTrack {
     private let videoSource: RTCVideoSource
-    public internal(set) let capturer: VideoCapturer
-    public internal(set) let track: RTCVideoTrack
+    private let capturer: VideoCapturer
+    public let track: RTCVideoTrack
     
     enum Capturer {
-        case camera, screensharing
+        case camera, screensharing, file
     }
     
     internal init(capturer: Capturer) {
         self.videoSource = ConnectionManager.createVideoSource()
-
-        self.capturer = { 
-            switch capturer {
-                case .camera:
-                  return CameraCapture(delegate: self.videoSource)
-                case .screensharing:
-                    fatalError(message: "Not implemented")
-            }
-        }()
         
-        self.track = ConnectionManager.videoTrack(with: self.capturer)
+        switch capturer {
+            case .camera:
+                self.capturer = CameraCapturer(self.videoSource)
+            case .file:
+                self.capturer = FileCapturer(self.videoSource)
+            case .screensharing:
+                fatalError("Not implemented")
+        }
+        
+        self.track = ConnectionManager.createVideoTrack(source: self.videoSource)
     }
     
     func start() {

@@ -8,13 +8,13 @@ final class AppController: ObservableObject {
     
     @Published private(set) var localVideoFeed: RTCVideoTrack?
     
-    var client: MembraneRTC?
+    @Published private(set) var client: MembraneRTC?
     
     private init() {
 
     }
 
-    static public func connect() {
+    public func connect() {
         self.client = MembraneRTC(delegate: self, eventTransport: self, config: RTCConfiguration())
     }
 }
@@ -79,6 +79,6 @@ extension AppController: EventTransport {
     }
 
     func sendEvent(event: Event) {
-        print("Wow, sending the event")
+        print("Application sending the signalling event")
     }
 }

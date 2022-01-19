@@ -14,9 +14,8 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             Color.blue.ignoresSafeArea()
-            
-            if let room = appCtrl.room {
-                RoomView(room)
+            if let roomClient = appCtrl.client {
+                RoomView(client: roomClient)
             } else {
                 ConnectView()
             }

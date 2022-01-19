@@ -1,13 +1,21 @@
+import Foundation
 import SwiftUI
 
-class RoomView: View {
-    @ObservableObject var client: MembraneRTC
+struct RoomView: View {
+    @ObservedObject var client: MembraneRTC
 
     var body: some View {
-        if let track = client.localVideoTrack {
-            SwiftUIVideoView(track.track, fit: .fill)
-        } else {
-            Text("Local video track is not available yet...")
+        VStack {
+            Text("Welcome").foregroundColor(.white)
+            
+            if let track = client.localVideoTrack {
+                SwiftUIVideoView(track.track, fit: .fill)
+                    .border(Color.black)
+            } else {
+                Text("Local video track is not available yet...").foregroundColor(.white)
+            }
+            Text("Goodbye").foregroundColor(.white)
         }
+        .padding(8)
     }
 }
