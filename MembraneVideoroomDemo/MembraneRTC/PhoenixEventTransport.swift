@@ -18,6 +18,7 @@ class PhoenixEventTransport: EventTransport {
     
     let socket: Socket
     var channel: Channel?
+    // TODO: this delegate should be a weak reference
     var delegate: EventTransportDelegate?
     var connectionState: ConnectionState = .uninitialized
     
@@ -61,10 +62,13 @@ class PhoenixEventTransport: EventTransport {
             
             self.channel = channel
             
-            self.channel!.on("mediaEvent", callback: {
-                event in  print(Events.deserialize(payload: event.payload))
+            self.channel!.on("mediaEvent", callback: { message in
+                guard let event: ReceivableEvent = Events.deserialize(payload: message.payload) else {
+                    return
+                }
+                
+                self.delegate?.receiveEvent(event: event)
             })
-            return
         }
     }
     
@@ -77,8 +81,11 @@ class PhoenixEventTransport: EventTransport {
         
         let data = try! JSONSerialization.data(withJSONObject: event.serialize(), options: JSONSerialization.WritingOptions())
         
-        print("pushing message through channel")
-        channel.push("mediaEvent", payload: ["data": String(data: data, encoding: .utf8)])
+        guard let dataPayload: String = String(data: data, encoding: .utf8) else {
+            return
+        }
+        
+        channel.push("mediaEvent", payload: ["data": dataPayload])
     }
 }
 

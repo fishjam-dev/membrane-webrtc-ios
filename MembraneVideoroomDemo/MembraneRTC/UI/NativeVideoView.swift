@@ -52,11 +52,11 @@ public class NativeVideoView: UIView {
     }
 
     override init(frame: CGRect) {
-        print("Got frame", frame)
 //        let newFrame = CGRect(x: 0.0, y: 0.0, width: 480, height: 720)
 //        self.viewSize = newFrame.size
 //        super.init(frame: newFrame)
         
+        // TODO: fix me as this frame has bad sizing...
         self.viewSize = frame.size
         super.init(frame: frame)
         shouldPrepare()
@@ -100,10 +100,9 @@ public class NativeVideoView: UIView {
         guard let rendererView = rendererView as? UIView else { return }
         
         // TODO: handle this dimensions here, should have something in common with the real video
-        if dimensions == nil {
-
-            print("Setting renderer to hidden, why though?")
-        }
+//        if dimensions == nil {
+//            print("Setting renderer to hidden, why though?")
+//        }
 
         // hard code if for now...
         let dimensions = Dimensions(width: 480, height: 720)

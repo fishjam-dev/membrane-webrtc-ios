@@ -18,7 +18,7 @@ public class LocalVideoTrack {
             case .file:
                 self.capturer = FileCapturer(self.videoSource)
             case .screensharing:
-                fatalError("Not implemented")
+                self.capturer = ScreenCapturer(self.videoSource)
         }
         
         self.track = ConnectionManager.createVideoTrack(source: self.videoSource)

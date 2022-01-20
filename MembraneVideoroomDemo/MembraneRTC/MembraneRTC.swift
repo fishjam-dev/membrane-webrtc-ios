@@ -8,6 +8,7 @@ public class MembraneRTC: NSObject, ObservableObject {
     
     
     var transport: EventTransport
+    // TODO: this delegate should be a weak reference
     var delegate: MembraneRTCDelegate
     var config: RTCConfiguration
     
@@ -16,10 +17,6 @@ public class MembraneRTC: NSObject, ObservableObject {
     
     // TODO: this should be a separate type to hide the RTCVideoTrack type
     @Published public var localVideoTrack: LocalVideoTrack?
-    
-    public static func connect() {
-        print("Connecting...");
-    }
 
     public init(delegate: MembraneRTCDelegate, eventTransport: EventTransport, config: RTCConfiguration) {
         self.transport = eventTransport;
@@ -57,7 +54,7 @@ public class MembraneRTC: NSObject, ObservableObject {
 
         let audioTrack = Self.createLocalAudioTrack()
         
-        let videoTrack = LocalVideoTrack(capturer: .file)
+        let videoTrack = LocalVideoTrack(capturer: .screensharing)
 
         // TODO: decide where this should start capturing...
         videoTrack.start()
