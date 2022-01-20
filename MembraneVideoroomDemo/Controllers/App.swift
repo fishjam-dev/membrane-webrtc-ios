@@ -21,9 +21,14 @@ final class AppController: ObservableObject {
 }
 
 extension AppController: MembraneRTCDelegate {
+    func onConnected() {
+        DispatchQueue.sdk.async {
+            self.client?.join(metadata: ["displayName": "King"])
+        }
+    }
     /// Callback invoked when the client has been let into the room.
     func onJoinSuccess(peerID: String, peersInRoom: Array<Peer>) {
-        debugPrint("onJoinSuccess")
+        debugPrint("onJoinSuccess", peerID, peersInRoom)
     }
 
     /// Callback invoked when client has been denied access to enter the room. 

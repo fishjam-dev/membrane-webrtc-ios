@@ -1,5 +1,8 @@
 
 public protocol MembraneRTCDelegate {
+    
+    func onConnected() -> Void;
+    
     /// Callback invoked when the client has been let into the room.
     func onJoinSuccess(peerID: String, peersInRoom: Array<Peer>) -> Void;
 

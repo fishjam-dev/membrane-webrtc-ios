@@ -19,6 +19,9 @@ public enum ReceivableEventType: String, Codable {
     case PeerJoined = "peerJoined"
     case Custom = "custom"
     case OfferData = "offerData"
+    case Candidate = "candidate"
+    case TracksAdded = "tracksAdded"
+    case SdpAnswer = "sdpAnswer"
 }
 
 public protocol ReceivableEvent {
@@ -31,7 +34,13 @@ internal struct ReceivableEventBase: Decodable {
 
 public class Events {
     internal static func decodeEvent<T: Decodable>(from data: Data) -> T? {
-        return try? JSONDecoder().decode(T.self, from: data)
+        do {
+            
+         return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            print(error)
+            return nil
+        }
     }
     
     public static func deserialize(payload: Payload) -> ReceivableEvent? {
@@ -58,9 +67,15 @@ public class Events {
             
             return event
             
+        case .TracksAdded:
+            let event: TracksAddedEvent? = decodeEvent(from: data)
+            
+            return event
+            
         case .Custom:
             guard let baseEvent: BaseCustomEvent = decodeEvent(from: data) else {
                 debugPrint("Failed to decode BaseCustomEvent")
+                print(payload)
                 
                 return nil
             }
@@ -76,6 +91,8 @@ public class Events {
                 return event.data
                 
             default:
+                debugPrint("Unhandled custom event parsing for ", baseEvent.data.type)
+                debugPrint(payload)
                 return nil
             }
         default:
@@ -93,6 +110,36 @@ struct JoinEvent: SendableEvent {
         return [
             "type": "join",
             "data": ["metadata": Dictionary<String, String>()]
+        ]
+    }
+}
+
+struct SdpOfferEvent: SendableEvent {
+    let sdp: String
+    let trackIdToTrackMetadata: [String: Metadata]
+    let midToTrackId: [String: String]
+    
+    init(sdp: String, trackIdToTrackMetadata: [String: Metadata], midToTrackId: [String: String]) {
+        self.sdp = sdp
+        self.trackIdToTrackMetadata = trackIdToTrackMetadata
+        self.midToTrackId = midToTrackId
+    }
+    
+    func serialize() -> Payload {
+        return [
+            "type": "custom",
+            "data": [
+                "type": "sdpOffer",
+                "data": [
+                    "sdpOffer": [
+                        "type": "offer",
+                        "sdp": self.sdp
+                    ],
+                    "trackIdToTrackMetadata": self.trackIdToTrackMetadata,
+                    "midToTrackId": self.trackIdToTrackMetadata
+                ]
+                
+            ]
         ]
     }
 }
@@ -126,6 +173,17 @@ struct OfferDataEvent: ReceivableEvent, Codable {
     let type: ReceivableEventType
     let data: Data
 }
+
+struct TracksAddedEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let peerId: String
+        let trackIdToMetadata: [String: Metadata]
+    }
+    
+    let type: ReceivableEventType
+    let data: Data
+}
+
 
 // This is kinda strange as we can't dynamically decode json strings to structs
 // e.g. to [String: Any] type

@@ -149,7 +149,7 @@ public class NativeVideoView: UIView {
             let view: RTCVideoRenderer
 
             if isMetalAvailable() {
-                debugPrint("Using RTCMTLVideoView for VideoView's Renderer")
+                // debugPrint("Using RTCMTLVideoView for VideoView's Renderer")
                 let mtlView = RTCMTLVideoView()
                 // use .fit here to match macOS behavior and
                 // manually calculate .fill if necessary
@@ -158,7 +158,7 @@ public class NativeVideoView: UIView {
                 mtlView.delegate = delegate
                 view = mtlView
             } else {
-                debugPrint("Using RTCEAGLVideoView for VideoView's Renderer")
+                // debugPrint("Using RTCEAGLVideoView for VideoView's Renderer")
                 let glView = RTCEAGLVideoView()
                 glView.contentMode = .scaleAspectFit
                 glView.delegate = delegate
@@ -173,9 +173,6 @@ public class NativeVideoView: UIView {
 extension NativeVideoView: RTCVideoViewDelegate {
 
     public func videoView(_: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
-
-        debugPrint("VideoView: didChangeVideoSize \(size)")
-
         guard let width = Int32(exactly: size.width),
               let height = Int32(exactly: size.height) else {
             // CGSize is used by WebRTC but this should always be an integer

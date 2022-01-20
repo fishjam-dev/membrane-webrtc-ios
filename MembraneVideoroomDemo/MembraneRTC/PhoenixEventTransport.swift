@@ -91,17 +91,14 @@ class PhoenixEventTransport: EventTransport {
 
 extension PhoenixEventTransport {
     func onOpen() {
-        debugPrint("Phoenix socket connected")
         self.connectionState = .connected
     }
     
     func onClose() {
-        debugPrint("Phoenix socket closed")
         self.connectionState = .closed
     }
     
     func onError(_ error: Error) {
-        debugPrint("Phoenix socket emitted an error")
         self.connectionState = .closed
     }
 }

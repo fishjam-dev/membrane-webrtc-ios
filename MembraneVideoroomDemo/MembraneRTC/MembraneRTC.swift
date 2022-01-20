@@ -13,6 +13,7 @@ public class MembraneRTC: NSObject, ObservableObject {
     var config: RTCConfiguration
     
     var connection: RTCPeerConnection?
+    var localPeer = Peer(id: "", metadata: [:], trackIdToMetadata: [:])
     
     
     // TODO: this should be a separate type to hide the RTCVideoTrack type
@@ -23,10 +24,11 @@ public class MembraneRTC: NSObject, ObservableObject {
         self.delegate = delegate;
         self.config = config;
         
+        
         super.init()
         
         self.transport.connect(delegate: self).then {
-            self.transport.sendEvent(event: Events.joinEvent())
+            self.delegate.onConnected()
         }
         
         let config = RTCConfiguration()
@@ -54,7 +56,7 @@ public class MembraneRTC: NSObject, ObservableObject {
 
         let audioTrack = Self.createLocalAudioTrack()
         
-        let videoTrack = LocalVideoTrack(capturer: .screensharing)
+        let videoTrack = LocalVideoTrack(capturer: .file)
 
         // TODO: decide where this should start capturing...
         videoTrack.start()
@@ -62,6 +64,10 @@ public class MembraneRTC: NSObject, ObservableObject {
         pc.add(audioTrack, streamIds: [localStreamId])
         pc.add(videoTrack.track, streamIds: [localStreamId])
         self.localVideoTrack = videoTrack
+    }
+    
+    public func join(metadata: Metadata) {
+        self.transport.sendEvent(event: Events.joinEvent())
     }
 }
 
@@ -123,9 +129,62 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
 
 extension MembraneRTC: EventTransportDelegate {
     public func receiveEvent(event: ReceivableEvent) {
-        debugPrint("Receiving event", event)
+        switch event.type {
+        case .PeerAccepted:
+            let peerAccepted = event as! PeerAcceptedEvent
+            
+            self.localPeer.id = peerAccepted.data.id
+            self.delegate.onJoinSuccess(peerID: peerAccepted.data.id, peersInRoom: peerAccepted.data.peersInRoom)
+            
+        case .PeerJoined:
+            let peerJoined = event as! PeerJoinedEvent
+            guard peerJoined.data.peer.id != self.localPeer.id else {
+                return
+            }
+            
+            self.delegate.onPeerJoined(peer: peerJoined.data.peer)
+            
+        case .OfferData:
+            let offerData = event as! OfferDataEvent
+            
+            DispatchQueue.sdk.async {
+                self.onOfferData(offerData)
+            }
+        
+        default:
+            print(event.type)
+            return
+        }
     }
     
+}
+
+extension MembraneRTC {
+    func onOfferData(_ offerData: OfferDataEvent) {
+        guard let pc = self.connection else {
+            return
+        }
+        
+        // TODO: why do we event need constanits here if we passed them when creating a peer connection
+        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
+        
+        // TODO: handle incoming track, the code below assumes that we just send the tracks without receiving any
+        // for all outgoing transceivers we need to change direction to 'sendOnly'
+        pc.transceivers.forEach { tc in
+            if tc.direction == .sendRecv {
+                tc.setDirection(.sendOnly, error: nil)
+            }
+        }
+        
+        
+        pc.offer(for: constraints, completionHandler: { offer, error in
+            guard let sdp: String = offer?.sdp else {
+                return
+            }
+            
+            self.transport.sendEvent(event: SdpOfferEvent(sdp: sdp, trackIdToTrackMetadata: [:], midToTrackId: [:]))
+        })
+    }
 }
 
 
