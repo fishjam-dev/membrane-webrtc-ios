@@ -6,10 +6,38 @@
 //
 
 import Foundation
+import Promises
+
+enum EventTransportError: Error {
+    // Throw when user is not authorized
+    case unauthorized
+
+    // Throw when transport fails to connect
+    case connectionError
+    
+    // Throw when you have no idea what happened...
+    case unexpected(reason: String)
+}
+
+extension EventTransportError: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .unauthorized:
+            return "User is unauthorized to use the transport"
+        case .connectionError:
+            return "Failed to connect with the remote side"
+        case .unexpected(reason: let reason):
+            return "Encountered unexpected error: \(reason)"
+        }
+    }
+}
 
 
 public protocol EventTransport {
-    // TODO: this should return non-nil event, leave it for now
-    func receiveEvent(data: Data) -> Event?;
-    func sendEvent(event: Event);
+    func connect(delegate: EventTransportDelegate) -> Promise<Void>;
+    func sendEvent(event: SendableEvent);
+}
+
+public protocol EventTransportDelegate {
+    func receiveEvent(event: ReceivableEvent);
 }

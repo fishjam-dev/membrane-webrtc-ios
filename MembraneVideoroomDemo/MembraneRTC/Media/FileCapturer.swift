@@ -7,7 +7,6 @@
 
 import SwiftUI
 import WebRTC
-import MembraneRTC
 
 class FileCapturer: VideoCapturer {
     private let capturer: RTCFileVideoCapturer

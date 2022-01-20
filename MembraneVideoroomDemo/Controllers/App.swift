@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import WebRTC
+import Promises
 
 
 final class AppController: ObservableObject {
@@ -15,7 +16,7 @@ final class AppController: ObservableObject {
     }
 
     public func connect() {
-        self.client = MembraneRTC(delegate: self, eventTransport: self, config: RTCConfiguration())
+        self.client = MembraneRTC(delegate: self, eventTransport: PhoenixEventTransport(url: "http://localhost:4000/socket", topic: "room:test"), config: RTCConfiguration())
     }
 }
 
@@ -74,11 +75,12 @@ extension AppController: MembraneRTCDelegate {
 
 // FIXME: this is temporary just to launch the application
 extension AppController: EventTransport {
-    func receiveEvent(data: Data) -> Event? {
-        return nil
+    func connect(delegate: EventTransportDelegate) -> Promise<Void> {
+        debugPrint("Connecting the event transport")
+        return Promise(())
     }
 
-    func sendEvent(event: Event) {
+    func sendEvent(event: SendableEvent) {
         print("Application sending the signalling event")
     }
 }

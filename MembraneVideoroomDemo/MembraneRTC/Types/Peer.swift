@@ -8,12 +8,12 @@
 import Foundation
 import UIKit
 
-public struct Peer {
-    public var id: String
-    public var metadata: [String: Any]
-    public var trackIdToMetadata: [String: Any]
+public struct Peer: Codable {
+    public let id: String
+    public let metadata: Metadata
+    public let trackIdToMetadata: [String: Metadata]?
     
-    public init(id: String, metadata: [String: Any], trackIdToMetadata: [String: Any]) {
+    public init(id: String, metadata: Metadata, trackIdToMetadata: [String: Metadata]) {
         self.id = id
         self.metadata = metadata
         self.trackIdToMetadata = trackIdToMetadata

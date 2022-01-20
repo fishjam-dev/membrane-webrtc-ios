@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3B04D3942798190F00E2B755 /* SwiftPhoenixClient in Frameworks */ = {isa = PBXBuildFile; productRef = 3B04D3932798190F00E2B755 /* SwiftPhoenixClient */; };
+		3B04D3962798197500E2B755 /* PhoenixEventTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B04D3952798197500E2B755 /* PhoenixEventTransport.swift */; };
 		3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1BF2796C42B0095941F /* RoomView.swift */; };
 		3B16A1DD2796C42B0095941F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B16A1C02796C42B0095941F /* Assets.xcassets */; };
 		3B16A1DE2796C42B0095941F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B16A1C22796C42B0095941F /* Preview Assets.xcassets */; };
@@ -30,12 +32,14 @@
 		3B16A20E2796DEAC0095941F /* Dimensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A20D2796DEAC0095941F /* Dimensions.swift */; };
 		3B16A2102796F4AF0095941F /* FileCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A20F2796F4AF0095941F /* FileCapturer.swift */; };
 		3B16A21627970B930095941F /* video.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3B16A21527970B8D0095941F /* video.mp4 */; };
+		3B667FC0279943B1007E38C8 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B667FBF279943B1007E38C8 /* Metadata.swift */; };
 		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; };
 		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3B04D3952798197500E2B755 /* PhoenixEventTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoenixEventTransport.swift; sourceTree = "<group>"; };
 		3B16A1BF2796C42B0095941F /* RoomView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
 		3B16A1C02796C42B0095941F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3B16A1C22796C42B0095941F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -59,6 +63,7 @@
 		3B16A20D2796DEAC0095941F /* Dimensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dimensions.swift; sourceTree = "<group>"; };
 		3B16A20F2796F4AF0095941F /* FileCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCapturer.swift; sourceTree = "<group>"; };
 		3B16A21527970B8D0095941F /* video.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = video.mp4; sourceTree = "<group>"; };
+		3B667FBF279943B1007E38C8 /* Metadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -68,6 +73,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */,
+				3B04D3942798190F00E2B755 /* SwiftPhoenixClient in Frameworks */,
 				3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */,
 				3BCCBEF92795701600A0AD4C /* Promises in Frameworks */,
 			);
@@ -135,6 +141,7 @@
 				3B16A1F92796C4970095941F /* Events */,
 				3B16A1FB2796C4970095941F /* MembraneRTCDelegate.swift */,
 				3B16A1FC2796C4970095941F /* EventTransport.swift */,
+				3B04D3952798197500E2B755 /* PhoenixEventTransport.swift */,
 				3B16A1FD2796C4970095941F /* Media */,
 			);
 			path = MembraneRTC;
@@ -154,6 +161,7 @@
 			children = (
 				3B16A1F52796C4970095941F /* TrackContext.swift */,
 				3B16A1F62796C4970095941F /* Peer.swift */,
+				3B667FBF279943B1007E38C8 /* Metadata.swift */,
 			);
 			path = Types;
 			sourceTree = "<group>";
@@ -214,6 +222,7 @@
 				3BCCBEF227956DF600A0AD4C /* WebRTC */,
 				3BCCBEF527956E1500A0AD4C /* Logging */,
 				3BCCBEF82795701600A0AD4C /* Promises */,
+				3B04D3932798190F00E2B755 /* SwiftPhoenixClient */,
 			);
 			productName = MembraneVideoroomDemo;
 			productReference = 3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */;
@@ -247,6 +256,7 @@
 				3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */,
 				3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */,
 				3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */,
+				3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */,
 			);
 			productRefGroup = 3BCCBEBC2795619500A0AD4C /* Products */;
 			projectDirPath = "";
@@ -278,6 +288,7 @@
 				3B16A2062796C4970095941F /* MembraneRTC.swift in Sources */,
 				3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */,
 				3B16A2022796C4970095941F /* NativeVideoView.swift in Sources */,
+				3B04D3962798197500E2B755 /* PhoenixEventTransport.swift in Sources */,
 				3B16A20B2796C4970095941F /* LocalVideoTrack.swift in Sources */,
 				3B16A20C2796C4970095941F /* CameraCapturer.swift in Sources */,
 				3B16A1E12796C42B0095941F /* App.swift in Sources */,
@@ -292,6 +303,7 @@
 				3B16A20A2796C4970095941F /* VideoCapturer.swift in Sources */,
 				3B16A1E32796C42B0095941F /* ContentView.swift in Sources */,
 				3B16A2102796F4AF0095941F /* FileCapturer.swift in Sources */,
+				3B667FC0279943B1007E38C8 /* Metadata.swift in Sources */,
 				3B16A2052796C4970095941F /* ConnectionManager.swift in Sources */,
 				3B16A2042796C4970095941F /* Peer.swift in Sources */,
 				3B16A2072796C4970095941F /* Event.swift in Sources */,
@@ -497,6 +509,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/davidstump/SwiftPhoenixClient.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.0;
+			};
+		};
 		3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/webrtc-sdk/Specs.git";
@@ -524,6 +544,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3B04D3932798190F00E2B755 /* SwiftPhoenixClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */;
+			productName = SwiftPhoenixClient;
+		};
 		3BCCBEF227956DF600A0AD4C /* WebRTC */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */;

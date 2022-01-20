@@ -13,6 +13,7 @@ public class MembraneRTC: NSObject, ObservableObject {
     
     var connection: RTCPeerConnection?
     
+    
     // TODO: this should be a separate type to hide the RTCVideoTrack type
     @Published public var localVideoTrack: LocalVideoTrack?
     
@@ -26,6 +27,10 @@ public class MembraneRTC: NSObject, ObservableObject {
         self.config = config;
         
         super.init()
+        
+        self.transport.connect(delegate: self).then {
+            self.transport.sendEvent(event: Events.joinEvent())
+        }
         
         let config = RTCConfiguration()
         config.sdpSemantics = .unifiedPlan
@@ -119,7 +124,10 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
     }
 }
 
-extension MembraneRTC {
+extension MembraneRTC: EventTransportDelegate {
+    public func receiveEvent(event: ReceivableEvent) {
+        debugPrint("Receiving event", event)
+    }
     
 }
 
