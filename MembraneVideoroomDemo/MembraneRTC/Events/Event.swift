@@ -17,10 +17,14 @@ public protocol SendableEvent {
 public enum ReceivableEventType: String, Codable {
     case PeerAccepted = "peerAccepted"
     case PeerJoined = "peerJoined"
+    case PeerLeft = "peerLeft"
+    case PeerUpdated = "peerUpdated"
     case Custom = "custom"
     case OfferData = "offerData"
     case Candidate = "candidate"
     case TracksAdded = "tracksAdded"
+    case TracksRemoved = "tracksRemoved"
+    case TrackUpdated = "trackUpdated"
     case SdpAnswer = "sdpAnswer"
 }
 
@@ -67,24 +71,53 @@ public class Events {
             
             return event
             
+        case .PeerLeft:
+            let event: PeerLeftEvent? = decodeEvent(from: data)
+            
+            return event
+            
+        case .PeerUpdated:
+            let event: PeerUpdateEvent? = decodeEvent(from: data)
+            
+            return event
+            
         case .TracksAdded:
             let event: TracksAddedEvent? = decodeEvent(from: data)
             
             return event
             
+        case .TracksRemoved:
+            let event: TracksRemovedEvent? = decodeEvent(from: data)
+            
+            return event
+            
+        case .TrackUpdated:
+            let event: TracksUpdatedEvent? = decodeEvent(from: data)
+            
+            return event
+            
         case .Custom:
             guard let baseEvent: BaseCustomEvent = decodeEvent(from: data) else {
-                debugPrint("Failed to decode BaseCustomEvent")
-                print(payload)
-                
                 return nil
             }
             
             switch baseEvent.data.type {
             case .OfferData:
                 guard let event: CustomEvent<OfferDataEvent> = decodeEvent(from: data) else {
-                    debugPrint("Failed to decode CustomEvent of internal type", baseEvent.data.type)
-                    
+                    return nil
+                }
+                
+                return event.data
+                
+            case .Candidate:
+                guard let event: CustomEvent<RemoteCandidateEvent> = decodeEvent(from: data) else {
+                    return nil
+                }
+                
+                return event.data
+                
+            case .SdpAnswer:
+                guard let event: CustomEvent<SdpAnswerEvent> = decodeEvent(from: data) else {
                     return nil
                 }
                 
@@ -92,7 +125,6 @@ public class Events {
                 
             default:
                 debugPrint("Unhandled custom event parsing for ", baseEvent.data.type)
-                debugPrint(payload)
                 return nil
             }
         default:
@@ -105,6 +137,9 @@ public class Events {
     }
 }
 
+/*
+ Sendable events
+ */
 struct JoinEvent: SendableEvent {
     func serialize() -> Payload {
         return [
@@ -144,6 +179,34 @@ struct SdpOfferEvent: SendableEvent {
     }
 }
 
+struct LocalCandidateEvent: SendableEvent {
+    let candidate: String
+    let sdpMLineIndex: Int
+    
+    init(candidate: String, sdpMLineIndex: Int) {
+        self.candidate = candidate
+        self.sdpMLineIndex = sdpMLineIndex
+    }
+    
+    func serialize() -> Payload {
+        return [
+            "type": "custom",
+            "data": [
+                "type": "candidate",
+                "data": [
+                    "candidate": self.candidate,
+                    "sdpMLineIndex": self.sdpMLineIndex
+                ]
+                
+            ]
+        ]
+    }
+}
+
+/*
+ Receivable events
+ */
+
 struct PeerAcceptedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let id: String
@@ -157,6 +220,25 @@ struct PeerAcceptedEvent: ReceivableEvent, Codable {
 struct PeerJoinedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let peer: Peer
+    }
+    
+    let type: ReceivableEventType
+    let data: Data
+}
+
+struct PeerLeftEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let peerId: String
+    }
+    
+    let type: ReceivableEventType
+    let data: Data
+}
+
+struct PeerUpdateEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let peerId: String
+        let metadata: Metadata
     }
     
     let type: ReceivableEventType
@@ -184,6 +266,48 @@ struct TracksAddedEvent: ReceivableEvent, Codable {
     let data: Data
 }
 
+struct TracksRemovedEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let peerId: String
+        let trackIds: Array<String>
+    }
+    
+    let type: ReceivableEventType
+    let data: Data
+}
+
+struct TracksUpdatedEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let peerId: String
+        let trackId: String
+        let metadata: Metadata
+    }
+    
+    let type: ReceivableEventType
+    let data: Data
+}
+
+struct SdpAnswerEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let type: String
+        let sdp: String
+        let midToTrackId: [String: Int?]
+    }
+    
+    let type: ReceivableEventType
+    let data: Data
+}
+
+struct RemoteCandidateEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let candidate: String
+        let sdpMLineIndex: Int
+        let sdpMid: String?
+    }
+    
+    let type: ReceivableEventType
+    let data: Data
+}
 
 // This is kinda strange as we can't dynamically decode json strings to structs
 // e.g. to [String: Any] type

@@ -28,7 +28,7 @@ extension AppController: MembraneRTCDelegate {
     }
     /// Callback invoked when the client has been let into the room.
     func onJoinSuccess(peerID: String, peersInRoom: Array<Peer>) {
-        debugPrint("onJoinSuccess", peerID, peersInRoom)
+        debugPrint("onJoinSuccess")
     }
 
     /// Callback invoked when client has been denied access to enter the room. 
