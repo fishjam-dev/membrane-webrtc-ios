@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 struct ConnectView: View {
   @EnvironmentObject var appCtrl: AppController
@@ -7,6 +8,21 @@ struct ConnectView: View {
     GeometryReader { geometry in
       ScrollView {
         VStack(alignment: .center, spacing: 40.0) {
+          Button(
+            action: {
+                AVCaptureDevice.requestAccess(for: .audio, completionHandler: {
+                    granted in print("Granted permissions ", granted)
+                })
+            },
+            label: {
+              Text("Allow microphone access")
+                .fontWeight(.bold)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+            }
+          ).background(Color.blue.darker())
+            .cornerRadius(8)
+            
           Button(
             action: {
                 appCtrl.connect()

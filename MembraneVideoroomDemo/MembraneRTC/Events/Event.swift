@@ -42,21 +42,21 @@ public class Events {
             
          return try JSONDecoder().decode(T.self, from: data)
         } catch {
-            print(error)
+            sdkLogger.error("failed to decode an event: \(error)")
             return nil
         }
     }
     
     public static func deserialize(payload: Payload) -> ReceivableEvent? {
         guard let rawData = payload["data"] as? String else {
-            debugPrint("Failed to extract 'data' field from json payload: ", payload)
+            sdkLogger.error("Failed to extract 'data' field from json payload: \(payload)")
             return nil
         }
         
         let data = rawData.data(using: .utf8)!
         
         guard let base: ReceivableEventBase = decodeEvent(from: data) else {
-            debugPrint("Failed to decode ReceivableEventBase")
+            sdkLogger.error("Failed to decode ReceivableEventBase")
             return nil
         }
         
@@ -124,7 +124,8 @@ public class Events {
                 return event.data
                 
             default:
-                debugPrint("Unhandled custom event parsing for ", baseEvent.data.type)
+                sdkLogger.warning("Unhandled custom event parsing for \(baseEvent.data.type)")
+                
                 return nil
             }
         default:
