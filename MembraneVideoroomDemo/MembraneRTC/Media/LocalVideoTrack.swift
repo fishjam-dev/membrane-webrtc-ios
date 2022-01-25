@@ -1,6 +1,6 @@
 import WebRTC
 
-public class LocalVideoTrack {
+public class LocalVideoTrack: LocalTrack {
     private let videoSource: RTCVideoSource
     private let capturer: VideoCapturer
     public let track: RTCVideoTrack
@@ -24,11 +24,11 @@ public class LocalVideoTrack {
         self.track = ConnectionManager.createVideoTrack(source: self.videoSource)
     }
     
-    func start() {
+    public func start() {
         self.capturer.startCapture()
     }
     
-    func stop() {
+    public func stop() {
         self.capturer.stopCapture()
     }
 }

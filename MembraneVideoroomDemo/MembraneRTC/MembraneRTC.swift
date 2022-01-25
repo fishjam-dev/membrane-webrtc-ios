@@ -15,14 +15,20 @@ public class MembraneRTC: NSObject, ObservableObject {
     var connection: RTCPeerConnection?
     var localPeer = Peer(id: "", metadata: [:], trackIdToMetadata: [:])
     
+    var started: Bool
+    
     
     // TODO: this should be a separate type to hide the RTCVideoTrack type
     @Published public var localVideoTrack: LocalVideoTrack?
+    var localAudioTrack: LocalAudioTrack?
 
     public init(delegate: MembraneRTCDelegate, eventTransport: EventTransport, config: RTCConfiguration) {
+        RTCSetMinDebugLogLevel(.error)
+        
         self.transport = eventTransport;
         self.delegate = delegate;
         self.config = config;
+        self.started = false
         
         
         super.init()
@@ -34,6 +40,14 @@ public class MembraneRTC: NSObject, ObservableObject {
         let config = RTCConfiguration()
         config.sdpSemantics = .unifiedPlan
         config.continualGatheringPolicy = .gatherContinually
+        config.candidateNetworkPolicy = .all
+        config.disableIPV6 = true
+        config.tcpCandidatePolicy = .disabled
+        config.iceTransportPolicy = .all
+        
+        config.iceServers = [
+            RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"])
+        ]
         
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
         
@@ -53,77 +67,122 @@ public class MembraneRTC: NSObject, ObservableObject {
         }
         
         let localStreamId = UUID().uuidString
-
-        let audioTrack = Self.createLocalAudioTrack()
-        
         let videoTrack = LocalVideoTrack(capturer: .file)
-
-        // TODO: decide where this should start capturing...
-        videoTrack.start()
         
-        pc.add(audioTrack, streamIds: [localStreamId])
+        videoTrack.start()
         pc.add(videoTrack.track, streamIds: [localStreamId])
+        
         self.localVideoTrack = videoTrack
+        
+        let audioTrack = LocalAudioTrack()
+        audioTrack.start()
+//        pc.add(audioTrack.track, streamIds: [localStreamId])
+        self.localAudioTrack = audioTrack
+        
+        
+        print("Video track", videoTrack.track.trackId)
+        print("Audio track", audioTrack.track.trackId)
+        
+        self.localPeer.trackIdToMetadata = [
+            videoTrack.track.trackId: [:],
+            // somehow audio track is not yet working on simulator...
+            //            audioTrack.track.trackId: [:]
+        ]
+        
+        // TODO: remove me, just for testing...
+        pc.transceivers
+            .compactMap { return $0.sender.track as? RTCAudioTrack }
+                   .forEach { $0.isEnabled = true }
+        
+        pc.transceivers
+            .compactMap { return $0.sender.track as? RTCVideoTrack }
+                   .forEach { $0.isEnabled = true }
     }
     
     public func join(metadata: Metadata) {
-        self.transport.sendEvent(event: Events.joinEvent())
-    }
-}
-
-
-// MARK: local media tracks
-extension MembraneRTC {
-    // TODO: this function should have a lot of options regarding noise cancellation ect.
-    static func createLocalAudioTrack() -> RTCAudioTrack {
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
-
-        let audioSource = ConnectionManager.createAudioSource(constraints)
-        let audioTrack = ConnectionManager.createAudioTrack(source: audioSource)
-        
-        return audioTrack
-    }
-    
-    static func createLocalScreensharingTrack() {
-        fatalError("Not implemented")
+        self.transport.sendEvent(event: Events.joinEvent(metadata: metadata))
     }
 }
 
 extension MembraneRTC: RTCPeerConnectionDelegate {
-    public func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
-        debugPrint("peerConnection new signaling state: \(stateChanged)")
-    }
-    
     public func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
-        debugPrint("peerConnection did add stream")
+        fatalError("called didAdd stream when only a unified-plan is supported")
     }
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
-        debugPrint("peerConnection did remove stream")
+        fatalError("called didRemove stream when only a unified-plan is supported")
+    }
+    
+    public func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
+        print("peerConnection new signaling state: \(stateChanged)")
+    }
+    
+    public func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
+        print("peerConnection started receiving on transceiver", transceiver)
+    }
+    
+    public func peerConnection(_ peerConnection: RTCPeerConnection,
+                               didAdd  receiver: RTCRtpReceiver, streams mediaStreams: Array<RTCMediaStream>) {
+        print("peerConnection added new receiver", receiver, "for streams", mediaStreams)
+    }
+    
+    public func peerConnection(_ peerConnection: RTCPeerConnection, didRemove  rtpReceiver: RTCRtpReceiver) {
+        print("peerConnection removed a receiver")
+        
+    }
+    
+    public func peerConnection(_ peerConnection: RTCPeerConnection, didChangeLocalCandidate  local: RTCIceCandidate, remoteCandidate remote: RTCIceCandidate, lastReceivedMs lastDataReceivedMs: Int32, changeReason reason: String) {
+        print("peerConnection local candidate has changed due to \(local.debugDescription), \(remote.debugDescription), \(reason)")
     }
     
     public func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
-        debugPrint("peerConnection should negotiate")
+        print("peerConnection should negotiate")
     }
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
-        debugPrint("peerConnection new connection state: \(newState)")
+        var stateName: String?
+        
+        
+        switch newState {
+        case .new:
+            stateName = "new"
+        case .checking:
+            stateName = "checking"
+        case .connected:
+            stateName = "connected"
+        case .closed:
+            stateName = "closed"
+        case .completed:
+            stateName = "completed"
+        case .disconnected:
+            stateName = "disconnected"
+        case .failed:
+            stateName = "failed"
+        case .count:
+            stateName = "count"
+        default:
+            stateName = "unknown"
+            
+        }
+        print("peerConnection new connection state: ", stateName!)
     }
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {
-        debugPrint("peerConnection new gathering state: \(newState)")
+        print("peerConnection new gathering state: \(newState)")
     }
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-        debugPrint("Peer connection generated new candidate: \(candidate)")
+        DispatchQueue.webRTC.async {
+            self.onLocalCandidate(candidate)
+        }
     }
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
-        debugPrint("peerConnection did remove candidate(s)")
+        print("peerConnection did remove candidate(s)")
     }
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didOpen dataChannel: RTCDataChannel) {
-        debugPrint("peerConnection did open data channel")
+        print("peerConnection did open data channel")
     }
 }
 
@@ -147,8 +206,23 @@ extension MembraneRTC: EventTransportDelegate {
         case .OfferData:
             let offerData = event as! OfferDataEvent
             
-            DispatchQueue.sdk.async {
+            DispatchQueue.webRTC.async {
                 self.onOfferData(offerData)
+            }
+            
+        case .SdpAnswer:
+            let sdpAnswer = event as! SdpAnswerEvent
+            
+            DispatchQueue.webRTC.async {
+                self.onSdpAnswer(sdpAnswer)
+            }
+            
+            
+        case .Candidate:
+            let candidate = event as! RemoteCandidateEvent
+            
+            DispatchQueue.webRTC.async {
+                self.onRemoteCandidate(candidate)
             }
         
         default:
@@ -160,10 +234,14 @@ extension MembraneRTC: EventTransportDelegate {
 }
 
 extension MembraneRTC {
+    
     func onOfferData(_ offerData: OfferDataEvent) {
-        guard let pc = self.connection else {
+        guard let pc = self.connection,
+            started == false else {
             return
         }
+        
+        self.started = true
         
         // TODO: why do we event need constanits here if we passed them when creating a peer connection
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
@@ -178,12 +256,79 @@ extension MembraneRTC {
         
         
         pc.offer(for: constraints, completionHandler: { offer, error in
-            guard let sdp: String = offer?.sdp else {
+            guard let offer = offer else {
                 return
             }
             
-            self.transport.sendEvent(event: SdpOfferEvent(sdp: sdp, trackIdToTrackMetadata: [:], midToTrackId: [:]))
+            pc.setLocalDescription(offer, completionHandler: { error in
+                guard let err = error else {
+                    self.transport.sendEvent(event: SdpOfferEvent(sdp: offer.sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata ?? [:], midToTrackId: self.getMidToTrackId()))
+                    return
+                }
+                
+                print("Error while setting local description", err)
+            })
+            
         })
+    }
+    
+    private func getMidToTrackId() -> [String: String] {
+        guard let pc = self.connection,
+              let localTracksKeys = self.localPeer.trackIdToMetadata?.keys else {
+            return [:]
+        }
+        
+        let localTracks: Array<String> = Array(localTracksKeys)
+        
+        var mapping: [String: String] = [:]
+        
+        
+        pc.transceivers.forEach { transceiver in
+            guard let trackId: String = transceiver.sender.track?.trackId,
+                  localTracks.contains(trackId) else {
+                      return
+              }
+            mapping[transceiver.mid] = trackId
+        }
+        
+        return mapping
+        
+    }
+    
+    func onSdpAnswer(_ sdpAnswer: SdpAnswerEvent) {
+        guard let pc = self.connection else {
+            return
+        }
+        
+        let description = RTCSessionDescription(type: .answer, sdp: sdpAnswer.data.sdp)
+        
+        pc.setRemoteDescription(description, completionHandler: { error in
+            guard let err = error else {
+                return
+            }
+            
+            print("Failed to set remote description", err)
+        })
+    }
+    
+    func onRemoteCandidate(_ remoteCandidate: RemoteCandidateEvent) {
+        guard let pc = self.connection else {
+            return
+        }
+        
+        let candidate = RTCIceCandidate(sdp: remoteCandidate.data.candidate, sdpMLineIndex: remoteCandidate.data.sdpMLineIndex, sdpMid: remoteCandidate.data.sdpMid)
+        
+        pc.add(candidate, completionHandler: { error in
+            guard let err = error else {
+                return
+            }
+            
+            print("Error while processing remote ice candidate", err)
+        })
+    }
+    
+    func onLocalCandidate(_ candidate: RTCIceCandidate) {
+        self.transport.sendEvent(event: LocalCandidateEvent(candidate: candidate.sdp, sdpMLineIndex: candidate.sdpMLineIndex))
     }
 }
 

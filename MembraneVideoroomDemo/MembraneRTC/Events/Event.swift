@@ -132,8 +132,8 @@ public class Events {
         }
     }
     
-    public static func joinEvent() -> SendableEvent  {
-        return JoinEvent()
+    public static func joinEvent(metadata: Metadata) -> SendableEvent  {
+        return JoinEvent(metadata: metadata)
     }
 }
 
@@ -141,10 +141,16 @@ public class Events {
  Sendable events
  */
 struct JoinEvent: SendableEvent {
+    let metadata: Metadata
+    
+    init(metadata: Metadata) {
+        self.metadata = metadata
+    }
+    
     func serialize() -> Payload {
         return [
             "type": "join",
-            "data": ["metadata": Dictionary<String, String>()]
+            "data": ["metadata": self.metadata]
         ]
     }
 }
@@ -171,7 +177,7 @@ struct SdpOfferEvent: SendableEvent {
                         "sdp": self.sdp
                     ],
                     "trackIdToTrackMetadata": self.trackIdToTrackMetadata,
-                    "midToTrackId": self.trackIdToTrackMetadata
+                    "midToTrackId": self.midToTrackId
                 ]
                 
             ]
@@ -181,9 +187,9 @@ struct SdpOfferEvent: SendableEvent {
 
 struct LocalCandidateEvent: SendableEvent {
     let candidate: String
-    let sdpMLineIndex: Int
+    let sdpMLineIndex: Int32
     
-    init(candidate: String, sdpMLineIndex: Int) {
+    init(candidate: String, sdpMLineIndex: Int32) {
         self.candidate = candidate
         self.sdpMLineIndex = sdpMLineIndex
     }
@@ -291,7 +297,7 @@ struct SdpAnswerEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let type: String
         let sdp: String
-        let midToTrackId: [String: Int?]
+        let midToTrackId: [String: String]
     }
     
     let type: ReceivableEventType
@@ -301,7 +307,7 @@ struct SdpAnswerEvent: ReceivableEvent, Codable {
 struct RemoteCandidateEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let candidate: String
-        let sdpMLineIndex: Int
+        let sdpMLineIndex: Int32
         let sdpMid: String?
     }
     

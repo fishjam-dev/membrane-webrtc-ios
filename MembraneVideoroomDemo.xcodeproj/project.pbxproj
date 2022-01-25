@@ -32,9 +32,12 @@
 		3B16A20E2796DEAC0095941F /* Dimensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A20D2796DEAC0095941F /* Dimensions.swift */; };
 		3B16A2102796F4AF0095941F /* FileCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A20F2796F4AF0095941F /* FileCapturer.swift */; };
 		3B16A21627970B930095941F /* video.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3B16A21527970B8D0095941F /* video.mp4 */; };
+		3B4191F8279EEDD1000035C0 /* LocalAudioTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */; };
+		3B4191FA279EEE09000035C0 /* LocalTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191F9279EEE09000035C0 /* LocalTrack.swift */; };
+		3B4191FC279EF160000035C0 /* AudioSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191FB279EF160000035C0 /* AudioSessionManager.swift */; };
 		3B667FC0279943B1007E38C8 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B667FBF279943B1007E38C8 /* Metadata.swift */; };
 		3B667FC227995437007E38C8 /* ScreenCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B667FC127995437007E38C8 /* ScreenCapturer.swift */; };
-		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; };
+		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; settings = {ATTRIBUTES = (Required, ); }; };
 		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
 /* End PBXBuildFile section */
@@ -64,6 +67,9 @@
 		3B16A20D2796DEAC0095941F /* Dimensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dimensions.swift; sourceTree = "<group>"; };
 		3B16A20F2796F4AF0095941F /* FileCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCapturer.swift; sourceTree = "<group>"; };
 		3B16A21527970B8D0095941F /* video.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = video.mp4; sourceTree = "<group>"; };
+		3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAudioTrack.swift; sourceTree = "<group>"; };
+		3B4191F9279EEE09000035C0 /* LocalTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTrack.swift; sourceTree = "<group>"; };
+		3B4191FB279EF160000035C0 /* AudioSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionManager.swift; sourceTree = "<group>"; };
 		3B667FBF279943B1007E38C8 /* Metadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
 		3B667FC127995437007E38C8 /* ScreenCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapturer.swift; sourceTree = "<group>"; };
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -181,10 +187,13 @@
 			children = (
 				3B16A1FE2796C4970095941F /* VideoCapturer.swift */,
 				3B16A1FF2796C4970095941F /* LocalVideoTrack.swift */,
+				3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */,
 				3B16A2002796C4970095941F /* CameraCapturer.swift */,
+				3B4191FB279EF160000035C0 /* AudioSessionManager.swift */,
 				3B16A20D2796DEAC0095941F /* Dimensions.swift */,
 				3B16A20F2796F4AF0095941F /* FileCapturer.swift */,
 				3B667FC127995437007E38C8 /* ScreenCapturer.swift */,
+				3B4191F9279EEE09000035C0 /* LocalTrack.swift */,
 			);
 			path = Media;
 			sourceTree = "<group>";
@@ -298,8 +307,11 @@
 				3B16A1DF2796C42B0095941F /* MembraneVideoroomDemoApp.swift in Sources */,
 				3B16A1E02796C42B0095941F /* Extensions.swift in Sources */,
 				3B16A2012796C4970095941F /* SwiftUIVideoView.swift in Sources */,
+				3B4191F8279EEDD1000035C0 /* LocalAudioTrack.swift in Sources */,
 				3B16A2092796C4970095941F /* EventTransport.swift in Sources */,
 				3B16A2082796C4970095941F /* MembraneRTCDelegate.swift in Sources */,
+				3B4191FC279EF160000035C0 /* AudioSessionManager.swift in Sources */,
+				3B4191FA279EEE09000035C0 /* LocalTrack.swift in Sources */,
 				3B16A1E22796C42B0095941F /* ConnectView.swift in Sources */,
 				3B16A2032796C4970095941F /* TrackContext.swift in Sources */,
 				3B16A20E2796DEAC0095941F /* Dimensions.swift in Sources */,
@@ -448,6 +460,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -476,6 +489,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -499,7 +513,7 @@
 				3BCCBEC82795619600A0AD4C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		3BCCBEC92795619600A0AD4C /* Build configuration list for PBXNativeTarget "MembraneVideoroomDemo" */ = {
 			isa = XCConfigurationList;
@@ -508,7 +522,7 @@
 				3BCCBECB2795619600A0AD4C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 
