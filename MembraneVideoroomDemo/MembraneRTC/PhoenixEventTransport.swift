@@ -18,9 +18,9 @@ class PhoenixEventTransport: EventTransport {
     
     let socket: Socket
     var channel: Channel?
-    // TODO: this delegate should be a weak reference
-    var delegate: EventTransportDelegate?
     var connectionState: ConnectionState = .uninitialized
+    
+    weak var delegate: EventTransportDelegate?
     
     
     let queue = DispatchQueue(label: "membrane.rtc.transport", qos: .background)
@@ -34,7 +34,6 @@ class PhoenixEventTransport: EventTransport {
     func connect(delegate: EventTransportDelegate) -> Promise<Void> {
         return Promise(on: queue) { resolve, fail in
             guard case .uninitialized = self.connectionState else {
-                debugPrint("Tried connecting on a socket with state", self.connectionState)
                 fail(EventTransportError.unexpected(reason: "Tried to connect on a pending socket"))
                 return
             }
@@ -73,9 +72,9 @@ class PhoenixEventTransport: EventTransport {
     }
     
     func sendEvent(event: SendableEvent) {
-        guard socket.isConnected,
+        guard self.connectionState == .connected,
             let channel = self.channel else {
-            debugPrint("Tried sending a message on closed socket")
+                sdkLogger.error("PhoenixEventTransport tried sending a message on a closed socket")
             return
         }
         

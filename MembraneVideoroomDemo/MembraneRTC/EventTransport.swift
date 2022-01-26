@@ -38,6 +38,6 @@ public protocol EventTransport {
     func sendEvent(event: SendableEvent);
 }
 
-public protocol EventTransportDelegate {
+public protocol EventTransportDelegate: class {
     func receiveEvent(event: ReceivableEvent);
 }

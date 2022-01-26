@@ -3,6 +3,11 @@ import UIKit
 import WebRTC
 import ReplayKit
 
+
+public protocol NativeVideoViewDelegate: AnyObject {
+    func didChange(dimensions: Dimensions);
+}
+
 public class NativeVideoView: UIView {
     public enum BoxFit {
         case fit
@@ -22,41 +27,30 @@ public class NativeVideoView: UIView {
         }
     }
 
-    /// Size of the actual video, this will change when the publisher
-    /// changes dimensions of the video such as rotating etc.
+    // TODO: handle device rotation, for now assume that is held vertically
+    /// Dimensions can change dynamically due to RTC changing the resolution itself or by rotation
     public private(set) var dimensions: Dimensions? {
         didSet {
             guard oldValue != dimensions else { return }
 
-            // force layout
-            setNeedsLayout()
+            shouldLayout()
 
             // notify dimensions update
-            // guard let dimensions = dimensions else { return }
-
-            // track?.notify { [weak track] in
-            //    guard let track = track else { return }
-            //    $0.track(track, videoView: self, didUpdate: dimensions)
-            // }
+            
+            guard let dimensions = dimensions else { return }
+            
+            self.delegate?.didChange(dimensions: dimensions)
         }
     }
 
-    /// Size of this view (used to notify delegates), we are not yet using delegates though, no idea if they are necessary to begin with, will see...
     /// usually should be equal to `frame.size`
     public private(set) var viewSize: CGSize {
         didSet {
             guard oldValue != viewSize else { return }
-            // notify viewSize update
-            // track?.notify { $0.track(self.track!, videoView: self, didUpdate: self.viewSize) }
         }
     }
 
     override init(frame: CGRect) {
-//        let newFrame = CGRect(x: 0.0, y: 0.0, width: 480, height: 720)
-//        self.viewSize = newFrame.size
-//        super.init(frame: newFrame)
-        
-        // TODO: fix me as this frame has bad sizing...
         self.viewSize = frame.size
         super.init(frame: frame)
         shouldPrepare()
@@ -75,16 +69,12 @@ public class NativeVideoView: UIView {
         didSet {
             if let oldValue = oldValue {
                 oldValue.remove(rendererView)
-                // oldValue.notify { $0.track(oldValue, didDetach: self) }
             }
-//            print("Adding renderer for a track", track, rendererView)
             track?.add(rendererView)
-            // track?.notify { [weak track] in
-            //     guard let track = track else { return }
-            //     $0.track(track, didAttach: self)
-            // }
         }
     }
+    
+    public weak var delegate: NativeVideoViewDelegate?
 
     func shouldPrepare() {
         guard let rendererView = rendererView as? UIView else { return }
@@ -96,20 +86,18 @@ public class NativeVideoView: UIView {
 
     func shouldLayout() {
         setNeedsLayout()
+        self.viewSize = frame.size
         
         guard let rendererView = rendererView as? UIView else { return }
         
-        // TODO: handle this dimensions here, should have something in common with the real video
-//        if dimensions == nil {
-//            print("Setting renderer to hidden, why though?")
-//        }
+        guard let dimensions = self.dimensions else {
+            rendererView.isHidden = true
+            return
+        }
 
-        // hard code if for now...
-        let dimensions = Dimensions(width: 480, height: 720)
-
+        // FIXME: this fill behaviour does not work well...
         if case .fill = fit {
-            let vSize = CGSize(width: 240, height: 360)
-            var size = vSize
+            var size = self.viewSize
             
             let widthRatio = size.width / CGFloat(dimensions.width)
             let heightRatio = size.height / CGFloat(dimensions.height)
@@ -119,16 +107,18 @@ public class NativeVideoView: UIView {
             } else if widthRatio > heightRatio {
                 size.height = size.width / CGFloat(dimensions.width) * CGFloat(dimensions.height)
             }
-
+            
             // center layout
-            rendererView.frame = CGRect(x: -((size.width - vSize.width) / 2),
-                                        y: -((size.height - vSize.height) / 2),
+            rendererView.frame = CGRect(x: -((size.width - viewSize.width) / 2),
+                                        y: -((size.height - viewSize.height) / 2),
                                         width: size.width,
                                         height: size.height)
-
+            print(rendererView.frame)
         } else {
             rendererView.frame = bounds
         }
+        // FIXME: ignore fill and always do the fit unless it gets fixed up
+        rendererView.frame = bounds
         rendererView.isHidden = false
     }
 
@@ -149,16 +139,12 @@ public class NativeVideoView: UIView {
             let view: RTCVideoRenderer
 
             if isMetalAvailable() {
-                // debugPrint("Using RTCMTLVideoView for VideoView's Renderer")
                 let mtlView = RTCMTLVideoView()
-                // use .fit here to match macOS behavior and
-                // manually calculate .fill if necessary
                 mtlView.contentMode = .scaleAspectFit
                 mtlView.videoContentMode = .scaleAspectFit
                 mtlView.delegate = delegate
                 view = mtlView
             } else {
-                // debugPrint("Using RTCEAGLVideoView for VideoView's Renderer")
                 let glView = RTCEAGLVideoView()
                 glView.contentMode = .scaleAspectFit
                 glView.delegate = delegate
@@ -171,7 +157,6 @@ public class NativeVideoView: UIView {
 }
 
 extension NativeVideoView: RTCVideoViewDelegate {
-
     public func videoView(_: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         guard let width = Int32(exactly: size.width),
               let height = Int32(exactly: size.height) else {
@@ -183,7 +168,6 @@ extension NativeVideoView: RTCVideoViewDelegate {
         guard width > 1, height > 1 else {
             // Handle known issue where the delegate (rarely) reports dimensions of 1x1
             // which causes [MTLTextureDescriptorInternal validateWithDevice] to crash.
-            debugPrint("VideoView: size is 1x1, ignoring...")
             return
         }
 

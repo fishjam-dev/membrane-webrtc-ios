@@ -7,85 +7,80 @@ import Promises
 final class AppController: ObservableObject {
     public static let shared = AppController()
     
-    @Published private(set) var localVideoFeed: RTCVideoTrack?
+    public private(set) var client: MembraneRTC?
     
-    @Published private(set) var client: MembraneRTC?
+    @Published private(set) var awaitingConnect: Bool
     
     private init() {
-
+        self.awaitingConnect = true
     }
 
     public func connect() {
-        self.client = MembraneRTC(delegate: self, eventTransport: PhoenixEventTransport(url: "http://localhost:4000/socket", topic: "room:test"), config: RTCConfiguration())
+        let client = MembraneRTC(eventTransport: PhoenixEventTransport(url: "http://localhost:4000/socket", topic: "room:test"), config: RTCConfiguration())
+        client.add(delegate: self)
+        client.connect()
+        
+        self.client = client
+    }
+    
+    deinit {
+        self.client?.remove(delegate: self)
     }
 }
 
 extension AppController: MembraneRTCDelegate {
     func onConnected() {
-        DispatchQueue.sdk.async {
-            self.client?.join(metadata: ["displayName": "King"])
+        DispatchQueue.main.async {
+            self.awaitingConnect = false
         }
     }
     /// Callback invoked when the client has been let into the room.
     func onJoinSuccess(peerID: String, peersInRoom: Array<Peer>) {
-        debugPrint("onJoinSuccess")
+        sdkLogger.info("AppController joined successfully")
     }
 
     /// Callback invoked when client has been denied access to enter the room. 
     func onJoinError(metadata: Any) {
-        debugPrint("onJoinError")
+        sdkLogger.info("AppController failed to join: \(metadata)")
     }
 
     /// Callback invoked a track is ready to be played. 
     func onTrackReady(ctx: TrackContext) {
-        debugPrint("onTrackReady")
+        sdkLogger.debug("AppController a track is ready: \(ctx.trackId)")
     }
 
     /// Callback invoked a peer already present in a room adds a new track. 
     func onTrackAdded(ctx: TrackContext) {
-        debugPrint("onTrackAdded")
+        sdkLogger.debug("AppController a track has been added: \(ctx.trackId)")
     }
     
     /// Callback invoked when a track will no longer receive any data. 
     func onTrackRemoved(ctx: TrackContext) {
-        debugPrint("onTrackRemoved")
+        sdkLogger.debug("AppController a track has been removed: \(ctx.trackId)")
     }
 
     /// Callback invoked when track's metadata gets updated 
     func onTrackUpdated(ctx: TrackContext) {
-        debugPrint("onTrackUpdated")
+        sdkLogger.debug("AppController a track has been updated: \(ctx.trackId)")
     }
     
     /// Callback invoked when a new peer joins the room. 
     func onPeerJoined(peer: Peer) {
-        debugPrint("onPeerJoined")
-        
+        sdkLogger.debug("AppController a new peer has joined")
     }
 
     /// Callback invoked when a peer leaves the room. 
     func onPeerLeft(peer: Peer) {
-        debugPrint("onPeerLeft")
+        sdkLogger.debug("AppController a peer has left")
     }
     
     /// Callback invoked when peer's metadata gets updated. 
     func onPeerUpdated(peer: Peer) {
-        debugPrint("onPeerUpdated")
+        sdkLogger.debug("AppController a peer has been updated")
     }
     
     /// Callback invoked when a connection errors happens.
     func onConnectionError(message: String) {
-        debugPrint("onConnectionError")
-    }
-}
-
-// FIXME: this is temporary just to launch the application
-extension AppController: EventTransport {
-    func connect(delegate: EventTransportDelegate) -> Promise<Void> {
-        debugPrint("Connecting the event transport")
-        return Promise(())
-    }
-
-    func sendEvent(event: SendableEvent) {
-        print("Application sending the signalling event")
+        sdkLogger.debug("AppController encountered connection error..")
     }
 }

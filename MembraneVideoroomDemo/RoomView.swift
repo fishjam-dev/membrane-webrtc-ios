@@ -2,20 +2,68 @@ import Foundation
 import SwiftUI
 
 struct RoomView: View {
-    @ObservedObject var client: MembraneRTC
+    @ObservedObject var room: ObservableRoom
+    
+    @State private var localDimensions: Dimensions?
+    
+    init(_ room: MembraneRTC) {
+        self.room = ObservableRoom(room)
+    }
+    
+    
+    @ViewBuilder
+    func participantsList(_ participants: Array<Participant>) -> some View {
+        let participantNames = participants.map {
+            $0.displayName
+        }.joined(separator: ", ")
+        
+        if participants.count > 0 {
+             HStack {
+                Text("Participants: ").bold()
+                Text(participantNames)
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+        } else {
+             EmptyView()
+        }
+    }
 
     var body: some View {
-        VStack {
-            Text("Welcome").foregroundColor(.white)
+        GeometryReader { geometry in
+            // width minus potential padding
+            let videoFrameWidth = geometry.size.width * 0.5 - 20
+            // video height assumed that we are dealing with 9/16 minus potential padding
+            let videoFrameHeight = (videoFrameWidth) * (16.0 / 9.0) - 20
             
-            if let track = client.localVideoTrack {
-                SwiftUIVideoView(track.track, fit: .fill)
-                    .border(Color.black)
-            } else {
-                Text("Local video track is not available yet...").foregroundColor(.white)
+            VStack {
+                Text("Membrane iOS Demo")
+                    .bold()
+                    .font(.system(size: 20))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .foregroundColor(.white)
+                
+                if let track = room.localVideoTrack {
+                    SwiftUIVideoView(track.track, fit: .fill, dimensions: $localDimensions)
+                        .background(Color.blue.darker())
+                        .frame(width: videoFrameWidth, height: videoFrameHeight, alignment: .leading)
+                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(Color.blue.darker(by: 0.4), lineWidth: 2)
+                        )
+                        .padding(10)
+                } else {
+                    Text("Local video track is not available yet...").foregroundColor(.white)
+                }
+                
+                if let errorMessage = room.errorMessage {
+                    Text(errorMessage).foregroundColor(.red)
+                }
+                Spacer()
+                
+                participantsList(room.participants)
             }
-            Text("Goodbye").foregroundColor(.white)
+            .padding(8)
         }
-        .padding(8)
     }
 }

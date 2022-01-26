@@ -4,9 +4,9 @@ import Logging
 
 internal var sdkLogger = Logger(label: "org.membrane.ios")
 
-public class MembraneRTC: NSObject, ObservableObject {
-    // TODO: this should have a better documentation
-    
+// TODO: document anything for your owns sake...
+public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObject {
+    static let version = "0.1.0"
     
     enum State {
         case uninitialized
@@ -14,39 +14,48 @@ public class MembraneRTC: NSObject, ObservableObject {
         case disconnected
     }
     
-    static let version = "0.1.0"
-    
     
     var state: State
     var transport: EventTransport
-    // TODO: this delegate should be a weak reference
-    var delegate: MembraneRTCDelegate
-    var config: RTCConfiguration
     
+    // RTC related stuff
+    var config: RTCConfiguration
     var connection: RTCPeerConnection?
+    
+    @Published public var localVideoTrack: LocalVideoTrack?
+    @Published public var localAudioTrack: LocalAudioTrack?
+    
+    
     var localPeer = Peer(id: "", metadata: [:], trackIdToMetadata: [:])
     
+    var remotePeers: [String: Peer] = [:]
+    var peerTrackContexts: [String: TrackContext] = [:]
     
-    // TODO: this should be a separate type to hide the RTCVideoTrack type
-    @Published public var localVideoTrack: LocalVideoTrack?
-    var localAudioTrack: LocalAudioTrack?
     
-    public init(delegate: MembraneRTCDelegate, eventTransport: EventTransport, config: RTCConfiguration) {
-        RTCSetMinDebugLogLevel(.error)
+    public init(eventTransport: EventTransport, config: RTCConfiguration) {
+//        RTCSetMinDebugLogLevel(.error)
         sdkLogger.logLevel = .debug
         
         self.state = .uninitialized
-        self.transport = eventTransport;
-        self.delegate = delegate;
-        self.config = config;
+        self.transport = eventTransport
+        self.config = config
         
         super.init()
         
+    }
+    
+    public func join(metadata: Metadata) {
+        self.transport.sendEvent(event: Events.joinEvent(metadata: metadata))
+    }
+    
+    public func connect() {
         self.transport.connect(delegate: self).then {
-            self.delegate.onConnected()
+            self.notify {
+                $0.onConnected()
+            }
         }
         
-        let config = RTCConfiguration()
+        let config = self.config
         config.sdpSemantics = .unifiedPlan
         config.continualGatheringPolicy = .gatherContinually
         config.candidateNetworkPolicy = .all
@@ -97,14 +106,11 @@ public class MembraneRTC: NSObject, ObservableObject {
         
         self.localPeer.trackIdToMetadata = [
             videoTrack.track.trackId: [:],
-            // somehow audio track is not yet working on simulator, and wont be, microphone has to be handled differently...
+            // for now the audio track does not relay any media as microphone does not work on a simulator
             audioTrack.track.trackId: [:]
         ]
     }
     
-    public func join(metadata: Metadata) {
-        self.transport.sendEvent(event: Events.joinEvent(metadata: metadata))
-    }
 }
 
 extension MembraneRTC: RTCPeerConnectionDelegate {
@@ -163,6 +169,15 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
         ]
         
         sdkLogger.debug("peerConnection new connection state: \(descriptions[newState] ?? "unknown")")
+        
+        switch newState {
+        case .connected:
+            self.state = .connected
+        case .disconnected:
+            self.state = .disconnected
+        default:
+            break
+        }
     }
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {
@@ -195,7 +210,10 @@ extension MembraneRTC: EventTransportDelegate {
             let peerAccepted = event as! PeerAcceptedEvent
             
             self.localPeer.id = peerAccepted.data.id
-            self.delegate.onJoinSuccess(peerID: peerAccepted.data.id, peersInRoom: peerAccepted.data.peersInRoom)
+            
+            self.notify {
+                $0.onJoinSuccess(peerID: peerAccepted.data.id, peersInRoom: peerAccepted.data.peersInRoom)
+            }
             
         case .PeerJoined:
             let peerJoined = event as! PeerJoinedEvent
@@ -203,7 +221,41 @@ extension MembraneRTC: EventTransportDelegate {
                 return
             }
             
-            self.delegate.onPeerJoined(peer: peerJoined.data.peer)
+            remotePeers[peerJoined.data.peer.id] = peerJoined.data.peer
+            
+            self.notify {
+                $0.onPeerJoined(peer: peerJoined.data.peer)
+            }
+            
+            
+        case .PeerLeft:
+            let peerLeft = event as! PeerLeftEvent
+            
+            guard let peer = remotePeers[peerLeft.data.peerId] else {
+                return
+            }
+            
+            remotePeers.removeValue(forKey: peer.id)
+            
+            self.notify {
+                $0.onPeerLeft(peer: peer)
+            }
+            
+        case .PeerUpdated:
+            let peerUpdated = event as! PeerUpdateEvent
+            
+            // TODO: check if the mutibility breaks anything here
+            guard var peer = remotePeers[peerUpdated.data.peerId] else {
+                return
+            }
+            
+            
+            peer.metadata = peerUpdated.data.metadata
+            remotePeers.updateValue(peer, forKey: peer.id)
+            
+            self.notify {
+                $0.onPeerUpdated(peer: peer)
+            }
             
         case .OfferData:
             let offerData = event as! OfferDataEvent
@@ -226,6 +278,11 @@ extension MembraneRTC: EventTransportDelegate {
             DispatchQueue.webRTC.async {
                 self.onRemoteCandidate(candidate)
             }
+            
+        case .TracksAdded:
+            let tracksAdded = event as! TracksAddedEvent
+            
+            print(tracksAdded)
         
         default:
             sdkLogger.error("Failed to handle ReceivableEvent of type \(event.type)")
@@ -265,9 +322,6 @@ extension MembraneRTC {
                 
                 sdkLogger.error("error occured while setting a local description: \(err)")
             })
-            
-            
-            
         })
     }
     
