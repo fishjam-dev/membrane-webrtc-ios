@@ -1,5 +1,9 @@
 import Foundation
 import SwiftUI
+import WebRTC
+
+extension RTCVideoTrack: Identifiable {
+}
 
 struct RoomView: View {
     @ObservedObject var room: ObservableRoom
@@ -27,6 +31,24 @@ struct RoomView: View {
              EmptyView()
         }
     }
+    
+    @ViewBuilder
+    func participantsVideoViews(_ participants: Array<Participant>, width: CGFloat, height: CGFloat) -> some View {
+        let videoTracks = participants.compactMap { $0.videoTrack }
+        
+        ForEach(videoTracks) { track in
+            SwiftUIVideoView(track, fit: .fill, dimensions: $localDimensions)
+                .background(Color.blue.darker())
+                .frame(width: width, height: height, alignment: .leading)
+                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .background(
+                    RoundedRectangle(cornerRadius: 15)
+                        .stroke(Color.blue.darker(by: 0.4), lineWidth: 2)
+                )
+                .padding(10)
+        }
+        
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -52,6 +74,8 @@ struct RoomView: View {
                                 .stroke(Color.blue.darker(by: 0.4), lineWidth: 2)
                         )
                         .padding(10)
+                    
+                    participantsVideoViews(room.participants, width: videoFrameWidth, height: videoFrameHeight)
                 } else {
                     Text("Local video track is not available yet...").foregroundColor(.white)
                 }

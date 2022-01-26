@@ -113,7 +113,6 @@ public class NativeVideoView: UIView {
                                         y: -((size.height - viewSize.height) / 2),
                                         width: size.width,
                                         height: size.height)
-            print(rendererView.frame)
         } else {
             rendererView.frame = bounds
         }

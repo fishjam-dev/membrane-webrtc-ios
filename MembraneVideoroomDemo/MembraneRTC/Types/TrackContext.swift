@@ -9,12 +9,10 @@ import Foundation
 import WebRTC
 
 public struct TrackContext {
-    let track: RTCMediaStreamTrack?
-    let stream: RTCMediaStream?
+    var track: RTCMediaStreamTrack?
+    var stream: RTCMediaStream?
     
     let peer: Peer
     let trackId: String
     let metadata: Any
-    
-    // let isSimulcast: Bool
 }

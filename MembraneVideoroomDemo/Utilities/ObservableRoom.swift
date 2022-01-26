@@ -68,6 +68,20 @@ extension ObservableRoom: MembraneRTCDelegate {
     }
     
     func onTrackReady(ctx: TrackContext) {
+        guard
+            let track = ctx.track,
+            track.kind == "video",
+            let idx = self.participants.firstIndex(where: { $0.id == ctx.peer.id }) else {
+            return
+        }
+        
+        var participant = self.participants[idx]
+        participant.videoTrack = ctx.track as? RTCVideoTrack
+        self.participants[idx] = participant
+        
+        DispatchQueue.main.async {
+            self.objectWillChange.send()
+        }
     }
     
     func onTrackAdded(ctx: TrackContext) {
@@ -81,8 +95,6 @@ extension ObservableRoom: MembraneRTCDelegate {
     
     func onPeerJoined(peer: Peer) {
         self.participants.append(Participant(id: peer.id, displayName: peer.metadata["displayName"] ?? ""))
-        
-        print(self.participants)
         
         DispatchQueue.main.async {
             self.objectWillChange.send()

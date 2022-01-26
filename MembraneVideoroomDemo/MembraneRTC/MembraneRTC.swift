@@ -29,7 +29,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     var localPeer = Peer(id: "", metadata: [:], trackIdToMetadata: [:])
     
     var remotePeers: [String: Peer] = [:]
-    var peerTrackContexts: [String: TrackContext] = [:]
+    var trackContexts: [String: TrackContext] = [:]
+    
+    var midToTrackId: [String: String] = [:]
     
     
     public init(eventTransport: EventTransport, config: RTCConfiguration) {
@@ -136,7 +138,20 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
     }
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
-        sdkLogger.debug("peerConnection started receiving on a transceiver with a mid: \(transceiver.mid)")
+        guard let trackId = self.midToTrackId[transceiver.mid],
+            var trackContext = self.trackContexts[trackId] else {
+            sdkLogger.error("peerConnection started receiving on a transceiver with an unknown 'mid' parameter or without registered track context")
+            return
+        }
+        
+        trackContext.track = transceiver.receiver.track
+        self.trackContexts[trackId] = trackContext
+        
+        self.notify {
+            $0.onTrackReady(ctx: trackContext)
+        }
+        
+        sdkLogger.debug("peerConnection started receiving on a transceiver with a mid: \(transceiver.mid) and id \(transceiver.receiver.track?.trackId ?? "" )")
     }
     
     public func peerConnection(_ peerConnection: RTCPeerConnection,
@@ -211,6 +226,20 @@ extension MembraneRTC: EventTransportDelegate {
             
             self.localPeer.id = peerAccepted.data.id
             
+            peerAccepted.data.peersInRoom.forEach { peer in
+                self.remotePeers[peer.id] = peer
+                
+                peer.trackIdToMetadata?.forEach { trackId, metadata in
+                    let context = TrackContext(track: nil, stream: nil, peer: peer, trackId: trackId, metadata: metadata)
+                    
+                    self.trackContexts[trackId] = context
+                    
+                    self.notify {
+                        $0.onTrackAdded(ctx: context)
+                    }
+                }
+            }
+            
             self.notify {
                 $0.onJoinSuccess(peerID: peerAccepted.data.id, peersInRoom: peerAccepted.data.peersInRoom)
             }
@@ -221,7 +250,7 @@ extension MembraneRTC: EventTransportDelegate {
                 return
             }
             
-            remotePeers[peerJoined.data.peer.id] = peerJoined.data.peer
+            self.remotePeers[peerJoined.data.peer.id] = peerJoined.data.peer
             
             self.notify {
                 $0.onPeerJoined(peer: peerJoined.data.peer)
@@ -282,7 +311,23 @@ extension MembraneRTC: EventTransportDelegate {
         case .TracksAdded:
             let tracksAdded = event as! TracksAddedEvent
             
-            print(tracksAdded)
+            guard self.localPeer.id != tracksAdded.data.peerId else {
+                return
+            }
+            
+            guard let peer = self.remotePeers[tracksAdded.data.peerId] else {
+                return
+            }
+            
+            tracksAdded.data.trackIdToMetadata.forEach { trackId, metadata in
+                let context = TrackContext(track: nil, stream: nil, peer: peer, trackId: trackId, metadata: metadata)
+                
+                self.trackContexts[trackId] = context
+                
+                self.notify {
+                    $0.onTrackAdded(ctx: context)
+                }
+            }
         
         default:
             sdkLogger.error("Failed to handle ReceivableEvent of type \(event.type)")
@@ -294,7 +339,6 @@ extension MembraneRTC: EventTransportDelegate {
 }
 
 extension MembraneRTC {
-    
     func onOfferData(_ offerData: OfferDataEvent) {
         guard let pc = self.connection else {
             return
@@ -390,6 +434,8 @@ extension MembraneRTC {
         guard let pc = self.connection else {
             return
         }
+        
+        self.midToTrackId = sdpAnswer.data.midToTrackId
         
         let description = RTCSessionDescription(type: .answer, sdp: sdpAnswer.data.sdp)
         
