@@ -35,9 +35,10 @@ extension EventTransportError: CustomStringConvertible {
 
 public protocol EventTransport {
     func connect(delegate: EventTransportDelegate) -> Promise<Void>;
+    func disconnect();
     func sendEvent(event: SendableEvent);
 }
 
-public protocol EventTransportDelegate: class {
+public protocol EventTransportDelegate: AnyObject {
     func receiveEvent(event: ReceivableEvent);
 }

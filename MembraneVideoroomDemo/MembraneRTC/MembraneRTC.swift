@@ -94,6 +94,14 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
     }
     
+    public func disconnect() {
+        self.transport.disconnect()
+        
+        if let pc = self.connection {
+            pc.close()
+        }
+    }
+    
     private func setupMediaTracks() {
         guard let pc = self.connection else {
             return
@@ -276,8 +284,6 @@ extension MembraneRTC: EventTransportDelegate {
             }
             
             remotePeers.removeValue(forKey: peer.id)
-            print("REMOVING PEER", peer)
-            
             
             // for a leaving peer clear his track contexts
             if let trackIdToMetadata = peer.trackIdToMetadata {
@@ -292,7 +298,6 @@ extension MembraneRTC: EventTransportDelegate {
                 }
                 
                 contexts.forEach { context in
-                    print("NOTIFYING ABOUT ", context)
                     self.notify {
                         $0.onTrackRemoved(ctx: context)
                     }

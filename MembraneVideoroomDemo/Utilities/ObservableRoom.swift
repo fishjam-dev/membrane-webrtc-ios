@@ -39,6 +39,8 @@ class ObservableRoom: ObservableObject {
     weak var room: MembraneRTC?
     
     @Published var errorMessage: String?
+    @Published var isMicEnabled: Bool
+    @Published var isCameraEnabled: Bool
     
     var primaryVideo: ParticipantVideo?
     
@@ -52,11 +54,49 @@ class ObservableRoom: ObservableObject {
         self.participants = [:]
         self.participantVideos = []
         
+        self.isMicEnabled = true
+        self.isCameraEnabled = true
+        
         room.add(delegate: self)
         
         // TODO: room probably should have other states indicating that it is awaiting a join
         // for now we know that we need to trigger join here but it is not a must
         room.join(metadata: ["displayName": "I am the king!"])
+    }
+    
+    // TODO: this should not belong here...
+    public enum LocalTrackType {
+        case audio, video
+    }
+    
+    func toggleLocalTrack(_ type: LocalTrackType) {
+        switch type {
+        case .audio:
+            self.room?.localAudioTrack?.toggle()
+            self.isMicEnabled = !self.isMicEnabled
+            
+        case .video:
+            self.room?.localVideoTrack?.toggle()
+            self.isCameraEnabled = !self.isCameraEnabled
+        }
+    }
+    
+    func focus(video: ParticipantVideo) {
+        DispatchQueue.main.async {
+            guard let idx = self.participantVideos.firstIndex(where: { $0.id == video.id}) else {
+                return
+            }
+            
+            self.participantVideos.remove(at: idx)
+            
+            if let primary = self.primaryVideo {
+                self.participantVideos.append(primary)
+            }
+            
+            self.primaryVideo = video
+            
+            self.objectWillChange.send()
+        }
     }
 }
 
@@ -125,9 +165,6 @@ extension ObservableRoom: MembraneRTCDelegate {
     }
     
     func onTrackRemoved(ctx: TrackContext) {
-        print("CONTEXT", ctx)
-        print("VIDEOS", self.participantVideos)
-        
         guard let idx = self.participantVideos.firstIndex(where: { $0.id == ctx.trackId }) else {
             if self.primaryVideo?.id == ctx.trackId {
                 DispatchQueue.main.async {

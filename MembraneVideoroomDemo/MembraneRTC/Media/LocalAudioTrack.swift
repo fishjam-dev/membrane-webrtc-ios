@@ -51,6 +51,10 @@ public class LocalAudioTrack: LocalTrack {
         configure(setActive: false)
     }
     
+    public func toggle() {
+        self.track.isEnabled = !self.track.isEnabled
+    }
+    
     private func configure(setActive: Bool) {
         let audioSession = RTCAudioSession.sharedInstance()
         audioSession.lockForConfiguration()

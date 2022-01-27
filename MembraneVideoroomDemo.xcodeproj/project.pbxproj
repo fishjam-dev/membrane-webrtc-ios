@@ -41,6 +41,7 @@
 		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; settings = {ATTRIBUTES = (Required, ); }; };
 		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
+		3BDAC1E027A2FCE200A2BB0D /* ParticipantVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +77,7 @@
 		3B667FC127995437007E38C8 /* ScreenCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapturer.swift; sourceTree = "<group>"; };
 		3BCA53B927A0248900E3CABF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantVideoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +102,7 @@
 				3B16A21527970B8D0095941F /* video.mp4 */,
 				3B16A1F02796C4970095941F /* MembraneRTC */,
 				3B16A1BF2796C42B0095941F /* RoomView.swift */,
+				3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */,
 				3B16A1C02796C42B0095941F /* Assets.xcassets */,
 				3B16A1C12796C42B0095941F /* Preview Content */,
 				3B16A1C32796C42B0095941F /* MembraneVideoroomDemoApp.swift */,
@@ -308,6 +311,7 @@
 				3B04D3962798197500E2B755 /* PhoenixEventTransport.swift in Sources */,
 				3B16A20B2796C4970095941F /* LocalVideoTrack.swift in Sources */,
 				3B16A20C2796C4970095941F /* CameraCapturer.swift in Sources */,
+				3BDAC1E027A2FCE200A2BB0D /* ParticipantVideoView.swift in Sources */,
 				3B16A1E12796C42B0095941F /* App.swift in Sources */,
 				3B16A1DF2796C42B0095941F /* MembraneVideoroomDemoApp.swift in Sources */,
 				3B16A1E02796C42B0095941F /* Extensions.swift in Sources */,

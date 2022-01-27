@@ -71,6 +71,18 @@ class PhoenixEventTransport: EventTransport {
         }
     }
     
+    func disconnect() {
+        if let channel = self.channel {
+            channel.leave()
+            
+            self.channel = nil
+        }
+        
+        socket.disconnect()
+        
+        self.connectionState = .closed
+    }
+    
     func sendEvent(event: SendableEvent) {
         guard self.connectionState == .connected,
             let channel = self.channel else {

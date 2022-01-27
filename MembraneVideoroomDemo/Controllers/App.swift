@@ -23,6 +23,21 @@ final class AppController: ObservableObject {
         self.client = client
     }
     
+    public func disconnect() {
+        DispatchQueue.main.async {
+            guard let client = self.client else {
+                return
+            }
+            
+            client.remove(delegate: self)
+            
+            client.disconnect()
+            
+            self.client = nil
+            self.awaitingConnect = true
+        }
+    }
+    
     deinit {
         self.client?.remove(delegate: self)
     }

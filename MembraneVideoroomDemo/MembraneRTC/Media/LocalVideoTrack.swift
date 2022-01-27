@@ -31,5 +31,9 @@ public class LocalVideoTrack: LocalTrack {
     public func stop() {
         self.capturer.stopCapture()
     }
+    
+    public func toggle() {
+        self.track.isEnabled = !self.track.isEnabled
+    }
 }
 
