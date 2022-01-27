@@ -10,9 +10,7 @@ struct ConnectView: View {
         VStack(alignment: .center, spacing: 40.0) {
           Button(
             action: {
-                AVCaptureDevice.requestAccess(for: .audio, completionHandler: {
-                    granted in print("Granted permissions ", granted)
-                })
+                AVCaptureDevice.requestAccess(for: .audio, completionHandler: { _ in })
             },
             label: {
               Text("Allow microphone access")

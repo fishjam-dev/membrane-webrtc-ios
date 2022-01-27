@@ -25,14 +25,16 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     @Published public var localVideoTrack: LocalVideoTrack?
     @Published public var localAudioTrack: LocalAudioTrack?
     
-    
     var localPeer = Peer(id: "", metadata: [:], trackIdToMetadata: [:])
     
+    // mapping from peer's id to itself
     var remotePeers: [String: Peer] = [:]
+    
+    // mapping from remote track's id to its context
     var trackContexts: [String: TrackContext] = [:]
     
+    // mapping from transceiver's mid to its remote track id
     var midToTrackId: [String: String] = [:]
-    
     
     public init(eventTransport: EventTransport, config: RTCConfiguration) {
 //        RTCSetMinDebugLogLevel(.error)
@@ -43,7 +45,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         self.config = config
         
         super.init()
-        
     }
     
     public func join(metadata: Metadata) {
@@ -51,9 +52,14 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
     
     public func connect() {
+        // initiate a transport connection
         self.transport.connect(delegate: self).then {
             self.notify {
                 $0.onConnected()
+            }
+        }.catch { error in
+            self.notify {
+                $0.onConnectionError(message: error.localizedDescription)
             }
         }
         
@@ -94,6 +100,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
         
         let localStreamId = UUID().uuidString
+        
         let videoTrack = LocalVideoTrack(capturer: .file)
         
         videoTrack.start()
@@ -144,6 +151,7 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
             return
         }
         
+        // assign receiving track to given track's context
         trackContext.track = transceiver.receiver.track
         self.trackContexts[trackId] = trackContext
         
@@ -226,9 +234,11 @@ extension MembraneRTC: EventTransportDelegate {
             
             self.localPeer.id = peerAccepted.data.id
             
+            // initialize all present peers
             peerAccepted.data.peersInRoom.forEach { peer in
                 self.remotePeers[peer.id] = peer
                 
+                // initialize peer's track contexts
                 peer.trackIdToMetadata?.forEach { trackId, metadata in
                     let context = TrackContext(track: nil, stream: nil, peer: peer, trackId: trackId, metadata: metadata)
                     
@@ -246,6 +256,7 @@ extension MembraneRTC: EventTransportDelegate {
             
         case .PeerJoined:
             let peerJoined = event as! PeerJoinedEvent
+            
             guard peerJoined.data.peer.id != self.localPeer.id else {
                 return
             }
@@ -265,6 +276,28 @@ extension MembraneRTC: EventTransportDelegate {
             }
             
             remotePeers.removeValue(forKey: peer.id)
+            print("REMOVING PEER", peer)
+            
+            
+            // for a leaving peer clear his track contexts
+            if let trackIdToMetadata = peer.trackIdToMetadata {
+                let trackIds = Array(trackIdToMetadata.keys)
+                
+                let contexts = trackIds.compactMap { id in
+                    self.trackContexts[id]
+                }
+                
+                trackIds.forEach { id in
+                    self.trackContexts.removeValue(forKey: id)
+                }
+                
+                contexts.forEach { context in
+                    print("NOTIFYING ABOUT ", context)
+                    self.notify {
+                        $0.onTrackRemoved(ctx: context)
+                    }
+                }
+            }
             
             self.notify {
                 $0.onPeerLeft(peer: peer)
@@ -311,21 +344,48 @@ extension MembraneRTC: EventTransportDelegate {
         case .TracksAdded:
             let tracksAdded = event as! TracksAddedEvent
             
+            // ignore local participant
             guard self.localPeer.id != tracksAdded.data.peerId else {
                 return
             }
             
-            guard let peer = self.remotePeers[tracksAdded.data.peerId] else {
+            guard var peer = self.remotePeers[tracksAdded.data.peerId] else {
                 return
             }
             
-            tracksAdded.data.trackIdToMetadata.forEach { trackId, metadata in
+            // update tracks for the peer
+            peer.trackIdToMetadata = tracksAdded.data.trackIdToMetadata
+            self.remotePeers[peer.id] = peer
+            
+            // for each track create a corresponding track context
+            peer.trackIdToMetadata?.forEach { trackId, metadata in
                 let context = TrackContext(track: nil, stream: nil, peer: peer, trackId: trackId, metadata: metadata)
                 
                 self.trackContexts[trackId] = context
                 
                 self.notify {
                     $0.onTrackAdded(ctx: context)
+                }
+            }
+            
+        case .TracksRemoved:
+            let tracksRemoved = event as! TracksRemovedEvent
+            
+            guard let _ = self.remotePeers[tracksRemoved.data.peerId] else {
+                return
+            }
+            
+            // for each track clear its context and notify delegates
+            tracksRemoved.data.trackIds.forEach { id in
+                guard let context = self.trackContexts[id] else {
+                    return
+                }
+                
+                // TODO: there are more fields to clear than just the track context mate...
+                self.trackContexts.removeValue(forKey: id)
+                
+                self.notify {
+                    $0.onTrackRemoved(ctx: context)
                 }
             }
         
@@ -402,7 +462,7 @@ extension MembraneRTC {
             pc.addTransceiver(of: .audio)?.setDirection(.recvOnly, error: nil)
         }
         
-        for _ in 0..<lackingAudio {
+        for _ in 0..<lackingVideo {
             pc.addTransceiver(of: .video)?.setDirection(.recvOnly, error: nil)
         }
     }

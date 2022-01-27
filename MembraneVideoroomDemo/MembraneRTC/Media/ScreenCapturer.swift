@@ -22,7 +22,7 @@ class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
         super.init()
         
         guard self.screenRecorder.isAvailable else {
-            debugPrint("Screen recording is not available")
+            sdkLogger.error("Screen recording is not available")
             return
         }
     }
@@ -36,7 +36,7 @@ class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
             }
             
         }, completionHandler: {
-            error in debugPrint("Encountered error while capturing screen:", error)
+            error in sdkLogger.error("Encountered error while capturing screen: \(error?.localizedDescription)")
         })
     }
          

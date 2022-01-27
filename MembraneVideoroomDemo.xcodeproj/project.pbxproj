@@ -36,7 +36,6 @@
 		3B16A21627970B930095941F /* video.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3B16A21527970B8D0095941F /* video.mp4 */; };
 		3B4191F8279EEDD1000035C0 /* LocalAudioTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */; };
 		3B4191FA279EEE09000035C0 /* LocalTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191F9279EEE09000035C0 /* LocalTrack.swift */; };
-		3B4191FC279EF160000035C0 /* AudioSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191FB279EF160000035C0 /* AudioSessionManager.swift */; };
 		3B667FC0279943B1007E38C8 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B667FBF279943B1007E38C8 /* Metadata.swift */; };
 		3B667FC227995437007E38C8 /* ScreenCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B667FC127995437007E38C8 /* ScreenCapturer.swift */; };
 		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -73,7 +72,6 @@
 		3B16A21527970B8D0095941F /* video.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = video.mp4; sourceTree = "<group>"; };
 		3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAudioTrack.swift; sourceTree = "<group>"; };
 		3B4191F9279EEE09000035C0 /* LocalTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTrack.swift; sourceTree = "<group>"; };
-		3B4191FB279EF160000035C0 /* AudioSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionManager.swift; sourceTree = "<group>"; };
 		3B667FBF279943B1007E38C8 /* Metadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
 		3B667FC127995437007E38C8 /* ScreenCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapturer.swift; sourceTree = "<group>"; };
 		3BCA53B927A0248900E3CABF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -197,7 +195,6 @@
 				3B16A1FF2796C4970095941F /* LocalVideoTrack.swift */,
 				3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */,
 				3B16A2002796C4970095941F /* CameraCapturer.swift */,
-				3B4191FB279EF160000035C0 /* AudioSessionManager.swift */,
 				3B16A20D2796DEAC0095941F /* Dimensions.swift */,
 				3B16A20F2796F4AF0095941F /* FileCapturer.swift */,
 				3B667FC127995437007E38C8 /* ScreenCapturer.swift */,
@@ -318,7 +315,6 @@
 				3B4191F8279EEDD1000035C0 /* LocalAudioTrack.swift in Sources */,
 				3B16A2092796C4970095941F /* EventTransport.swift in Sources */,
 				3B16A2082796C4970095941F /* MembraneRTCDelegate.swift in Sources */,
-				3B4191FC279EF160000035C0 /* AudioSessionManager.swift in Sources */,
 				3B4191FA279EEE09000035C0 /* LocalTrack.swift in Sources */,
 				3B16A1E22796C42B0095941F /* ConnectView.swift in Sources */,
 				3B16A2032796C4970095941F /* TrackContext.swift in Sources */,

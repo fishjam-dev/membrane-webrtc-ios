@@ -17,8 +17,8 @@ class FileCapturer: VideoCapturer {
     
     public func startCapture() {
         if let _ = Bundle.main.path(forResource: "video.mp4", ofType: nil) {
-            self.capturer.startCapturing(fromFileNamed: "video.mp4") { err in
-                print("Error while capturing from file", err)
+            self.capturer.startCapturing(fromFileNamed: "video.mp4") { error in
+                sdkLogger.error("Error while capturing from file: \(error.localizedDescription)")
             }
 
         } else {

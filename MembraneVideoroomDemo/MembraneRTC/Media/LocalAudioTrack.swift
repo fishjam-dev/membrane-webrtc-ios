@@ -52,7 +52,6 @@ public class LocalAudioTrack: LocalTrack {
     }
     
     private func configure(setActive: Bool) {
-        print("Configuring audio session with ", setActive)
         let audioSession = RTCAudioSession.sharedInstance()
         audioSession.lockForConfiguration()
         defer { audioSession.unlockForConfiguration() }
@@ -62,7 +61,7 @@ public class LocalAudioTrack: LocalTrack {
             try audioSession.setMode(self.config.mode)
             // try audioSession.setConfiguration(self.config, active: setActive)
         } catch {
-            debugPrint("Failed to set configuration for audio session")
+            sdkLogger.error("Failed to set configuration for audio session")
         }
     }
 }

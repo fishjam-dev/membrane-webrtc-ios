@@ -9,32 +9,48 @@ import Foundation
 import WebRTC
 
 
-struct Participant: Identifiable {
+
+struct Participant {
     let id: String
     let displayName: String
     
-    // TODO: this should be better wrapped so that we minimize webrtc imports
-    var videoTrack: RTCVideoTrack?
-    
-    init(id: String, displayName: String, videoTrack: RTCVideoTrack? = nil) {
+    init(id: String, displayName: String) {
         self.id = id
         self.displayName = displayName
+    }
+}
+
+struct ParticipantVideo: Identifiable {
+    let id: String
+    let participant: Participant
+    // TODO: this videotrack could be wrapped to limit imports of webrtc package
+    let videoTrack: RTCVideoTrack
+    let isScreensharing: Bool
+    
+    init(id: String, participant: Participant, videoTrack: RTCVideoTrack, isScreensharing: Bool = false) {
+        self.id = id
+        self.participant = participant
         self.videoTrack = videoTrack
+        self.isScreensharing = isScreensharing
     }
 }
 
 class ObservableRoom: ObservableObject {
     weak var room: MembraneRTC?
     
-    @Published var localVideoTrack: LocalVideoTrack?
     @Published var errorMessage: String?
     
-    var participants: Array<Participant>
+    var primaryVideo: ParticipantVideo?
+    
+    var participants: [String: Participant]
+    var participantVideos: Array<ParticipantVideo>
+    var localParticipantId: String?
     
     
     init(_ room: MembraneRTC) {
-        self.participants = []
         self.room = room
+        self.participants = [:]
+        self.participantVideos = []
         
         room.add(delegate: self)
         
@@ -53,13 +69,24 @@ extension ObservableRoom: MembraneRTCDelegate {
             return
         }
         
+        self.localParticipantId = peerID
+        
+        let localParticipant = Participant(id: peerID, displayName: "Me")
+        
         let participants = peersInRoom.map { peer in
             Participant(id: peer.id, displayName: peer.metadata["displayName"] ?? "")
         }
         
         DispatchQueue.main.async {
-            self.localVideoTrack = room.localVideoTrack
-            self.participants += participants
+            guard let track = room.localVideoTrack?.track else {
+                fatalError("failed to setup local video")
+            }
+            
+            self.primaryVideo = ParticipantVideo(id: track.trackId, participant: localParticipant, videoTrack: track)
+            self.participants[localParticipant.id] = localParticipant
+            participants.forEach { participant in self.participants[participant.id] = participant }
+            
+            self.objectWillChange.send()
         }
     }
     
@@ -69,15 +96,25 @@ extension ObservableRoom: MembraneRTCDelegate {
     
     func onTrackReady(ctx: TrackContext) {
         guard
-            let track = ctx.track,
-            track.kind == "video",
-            let idx = self.participants.firstIndex(where: { $0.id == ctx.peer.id }) else {
+            let participant = self.participants[ctx.peer.id],
+            let videoTrack = ctx.track as? RTCVideoTrack,
+            self.participantVideos.first(where: { $0.id == ctx.trackId }) == nil else {
             return
         }
         
-        var participant = self.participants[idx]
-        participant.videoTrack = ctx.track as? RTCVideoTrack
-        self.participants[idx] = participant
+        let isScreensharing = ctx.metadata["type"] == "screensharing"
+        let video = ParticipantVideo(id: ctx.trackId, participant: participant, videoTrack: videoTrack, isScreensharing: isScreensharing)
+        
+        // switch the video to primary view in case of screen sharing or a new remote participant
+        if isScreensharing || self.primaryVideo?.participant.id == self.localParticipantId {
+            if self.primaryVideo != nil {
+                self.participantVideos.insert(self.primaryVideo!, at: 0)
+            }
+            
+            self.primaryVideo = video
+        } else {
+            self.participantVideos.append(video)
+        }
         
         DispatchQueue.main.async {
             self.objectWillChange.send()
@@ -88,13 +125,36 @@ extension ObservableRoom: MembraneRTCDelegate {
     }
     
     func onTrackRemoved(ctx: TrackContext) {
+        print("CONTEXT", ctx)
+        print("VIDEOS", self.participantVideos)
+        
+        guard let idx = self.participantVideos.firstIndex(where: { $0.id == ctx.trackId }) else {
+            if self.primaryVideo?.id == ctx.trackId {
+                DispatchQueue.main.async {
+                    if self.participantVideos.count > 0 {
+                        self.primaryVideo = self.participantVideos.removeFirst()
+                    } else {
+                        self.primaryVideo = nil
+                    }
+                    
+                    self.objectWillChange.send()
+                }
+            }
+            return
+        }
+        
+        
+        DispatchQueue.main.async {
+            self.participantVideos.remove(at: idx)
+            self.objectWillChange.send()
+        }
     }
     
     func onTrackUpdated(ctx: TrackContext) {
     }
     
     func onPeerJoined(peer: Peer) {
-        self.participants.append(Participant(id: peer.id, displayName: peer.metadata["displayName"] ?? ""))
+        self.participants[peer.id] = Participant(id: peer.id, displayName: peer.metadata["displayName"] ?? "")
         
         DispatchQueue.main.async {
             self.objectWillChange.send()
@@ -102,11 +162,8 @@ extension ObservableRoom: MembraneRTCDelegate {
     }
     
     func onPeerLeft(peer: Peer) {
-        self.participants = self.participants.filter {
-            $0.id != peer.id
-        }
-        
         DispatchQueue.main.async {
+            self.participants.removeValue(forKey: peer.id)
             self.objectWillChange.send()
         }
     }

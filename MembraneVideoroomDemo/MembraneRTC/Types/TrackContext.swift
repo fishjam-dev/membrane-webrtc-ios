@@ -14,5 +14,5 @@ public struct TrackContext {
     
     let peer: Peer
     let trackId: String
-    let metadata: Any
+    let metadata: Metadata
 }
