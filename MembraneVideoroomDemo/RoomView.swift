@@ -5,27 +5,40 @@ import WebRTC
 extension RTCVideoTrack: Identifiable {
 }
 
+class OrientationReceiver: ObservableObject {
+    @Published var orientation: UIDeviceOrientation
+    
+    init() {
+        self.orientation = UIDevice.current.orientation
+    }
+    
+    func update(orientataion: UIDeviceOrientation) {
+        self.orientation = orientataion
+    }
+}
+
 struct RoomView: View {
     @EnvironmentObject var appCtrl: AppController
+    @ObservedObject var orientationReceiver: OrientationReceiver
     @ObservedObject var room: ObservableRoom
     
     @State private var localDimensions: Dimensions?
     
     init(_ room: MembraneRTC) {
+        self.orientationReceiver = OrientationReceiver()
+        
         self.room = ObservableRoom(room)
     }
     
     @ViewBuilder
     func participantsVideoViews(_ participantVideos: Array<ParticipantVideo>, size: CGFloat) -> some View {
-        ScrollView(.horizontal) {
-            HStack {
+        ScrollView(self.orientationReceiver.orientation.isLandscape ? .vertical : .horizontal) {
+            AdaptiveStack(orientation: self.orientationReceiver.orientation, naturalAlignment: false) {
                 ForEach(participantVideos) { video in
-                    // FIXME: this local dimensions should be kept separately inside some ParticipantVideoView or something...
-                    ParticipantVideoView(video, height: size, width: size)
+                    ParticipantVideoView(video, fit: .fill, height: size, width: size)
                         .onTapGesture {
                             self.room.focus(video: video)
                         }
-//                    }
                 }
             }
         }
@@ -45,13 +58,60 @@ struct RoomView: View {
             .foregroundColor(enabled ? Color.white : Color.red.darker())
         }
     }
+    
+    @ViewBuilder
+    func controls() -> some View {
+        HStack {
+            Spacer()
+            
+            Button(action: {
+                self.appCtrl.disconnect()
+            }) {
+                Image(systemName: "phone.down.fill")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(Color.red.darker())
+            }.padding(.trailing)
+            
+            mediaControlButton(.audio, enabled: self.room.isMicEnabled)
+                .padding(.trailing)
+            
+            mediaControlButton(.video, enabled: self.room.isCameraEnabled)
+                .padding(.trailing)
+            
+            
+            Spacer()
+        }.padding()
+    }
+    
+    private func calculatePrimaryFrameHeight(geometry: GeometryProxy) -> CGFloat {
+        if self.orientationReceiver.orientation.isLandscape {
+            return geometry.size.height * 0.9 - 20
+        } else {
+           return geometry.size.height * 0.70 - 20 - geometry.safeAreaInsets.top
+        }
+    }
+    
+    private func calculatePrimaryFrameWidth(geometry: GeometryProxy) -> CGFloat {
+        if self.orientationReceiver.orientation.isLandscape {
+            return geometry.size.width * 0.67 - 20
+        } else {
+            return geometry.size.width - 40
+        }
+    }
+    
+    private func calculateSecondaryFrameSize(geometry: GeometryProxy) -> CGFloat {
+        if self.orientationReceiver.orientation.isLandscape {
+            return geometry.size.height * 0.5 - 20
+        } else {
+            return geometry.size.height * 0.2 - 40
+        }
+    }
 
     var body: some View {
         GeometryReader { geometry in
-            // width minus potential padding
-            let videoFrameHeight = geometry.size.height * 0.70 - 20 - geometry.safeAreaInsets.top
-            // video height assumed that we are dealing with 9/16 minus potential padding
-            let videoFrameWidth = geometry.size.width - 40
+            let videoFrameHeight = calculatePrimaryFrameHeight(geometry: geometry)
+            let videoFrameWidth = calculatePrimaryFrameWidth(geometry: geometry)
+            let participantVideoSize = calculateSecondaryFrameSize(geometry: geometry)
             
             VStack {
                 Text("Membrane iOS Demo")
@@ -60,42 +120,34 @@ struct RoomView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .foregroundColor(.white)
                 
-                if let primaryVideo = room.primaryVideo {
-                    ParticipantVideoView(primaryVideo, height: videoFrameHeight, width: videoFrameWidth)
-                        .padding(.bottom)
-                    
-                    participantsVideoViews(room.participantVideos, size: geometry.size.height * 0.2 - 20)
-                } else {
-                    Text("Local video track is not available yet...").foregroundColor(.white)
-                }
-                
                 if let errorMessage = room.errorMessage {
                     Text(errorMessage).foregroundColor(.red)
                 }
                 
-                HStack {
-                    Spacer()
+                AdaptiveStack(orientation: self.orientationReceiver.orientation) {
+                    if let primaryVideo = room.primaryVideo {
+                        ParticipantVideoView(primaryVideo, fit: .fit, height: videoFrameHeight, width: videoFrameWidth)
+                            .padding(.bottom)
+                    } else {
+                        Text("Local video track is not available yet...").foregroundColor(.white)
+                    }
                     
-                    Button(action: {
-                        self.appCtrl.disconnect()
-                    }) {
-                        Image(systemName: "phone.down.fill")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundColor(Color.red.darker())
-                    }.padding(.trailing)
-                    
-                    mediaControlButton(.audio, enabled: self.room.isMicEnabled)
-                        .padding(.trailing)
-                    
-                    mediaControlButton(.video, enabled: self.room.isCameraEnabled)
-                        .padding(.trailing)
-                    
-                    
-                    Spacer()
+                    VStack {
+                        participantsVideoViews(room.participantVideos, size: participantVideoSize)
+                        Spacer()
+                        controls()
+                    }
                 }
-                    .padding()
+                
             }
             .padding(8)
+            
+        }
+        .onRotate { newOrientation in
+            DispatchQueue.main.async {
+                self.orientationReceiver.update(orientataion: newOrientation)
+            }
+            
         }
     }
 }

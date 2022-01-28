@@ -38,6 +38,8 @@
 		3B4191FA279EEE09000035C0 /* LocalTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191F9279EEE09000035C0 /* LocalTrack.swift */; };
 		3B667FC0279943B1007E38C8 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B667FBF279943B1007E38C8 /* Metadata.swift */; };
 		3B667FC227995437007E38C8 /* ScreenCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B667FC127995437007E38C8 /* ScreenCapturer.swift */; };
+		3B84661B27A3E9A6009BF97D /* AdaptiveStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B84661A27A3E9A6009BF97D /* AdaptiveStack.swift */; };
+		3B84661D27A3FB10009BF97D /* DeviceRotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B84661C27A3FB10009BF97D /* DeviceRotation.swift */; };
 		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; settings = {ATTRIBUTES = (Required, ); }; };
 		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
@@ -75,6 +77,8 @@
 		3B4191F9279EEE09000035C0 /* LocalTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTrack.swift; sourceTree = "<group>"; };
 		3B667FBF279943B1007E38C8 /* Metadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
 		3B667FC127995437007E38C8 /* ScreenCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapturer.swift; sourceTree = "<group>"; };
+		3B84661A27A3E9A6009BF97D /* AdaptiveStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveStack.swift; sourceTree = "<group>"; };
+		3B84661C27A3FB10009BF97D /* DeviceRotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceRotation.swift; sourceTree = "<group>"; };
 		3BCA53B927A0248900E3CABF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantVideoView.swift; sourceTree = "<group>"; };
@@ -128,6 +132,7 @@
 				3B16A1C52796C42B0095941F /* Extensions.swift */,
 				3B1642DA27A134C4008BBBA7 /* ObservableRoom.swift */,
 				3B1642DC27A13884008BBBA7 /* MulticastDelegate.swift */,
+				3B84661C27A3FB10009BF97D /* DeviceRotation.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -143,6 +148,7 @@
 		3B16A1C82796C42B0095941F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				3B84661927A3E967009BF97D /* Shared */,
 				3B16A1C92796C42B0095941F /* ConnectView.swift */,
 			);
 			path = Views;
@@ -204,6 +210,14 @@
 				3B4191F9279EEE09000035C0 /* LocalTrack.swift */,
 			);
 			path = Media;
+			sourceTree = "<group>";
+		};
+		3B84661927A3E967009BF97D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				3B84661A27A3E9A6009BF97D /* AdaptiveStack.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		3BCCBEB22795619500A0AD4C = {
@@ -312,6 +326,7 @@
 				3B16A20B2796C4970095941F /* LocalVideoTrack.swift in Sources */,
 				3B16A20C2796C4970095941F /* CameraCapturer.swift in Sources */,
 				3BDAC1E027A2FCE200A2BB0D /* ParticipantVideoView.swift in Sources */,
+				3B84661D27A3FB10009BF97D /* DeviceRotation.swift in Sources */,
 				3B16A1E12796C42B0095941F /* App.swift in Sources */,
 				3B16A1DF2796C42B0095941F /* MembraneVideoroomDemoApp.swift in Sources */,
 				3B16A1E02796C42B0095941F /* Extensions.swift in Sources */,
@@ -322,6 +337,7 @@
 				3B4191FA279EEE09000035C0 /* LocalTrack.swift in Sources */,
 				3B16A1E22796C42B0095941F /* ConnectView.swift in Sources */,
 				3B16A2032796C4970095941F /* TrackContext.swift in Sources */,
+				3B84661B27A3E9A6009BF97D /* AdaptiveStack.swift in Sources */,
 				3B16A20E2796DEAC0095941F /* Dimensions.swift in Sources */,
 				3B16A20A2796C4970095941F /* VideoCapturer.swift in Sources */,
 				3B16A1E32796C42B0095941F /* ContentView.swift in Sources */,

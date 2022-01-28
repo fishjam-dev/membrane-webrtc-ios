@@ -38,7 +38,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     
     public init(eventTransport: EventTransport, config: RTCConfiguration) {
 //        RTCSetMinDebugLogLevel(.error)
-        sdkLogger.logLevel = .debug
+        sdkLogger.logLevel = .info
         
         self.state = .uninitialized
         self.transport = eventTransport

@@ -90,7 +90,12 @@ class ObservableRoom: ObservableObject {
             self.participantVideos.remove(at: idx)
             
             if let primary = self.primaryVideo {
-                self.participantVideos.append(primary)
+                // make sure that when switching primary video the local user stays as the first participant
+                if primary.participant.id == self.localParticipantId {
+                    self.participantVideos.insert(primary, at: 0)
+                } else {
+                    self.participantVideos.append(primary)
+                }
             }
             
             self.primaryVideo = video
@@ -145,20 +150,19 @@ extension ObservableRoom: MembraneRTCDelegate {
         let isScreensharing = ctx.metadata["type"] == "screensharing"
         let video = ParticipantVideo(id: ctx.trackId, participant: participant, videoTrack: videoTrack, isScreensharing: isScreensharing)
         
+        self.participantVideos.append(video)
+        
+        
         // switch the video to primary view in case of screen sharing or a new remote participant
         if isScreensharing || self.primaryVideo?.participant.id == self.localParticipantId {
-            if self.primaryVideo != nil {
-                self.participantVideos.insert(self.primaryVideo!, at: 0)
-            }
-            
-            self.primaryVideo = video
+            self.focus(video: video)
         } else {
-            self.participantVideos.append(video)
+            // not focusing happened so notify that list of participat videos has changed
+            DispatchQueue.main.async {
+                self.objectWillChange.send()
+            }
         }
         
-        DispatchQueue.main.async {
-            self.objectWillChange.send()
-        }
     }
     
     func onTrackAdded(ctx: TrackContext) {
@@ -209,5 +213,8 @@ extension ObservableRoom: MembraneRTCDelegate {
     }
     
     func onConnectionError(message: String) {
+        DispatchQueue.main.async {
+            self.errorMessage = message
+        }
     }
 }

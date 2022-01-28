@@ -27,7 +27,6 @@ public class NativeVideoView: UIView {
         }
     }
 
-    // TODO: handle device rotation, for now assume that is held vertically
     /// Dimensions can change dynamically due to RTC changing the resolution itself or by rotation
     public private(set) var dimensions: Dimensions? {
         didSet {
@@ -116,8 +115,6 @@ public class NativeVideoView: UIView {
         } else {
             rendererView.frame = bounds
         }
-        // FIXME: ignore fill and always do the fit unless it gets fixed up
-        rendererView.frame = bounds
         rendererView.isHidden = false
     }
 

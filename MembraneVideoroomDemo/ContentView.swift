@@ -19,7 +19,8 @@ struct ContentView: View {
             } else if (appCtrl.awaitingConnect) {
                 ConnectView()
             }
-        }.foregroundColor(Color.white)
+        }
+            .foregroundColor(Color.white)
     }
 }
 
