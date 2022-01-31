@@ -23,6 +23,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     var connection: RTCPeerConnection?
     
     @Published public var localVideoTrack: LocalVideoTrack?
+    @Published public var localScreensharingVideoTrack: LocalVideoTrack?
     @Published public var localAudioTrack: LocalAudioTrack?
     
     var localPeer = Peer(id: "", metadata: [:], trackIdToMetadata: [:])
@@ -38,7 +39,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     
     public init(eventTransport: EventTransport, config: RTCConfiguration) {
 //        RTCSetMinDebugLogLevel(.error)
-        sdkLogger.logLevel = .info
+        sdkLogger.logLevel = .debug
         
         self.state = .uninitialized
         self.transport = eventTransport
@@ -102,6 +103,58 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
     }
     
+    // TODO: this is just a pure mock, refactor it once physical device becomes available
+    public func startScreensharing() -> LocalVideoTrack? {
+        guard let pc = self.connection else {
+            return nil
+        }
+        
+        let localStreamId = UUID().uuidString
+        
+        let screensharingTrack = LocalVideoTrack(capturer: .screensharing)
+        screensharingTrack.start()
+        
+        pc.add(screensharingTrack.track, streamIds: [localStreamId])
+        
+        // TODO: decide if all of those functions should be run on the webRTC queue
+        pc.transceivers.forEach { transceiver in
+            if transceiver.direction == .sendRecv {
+                transceiver.setDirection(.sendOnly, error: nil)
+            }
+        }
+        
+        self.transport.sendEvent(event: RenegotiateTracksEvent())
+        self.localScreensharingVideoTrack = screensharingTrack
+        
+        // add track's metadata and set the type to screensharing to indicate it to other clients
+        self.localPeer.trackIdToMetadata?[screensharingTrack.track.trackId] = ["type": "screensharing"]
+        
+        return screensharingTrack
+    }
+    
+    public func stopScreensharing() {
+        guard
+            let pc = self.connection,
+            let screensharing = self.localScreensharingVideoTrack else {
+            return
+        }
+        
+        // stop capturing the screen
+        screensharing.stop()
+        
+        // remove screensharing's track from peer connection and trigger renegotiation
+        if let sender = pc.senders.first(where: { sender in
+            sender.track?.trackId == screensharing.track.trackId
+        }) {
+            pc.removeTrack(sender)
+            screensharing.track.isEnabled = false
+            
+            self.localScreensharingVideoTrack = nil
+            self.transport.sendEvent(event: RenegotiateTracksEvent())
+        }
+    }
+    
+    // sets up both local video and audio tracks
     private func setupMediaTracks() {
         guard let pc = self.connection else {
             return
@@ -127,7 +180,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             audioTrack.track.trackId: [:]
         ]
     }
-    
 }
 
 extension MembraneRTC: RTCPeerConnectionDelegate {
@@ -155,6 +207,7 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
     public func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
         guard let trackId = self.midToTrackId[transceiver.mid],
             var trackContext = self.trackContexts[trackId] else {
+                print("HEEEEEJO")
             sdkLogger.error("peerConnection started receiving on a transceiver with an unknown 'mid' parameter or without registered track context")
             return
         }

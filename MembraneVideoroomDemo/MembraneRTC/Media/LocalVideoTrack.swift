@@ -18,7 +18,9 @@ public class LocalVideoTrack: LocalTrack {
             case .file:
                 self.capturer = FileCapturer(self.videoSource)
             case .screensharing:
-                self.capturer = ScreenCapturer(self.videoSource)
+            // screen capture does not work on simulator...
+            self.capturer = FileCapturer(self.videoSource)
+//                self.capturer = ScreenCapturer(self.videoSource)
         }
         
         self.track = ConnectionManager.createVideoTrack(source: self.videoSource)

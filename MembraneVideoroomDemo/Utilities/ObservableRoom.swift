@@ -24,7 +24,8 @@ struct ParticipantVideo: Identifiable {
     let id: String
     let participant: Participant
     // TODO: this videotrack could be wrapped to limit imports of webrtc package
-    let videoTrack: RTCVideoTrack
+    // FIXME: this can change dynamically so it must be 'var' and be an observable object instead of simple struct...
+    var videoTrack: RTCVideoTrack
     let isScreensharing: Bool
     
     init(id: String, participant: Participant, videoTrack: RTCVideoTrack, isScreensharing: Bool = false) {
@@ -41,12 +42,14 @@ class ObservableRoom: ObservableObject {
     @Published var errorMessage: String?
     @Published var isMicEnabled: Bool
     @Published var isCameraEnabled: Bool
+    @Published var isScreensharingEnabled: Bool
     
     var primaryVideo: ParticipantVideo?
     
     var participants: [String: Participant]
     var participantVideos: Array<ParticipantVideo>
     var localParticipantId: String?
+    var localScreensharingVideoId: String?
     
     
     init(_ room: MembraneRTC) {
@@ -56,6 +59,7 @@ class ObservableRoom: ObservableObject {
         
         self.isMicEnabled = true
         self.isCameraEnabled = true
+        self.isScreensharingEnabled = false
         
         room.add(delegate: self)
         
@@ -66,18 +70,56 @@ class ObservableRoom: ObservableObject {
     
     // TODO: this should not belong here...
     public enum LocalTrackType {
-        case audio, video
+        case audio, video, screensharing
     }
     
     func toggleLocalTrack(_ type: LocalTrackType) {
+        guard let room = self.room,
+              let localParticipantId = self.localParticipantId,
+            let localParticipant = self.participants[localParticipantId] else {
+            return
+        }
+        
         switch type {
         case .audio:
-            self.room?.localAudioTrack?.toggle()
+            room.localAudioTrack?.toggle()
             self.isMicEnabled = !self.isMicEnabled
             
         case .video:
-            self.room?.localVideoTrack?.toggle()
+            room.localVideoTrack?.toggle()
             self.isCameraEnabled = !self.isCameraEnabled
+            
+        case .screensharing:
+            if self.isScreensharingEnabled {
+                room.stopScreensharing()
+                
+                guard let localScreensharingId = self.localScreensharingVideoId,
+                      let video = self.findParticipantVideo(id: localScreensharingId) else {
+                    return
+                }
+                
+                self.remove(video: video)
+                
+                
+            } else {
+                guard let localScreensharingTrack = room.startScreensharing() else {
+                    return
+                }
+                
+                self.localScreensharingVideoId = localScreensharingTrack.track.trackId
+                
+                let localParticipantScreensharing = ParticipantVideo(
+                    id: self.localScreensharingVideoId!,
+                    participant: localParticipant,
+                    videoTrack: localScreensharingTrack.track,
+                    isScreensharing: true
+                )
+                
+                self.add(video: localParticipantScreensharing)
+                self.focus(video: localParticipantScreensharing)
+            }
+            
+            self.isScreensharingEnabled = !self.isScreensharingEnabled
         }
     }
     
@@ -89,19 +131,86 @@ class ObservableRoom: ObservableObject {
             
             self.participantVideos.remove(at: idx)
             
+            // decide where to put current primary video (if one is set)
             if let primary = self.primaryVideo {
-                // make sure that when switching primary video the local user stays as the first participant
-                if primary.participant.id == self.localParticipantId {
+                // if either new video or old primary are local videos then we can insert at the beginning
+                if video.participant.id == self.localParticipantId || primary.participant.id == self.localParticipantId {
                     self.participantVideos.insert(primary, at: 0)
                 } else {
-                    self.participantVideos.append(primary)
+                    
+                    let index = self.participantVideos.count > 0 ? 1 : 0
+                    self.participantVideos.insert(primary, at: index)
                 }
             }
             
+            // set the current primary video
             self.primaryVideo = video
             
             self.objectWillChange.send()
         }
+    }
+    
+    // in case of local video being a primary one then sets the new video
+    // as a primary and moves local video to regular participant videos
+    //
+    // otherwise simply appends to participant videos
+    func add(video: ParticipantVideo) {
+        DispatchQueue.main.async {
+            guard self.findParticipantVideo(id: video.id) == nil else {
+                sdkLogger.error("ObservableRoom tried to add already existing ParticipantVideo")
+                return
+            }
+            
+            if let primaryVideo = self.primaryVideo,
+               primaryVideo.participant.id == self.localParticipantId {
+                
+                self.participantVideos.insert(primaryVideo, at: 0)
+                self.primaryVideo = video
+                
+                self.objectWillChange.send()
+                
+                return
+            }
+            
+            self.participantVideos.append(video)
+            
+            self.objectWillChange.send()
+        }
+    }
+    
+    func remove(video: ParticipantVideo) {
+        DispatchQueue.main.async {
+            if let primaryVideo = self.primaryVideo,
+               primaryVideo.id == video.id {
+                
+                if self.participantVideos.count > 0 {
+                    self.primaryVideo = self.participantVideos.removeFirst()
+                } else {
+                    self.primaryVideo = nil
+                }
+                
+                self.objectWillChange.send()
+                
+                return
+            }
+            
+            guard let idx = self.participantVideos.firstIndex(where: { $0.id == video.id}) else {
+                return
+            }
+            
+            self.participantVideos.remove(at: idx)
+            
+            self.objectWillChange.send()
+        }
+    }
+    
+    func findParticipantVideo(id: String) -> ParticipantVideo? {
+        if let primaryVideo = self.primaryVideo,
+           primaryVideo.id == id {
+            return primaryVideo
+        }
+        
+        return self.participantVideos.first(where: { $0.id == id })
     }
 }
 
@@ -140,54 +249,58 @@ extension ObservableRoom: MembraneRTCDelegate {
     }
     
     func onTrackReady(ctx: TrackContext) {
-        guard
-            let participant = self.participants[ctx.peer.id],
-            let videoTrack = ctx.track as? RTCVideoTrack,
-            self.participantVideos.first(where: { $0.id == ctx.trackId }) == nil else {
+        guard let participant = self.participants[ctx.peer.id],
+            let videoTrack = ctx.track as? RTCVideoTrack else {
             return
         }
         
-        let isScreensharing = ctx.metadata["type"] == "screensharing"
-        let video = ParticipantVideo(id: ctx.trackId, participant: participant, videoTrack: videoTrack, isScreensharing: isScreensharing)
-        
-        self.participantVideos.append(video)
-        
-        
-        // switch the video to primary view in case of screen sharing or a new remote participant
-        if isScreensharing || self.primaryVideo?.participant.id == self.localParticipantId {
-            self.focus(video: video)
-        } else {
-            // not focusing happened so notify that list of participat videos has changed
+        // there can be a situation where we simply need to replace `videoTrack` for
+        // already existing video, happens when dynamically adding new local track
+        // TODO: Consider making each participant an observable object so that we don't have to refresh anything else
+        // TODO: refactor me here mate
+        if let idx = self.participantVideos.firstIndex(where: { $0.id == ctx.trackId }) {
+            guard let videoTrack = ctx.track as? RTCVideoTrack else {
+                return
+            }
+            
+            var participantVideo = self.participantVideos[idx]
+            participantVideo.videoTrack = videoTrack
+            self.participantVideos[idx] = participantVideo
+            
+            // signal that participant video track has been changed
+            // TODO: this needs to be signalling the track change
+            // this is just a temporary fix
             DispatchQueue.main.async {
                 self.objectWillChange.send()
             }
+            
+            return
         }
         
+        // track is seen for the first time so initialize the participant's video
+        let isScreensharing = ctx.metadata["type"] == "screensharing"
+        let video = ParticipantVideo(id: ctx.trackId, participant: participant, videoTrack: videoTrack, isScreensharing: isScreensharing)
+        
+        self.add(video: video)
+        
+        if isScreensharing {
+            self.focus(video: video)
+        }
     }
     
     func onTrackAdded(ctx: TrackContext) {
     }
     
     func onTrackRemoved(ctx: TrackContext) {
-        guard let idx = self.participantVideos.firstIndex(where: { $0.id == ctx.trackId }) else {
-            if self.primaryVideo?.id == ctx.trackId {
-                DispatchQueue.main.async {
-                    if self.participantVideos.count > 0 {
-                        self.primaryVideo = self.participantVideos.removeFirst()
-                    } else {
-                        self.primaryVideo = nil
-                    }
-                    
-                    self.objectWillChange.send()
-                }
-            }
+        if let primaryVideo = self.primaryVideo,
+           primaryVideo.id == ctx.trackId {
+            self.remove(video: primaryVideo)
+            
             return
         }
         
-        
-        DispatchQueue.main.async {
-            self.participantVideos.remove(at: idx)
-            self.objectWillChange.send()
+        if let video = self.participantVideos.first(where: { $0.id == ctx.trackId }) {
+            self.remove(video: video)
         }
     }
     

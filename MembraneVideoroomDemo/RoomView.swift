@@ -60,6 +60,19 @@ struct RoomView: View {
     }
     
     @ViewBuilder
+    func screensharingControlButton() -> some View {
+        let label = self.room.isScreensharingEnabled ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle"
+        
+        Button(action: {
+            self.room.toggleLocalTrack(.screensharing)
+        }) {
+            Image(systemName: label)
+                .font(.system(size: 32, weight: .bold))
+                .foregroundColor(Color.white.darker())
+        }
+    }
+    
+    @ViewBuilder
     func controls() -> some View {
         HStack {
             Spacer()
@@ -78,6 +91,8 @@ struct RoomView: View {
             mediaControlButton(.video, enabled: self.room.isCameraEnabled)
                 .padding(.trailing)
             
+            screensharingControlButton()
+                .padding(.trailing)
             
             Spacer()
         }.padding()

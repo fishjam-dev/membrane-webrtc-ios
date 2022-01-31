@@ -29,12 +29,14 @@ struct ParticipantVideoView: View {
                 .frame(width: self.width, height: self.height, alignment: .leading)
                 .clipShape(RoundedRectangle(cornerRadius: 15))
             
-            Text(self.participantVideo.participant.displayName)
+            Text(self.participantVideo.participant.displayName + (self.participantVideo.isScreensharing ? " (presentation)" : ""))
                 .font(.system(size: 20))
                 .bold()
                 .shadow(color: .black, radius: 1)
                 .foregroundColor(Color.white)
                 .padding(10)
+                .frame(maxWidth: self.width - 10)
+                .fixedSize()
         }
     }
 }

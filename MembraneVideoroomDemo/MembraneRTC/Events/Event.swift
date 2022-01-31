@@ -210,6 +210,19 @@ struct LocalCandidateEvent: SendableEvent {
     }
 }
 
+struct RenegotiateTracksEvent: SendableEvent {
+    init() {}
+    
+    func serialize() -> Payload {
+        return [
+            "type": "custom",
+            "data": [
+                "type": "renegotiateTracks"
+            ]
+        ]
+    }
+}
+
 /*
  Receivable events
  */
