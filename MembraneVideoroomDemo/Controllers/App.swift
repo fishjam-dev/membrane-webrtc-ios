@@ -9,10 +9,14 @@ final class AppController: ObservableObject {
     
     public private(set) var client: MembraneRTC?
     
-    @Published private(set) var awaitingConnect: Bool
+    enum State {
+        case awaiting, loading, connected, disconnected, error
+    }
+    
+    @Published private(set) var state: State
     
     private init() {
-        self.awaitingConnect = true
+        self.state = .awaiting
     }
 
     public func connect() {
@@ -20,7 +24,10 @@ final class AppController: ObservableObject {
         client.add(delegate: self)
         client.connect()
         
-        self.client = client
+        DispatchQueue.main.async {
+            self.state = .loading
+            self.client = client
+        }
     }
     
     public func disconnect() {
@@ -34,7 +41,19 @@ final class AppController: ObservableObject {
             client.disconnect()
             
             self.client = nil
-            self.awaitingConnect = true
+            self.state = .disconnected
+        }
+    }
+    
+    public func reset() {
+        if let client = self.client {
+            client.remove(delegate: self)
+            client.disconnect()
+        }
+        
+        DispatchQueue.main.async {
+            self.client = nil
+            self.state = .awaiting
         }
     }
     
@@ -46,7 +65,7 @@ final class AppController: ObservableObject {
 extension AppController: MembraneRTCDelegate {
     func onConnected() {
         DispatchQueue.main.async {
-            self.awaitingConnect = false
+            self.state = .connected
         }
     }
     /// Callback invoked when the client has been let into the room.
@@ -96,6 +115,10 @@ extension AppController: MembraneRTCDelegate {
     
     /// Callback invoked when a connection errors happens.
     func onConnectionError(message: String) {
+        DispatchQueue.main.async {
+            self.state = .error
+        }
+        
         sdkLogger.debug("AppController encountered connection error..")
     }
 }

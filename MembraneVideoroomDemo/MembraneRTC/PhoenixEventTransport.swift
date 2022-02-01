@@ -66,7 +66,7 @@ class PhoenixEventTransport: EventTransport {
                     return
                 }
                 
-                self.delegate?.receiveEvent(event: event)
+                self.delegate?.didReceive(event: event)
             })
         }
     }
@@ -111,5 +111,6 @@ extension PhoenixEventTransport {
     
     func onError(_ error: Error) {
         self.connectionState = .closed
+        self.delegate?.didReceive(error: EventTransportError.connectionError)
     }
 }

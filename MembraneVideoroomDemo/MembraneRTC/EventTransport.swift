@@ -8,7 +8,7 @@
 import Foundation
 import Promises
 
-enum EventTransportError: Error {
+public enum EventTransportError: Error {
     // Throw when user is not authorized
     case unauthorized
 
@@ -34,11 +34,12 @@ extension EventTransportError: CustomStringConvertible {
 
 
 public protocol EventTransport {
-    func connect(delegate: EventTransportDelegate) -> Promise<Void>;
-    func disconnect();
-    func sendEvent(event: SendableEvent);
+    func connect(delegate: EventTransportDelegate) -> Promise<Void>
+    func disconnect()
+    func sendEvent(event: SendableEvent)
 }
 
 public protocol EventTransportDelegate: AnyObject {
-    func receiveEvent(event: ReceivableEvent);
+    func didReceive(event: ReceivableEvent)
+    func didReceive(error: EventTransportError)
 }

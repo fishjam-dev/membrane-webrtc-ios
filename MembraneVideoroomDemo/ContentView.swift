@@ -14,9 +14,11 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             Color.blue.darker(by: 0.5).ignoresSafeArea()
-            if appCtrl.client != nil && !appCtrl.awaitingConnect {
+            
+            switch appCtrl.state {
+            case .connected:
                 RoomView(appCtrl.client!)
-            } else if (appCtrl.awaitingConnect) {
+            default:
                 ConnectView()
             }
         }

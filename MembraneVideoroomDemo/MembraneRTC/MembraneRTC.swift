@@ -150,6 +150,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             screensharing.track.isEnabled = false
             
             self.localScreensharingVideoTrack = nil
+            self.localPeer.trackIdToMetadata?.removeValue(forKey: screensharing.track.trackId)
             self.transport.sendEvent(event: RenegotiateTracksEvent())
         }
     }
@@ -288,7 +289,7 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
 }
 
 extension MembraneRTC: EventTransportDelegate {
-    public func receiveEvent(event: ReceivableEvent) {
+    public func didReceive(event: ReceivableEvent) {
         switch event.type {
         case .PeerAccepted:
             let peerAccepted = event as! PeerAcceptedEvent
@@ -454,6 +455,11 @@ extension MembraneRTC: EventTransportDelegate {
         }
     }
     
+    public func didReceive(error: EventTransportError) {
+        self.notify {
+            $0.onConnectionError(message: error.description)
+        }
+    }
 }
 
 extension MembraneRTC {

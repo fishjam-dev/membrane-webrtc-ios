@@ -137,23 +137,22 @@ struct RoomView: View {
                 
                 if let errorMessage = room.errorMessage {
                     Text(errorMessage).foregroundColor(.red)
-                }
-                
-                AdaptiveStack(orientation: self.orientationReceiver.orientation) {
-                    if let primaryVideo = room.primaryVideo {
-                        ParticipantVideoView(primaryVideo, fit: .fit, height: videoFrameHeight, width: videoFrameWidth)
-                            .padding(.bottom)
-                    } else {
-                        Text("Local video track is not available yet...").foregroundColor(.white)
+                } else {
+                    AdaptiveStack(orientation: self.orientationReceiver.orientation) {
+                        if let primaryVideo = room.primaryVideo {
+                            ParticipantVideoView(primaryVideo, fit: .fit, height: videoFrameHeight, width: videoFrameWidth)
+                                .padding(.bottom)
+                        } else {
+                            Text("Local video track is not available yet...").foregroundColor(.white)
+                        }
+                        
+                        VStack {
+                            participantsVideoViews(room.participantVideos, size: participantVideoSize)
+                            Spacer()
+                            controls()
+                        }
                     }
-                    
-                    VStack {
-                        participantsVideoViews(room.participantVideos, size: participantVideoSize)
-                        Spacer()
-                        controls()
-                    }
                 }
-                
             }
             .padding(8)
             
