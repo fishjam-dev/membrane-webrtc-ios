@@ -21,6 +21,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     // RTC related stuff
     var config: RTCConfiguration
     var connection: RTCPeerConnection?
+    var iceServers: Array<RTCIceServer>
     
     @Published public var localVideoTrack: LocalVideoTrack?
     @Published public var localScreensharingVideoTrack: LocalVideoTrack?
@@ -44,8 +45,15 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         self.state = .uninitialized
         self.transport = eventTransport
         self.config = config
+        self.iceServers = []
         
         super.init()
+    }
+    
+    private static func defaultIceServer() -> RTCIceServer {
+        let iceUrl = "stun:stun.l.google.com:19302"
+        
+        return RTCIceServer(urlStrings: [iceUrl])
     }
     
     public func join(metadata: Metadata) {
@@ -148,14 +156,16 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         config.candidateNetworkPolicy = .all
         config.disableIPV6 = true
         config.tcpCandidatePolicy = .disabled
-        config.iceTransportPolicy = .all
         
-        let iceUrlStringGoogle = "stun:stun.l.google.com:19302"
-        let iceUrlString = "stun:108.177.14.127:19302"
+        // setTurnServers should be responsible for setting it
+        // config.iceTransportPolicy = .all
         
-        config.iceServers = [
-            RTCIceServer(urlStrings: [iceUrlString])
-        ]
+        // if ice servers are not empty that probably means we are using turn servers
+        if self.iceServers.count > 0 {
+            self.config.iceServers = self.iceServers
+        } else {
+            self.config.iceServers = [Self.defaultIceServer()]
+        }
         
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
         
@@ -466,6 +476,8 @@ extension MembraneRTC: EventTransportDelegate {
 
 extension MembraneRTC {
     func onOfferData(_ offerData: OfferDataEvent) {
+        self.setTurnServers(offerData.data.integratedTurnServers, offerData.data.iceTransportPolicy)
+        
         if self.connection == nil {
             self.setupPeerConnection()
         }
@@ -485,6 +497,8 @@ extension MembraneRTC {
             kRTCMediaConstraintsOfferToReceiveVideo:kRTCMediaConstraintsValueTrue
         ]
         
+        
+        
         // TODO: why do we event need constanits here if we passed them when creating a peer connection
         let constraints = RTCMediaConstraints(mandatoryConstraints: mandatoryContraints, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
         
@@ -502,6 +516,29 @@ extension MembraneRTC {
                 sdkLogger.error("error occured while setting a local description: \(err)")
             })
         })
+    }
+    
+    private func setTurnServers(_ turnServers: Array<OfferDataEvent.TurnServer>, _ iceTransportPolicy: String) {
+        switch iceTransportPolicy {
+        case "all":
+            self.config.iceTransportPolicy = .all
+        case "relay":
+            self.config.iceTransportPolicy = .relay
+        default:
+            break
+        }
+        
+        let servers: Array<RTCIceServer> = turnServers.map { server in
+            let url = ["turn", ":", server.serverAddr, ":", String(server.serverPort), "?transport=", server.transport].joined()
+            
+            return RTCIceServer(
+                urlStrings: [url],
+                username: server.username,
+                credential: server.password
+            )
+        }
+        
+        self.iceServers = servers
     }
     
     private func addNecessaryTransceivers(_ offerData: OfferDataEvent) {

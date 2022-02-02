@@ -266,9 +266,17 @@ struct PeerUpdateEvent: ReceivableEvent, Codable {
 }
 
 struct OfferDataEvent: ReceivableEvent, Codable {
+    struct TurnServer: Codable {
+        let username: String
+        let password: String
+        let serverAddr: String
+        let serverPort: UInt32
+        let transport: String
+    }
+    
     struct Data: Codable {
         let iceTransportPolicy: String
-        let integratedTurnServers: Array<String>
+        let integratedTurnServers: Array<TurnServer>
         let tracksTypes: [String: Int]
     }
     
