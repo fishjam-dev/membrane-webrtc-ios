@@ -26,7 +26,7 @@ public class LocalAudioTrack: LocalTrack {
         // let audioConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: constraints)
         let audioConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: constraints)
         
-        self.config = RTCAudioSessionConfiguration()
+        self.config = RTCAudioSessionConfiguration.webRTC()
         
         self.config.category = AVAudioSession.Category.playAndRecord.rawValue
         self.config.mode = AVAudioSession.Mode.videoChat.rawValue
