@@ -18,9 +18,12 @@ final class AppController: ObservableObject {
     private init() {
         self.state = .awaiting
     }
+    
+    // let ip = "localhost"
+    let ip = "192.168.83.98"
 
     public func connect() {
-        let client = MembraneRTC(eventTransport: PhoenixEventTransport(url: "http://localhost:4000/socket", topic: "room:test"), config: RTCConfiguration())
+        let client = MembraneRTC(eventTransport: PhoenixEventTransport(url: "http://\(ip):4000/socket", topic: "room:test"), config: RTCConfiguration())
         client.add(delegate: self)
         client.connect()
         

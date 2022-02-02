@@ -14,13 +14,23 @@ public class LocalVideoTrack: LocalTrack {
         
         switch capturer {
             case .camera:
-                self.capturer = CameraCapturer(self.videoSource)
+                // camera capturing does not work on iOS
+                #if targetEnvironment(simulator)
+                    self.capturer = FileCapturer(self.videoSource)
+                #else
+                    self.capturer = CameraCapturer(self.videoSource)
+                #endif
+            
             case .file:
                 self.capturer = FileCapturer(self.videoSource)
+            
             case .screensharing:
-            // screen capture does not work on simulator...
-            self.capturer = FileCapturer(self.videoSource)
-//                self.capturer = ScreenCapturer(self.videoSource)
+                // screen capturing does not work on iOS
+                #if targetEnvironment(simulator)
+                    self.capturer = FileCapturer(self.videoSource)
+                #else
+                    self.capturer = ScreenCapturer(self.videoSource)
+                #endif
         }
         
         self.track = ConnectionManager.createVideoTrack(source: self.videoSource)

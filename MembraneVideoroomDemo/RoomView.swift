@@ -13,7 +13,10 @@ class OrientationReceiver: ObservableObject {
     }
     
     func update(orientataion: UIDeviceOrientation) {
-        self.orientation = orientataion
+        // in case of faceUp ignore the orientation and leave the old one
+        if orientation != .faceUp {
+            self.orientation = orientataion
+        }
     }
 }
 

@@ -16,24 +16,24 @@ public class LocalAudioTrack: LocalTrack {
     
     internal init() {
         let constraints: [String: String] = [
-            "googEchoCancellation": "false",
-            "googAutoGainControl":  "false",
-            "googNoiseSuppression": "false",
-            "googTypingNoiseDetection": "false",
-            "googHighpassFilter": "false"
+            "googEchoCancellation": "true",
+            "googAutoGainControl":  "true",
+            "googNoiseSuppression": "true",
+            "googTypingNoiseDetection": "true",
+            "googHighpassFilter": "true"
         ]
 
         // let audioConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: constraints)
-        let audioConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
+        let audioConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: constraints)
         
         self.config = RTCAudioSessionConfiguration()
         
         self.config.category = AVAudioSession.Category.playAndRecord.rawValue
         self.config.mode = AVAudioSession.Mode.videoChat.rawValue
-        // self.config.categoryOptions = AVAudioSession.CategoryOptions.duckOthers
+         self.config.categoryOptions = AVAudioSession.CategoryOptions.duckOthers
         
         let audioSource = ConnectionManager.createAudioSource(audioConstraints)
-        // audioSource.volume = 100
+         audioSource.volume = 100
         
         let track = ConnectionManager.createAudioTrack(source: audioSource)
         track.isEnabled = true
@@ -42,8 +42,6 @@ public class LocalAudioTrack: LocalTrack {
     }
 
     public func start() {
-        // TODO: this is just for testing purposes as this will change global settings while operating on local tracks
-        // which should not change remote tracks...
         configure(setActive: true)
     }
 
@@ -61,9 +59,10 @@ public class LocalAudioTrack: LocalTrack {
         defer { audioSession.unlockForConfiguration() }
         
         do {
-            try audioSession.setCategory(self.config.category)
-            try audioSession.setMode(self.config.mode)
-            // try audioSession.setConfiguration(self.config, active: setActive)
+//            try audioSession.setCategory(self.config.category)
+//            try audioSession.setMode(self.config.mode)
+           try audioSession.setConfiguration(self.config, active: setActive)
+            // try audioSession.overrideOutputAudioPort(AVAudioSession.PortOverride.speaker)
         } catch {
             sdkLogger.error("Failed to set configuration for audio session")
         }

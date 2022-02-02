@@ -38,8 +38,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     var midToTrackId: [String: String] = [:]
     
     public init(eventTransport: EventTransport, config: RTCConfiguration) {
-//        RTCSetMinDebugLogLevel(.error)
-        sdkLogger.logLevel = .debug
+        // RTCSetMinDebugLogLevel(.verbose)
+        sdkLogger.logLevel = .info
         
         self.state = .uninitialized
         self.transport = eventTransport
@@ -64,35 +64,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             }
         }
         
-        let config = self.config
-        config.sdpSemantics = .unifiedPlan
-        config.continualGatheringPolicy = .gatherContinually
-        config.candidateNetworkPolicy = .all
-        config.disableIPV6 = true
-        config.tcpCandidatePolicy = .disabled
-        config.iceTransportPolicy = .all
-        
-        config.iceServers = [
-            RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"])
-        ]
-        
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
-        
-        guard let peerConnection = ConnectionManager.createPeerConnection(config, constraints: constraints) else {
-            fatalError("Failed to initialize new PeerConnection")
-        }
-        
-        peerConnection.delegate = self
-        self.connection = peerConnection
-        
         self.setupMediaTracks()
-        
-        // sever does not accept sendRecv direction so change all local tracks to sendOnly
-        peerConnection.transceivers.forEach { tc in
-            if tc.direction == .sendRecv {
-                tc.setDirection(.sendOnly, error: nil)
-            }
-        }
     }
     
     public func disconnect() {
@@ -157,29 +129,60 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     
     // sets up both local video and audio tracks
     private func setupMediaTracks() {
-        guard let pc = self.connection else {
-            return
-        }
+        self.localVideoTrack = LocalVideoTrack(capturer: .camera)
+        self.localVideoTrack!.start()
         
-        let localStreamId = UUID().uuidString
-        
-        let videoTrack = LocalVideoTrack(capturer: .file)
-        
-        videoTrack.start()
-        pc.add(videoTrack.track, streamIds: [localStreamId])
-        
-        self.localVideoTrack = videoTrack
-        
-        let audioTrack = LocalAudioTrack()
-        audioTrack.start()
-        pc.add(audioTrack.track, streamIds: [localStreamId])
-        self.localAudioTrack = audioTrack
+        self.localAudioTrack = LocalAudioTrack()
+        self.localAudioTrack!.start()
         
         self.localPeer.trackIdToMetadata = [
-            videoTrack.track.trackId: [:],
-            // for now the audio track does not relay any media as microphone does not work on a simulator
-            audioTrack.track.trackId: [:]
+            self.localVideoTrack!.track.trackId: [:],
+            self.localAudioTrack!.track.trackId: [:]
         ]
+    }
+    
+    private func setupPeerConnection() {
+        let config = self.config
+        config.sdpSemantics = .unifiedPlan
+        config.continualGatheringPolicy = .gatherContinually
+        config.candidateNetworkPolicy = .all
+        config.disableIPV6 = true
+        config.tcpCandidatePolicy = .disabled
+        config.iceTransportPolicy = .all
+        
+        let iceUrlStringGoogle = "stun:stun.l.google.com:19302"
+        let iceUrlString = "stun:108.177.14.127:19302"
+        
+        config.iceServers = [
+            RTCIceServer(urlStrings: [iceUrlString])
+        ]
+        
+        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
+        
+        guard let peerConnection = ConnectionManager.createPeerConnection(config, constraints: constraints) else {
+            fatalError("Failed to initialize new PeerConnection")
+        }
+        self.connection = peerConnection
+        
+        peerConnection.delegate = self
+        
+        // common stream id for the local video and audio tracks
+        let localStreamId = UUID().uuidString
+        
+        if let videoTrack = self.localVideoTrack?.track {
+            peerConnection.add(videoTrack, streamIds: [localStreamId])
+        }
+        
+        if let audioTrack = self.localAudioTrack?.track {
+            peerConnection.add(audioTrack, streamIds: [localStreamId])
+        }
+        
+        // sever does not accept sendRecv direction so change all local tracks to sendOnly
+        peerConnection.transceivers.forEach { tc in
+            if tc.direction == .sendRecv {
+                tc.setDirection(.sendOnly, error: nil)
+            }
+        }
     }
 }
 
@@ -208,7 +211,6 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
     public func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
         guard let trackId = self.midToTrackId[transceiver.mid],
             var trackContext = self.trackContexts[trackId] else {
-                print("HEEEEEJO")
             sdkLogger.error("peerConnection started receiving on a transceiver with an unknown 'mid' parameter or without registered track context")
             return
         }
@@ -381,14 +383,14 @@ extension MembraneRTC: EventTransportDelegate {
         case .OfferData:
             let offerData = event as! OfferDataEvent
             
-            DispatchQueue.webRTC.async {
+            DispatchQueue.sdk.async {
                 self.onOfferData(offerData)
             }
             
         case .SdpAnswer:
             let sdpAnswer = event as! SdpAnswerEvent
             
-            DispatchQueue.webRTC.async {
+            DispatchQueue.sdk.async {
                 self.onSdpAnswer(sdpAnswer)
             }
             
@@ -396,7 +398,7 @@ extension MembraneRTC: EventTransportDelegate {
         case .Candidate:
             let candidate = event as! RemoteCandidateEvent
             
-            DispatchQueue.webRTC.async {
+            DispatchQueue.sdk.async {
                 self.onRemoteCandidate(candidate)
             }
             
@@ -464,6 +466,10 @@ extension MembraneRTC: EventTransportDelegate {
 
 extension MembraneRTC {
     func onOfferData(_ offerData: OfferDataEvent) {
+        if self.connection == nil {
+            self.setupPeerConnection()
+        }
+        
         guard let pc = self.connection else {
             return
         }
@@ -474,8 +480,13 @@ extension MembraneRTC {
             pc.restartIce()
         }
         
+        let mandatoryContraints: [String: String] = [
+            kRTCMediaConstraintsOfferToReceiveAudio:kRTCMediaConstraintsValueTrue,
+            kRTCMediaConstraintsOfferToReceiveVideo:kRTCMediaConstraintsValueTrue
+        ]
+        
         // TODO: why do we event need constanits here if we passed them when creating a peer connection
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
+        let constraints = RTCMediaConstraints(mandatoryConstraints: mandatoryContraints, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
         
         pc.offer(for: constraints, completionHandler: { offer, error in
             guard let offer = offer else {
@@ -520,14 +531,18 @@ extension MembraneRTC {
             }
         }
         
-        sdkLogger.debug("peerConnection adding \(lackingAudio) audio and \(lackingVideo) video lacking transceivers")
+        sdkLogger.info("peerConnection adding \(lackingAudio) audio and \(lackingVideo) video lacking transceivers")
         
-        for _ in 0..<lackingAudio {
-            pc.addTransceiver(of: .audio)?.setDirection(.recvOnly, error: nil)
+        if lackingAudio > 0 {
+            for _ in 0..<lackingAudio {
+                pc.addTransceiver(of: .audio)?.setDirection(.recvOnly, error: nil)
+            }
         }
         
-        for _ in 0..<lackingVideo {
-            pc.addTransceiver(of: .video)?.setDirection(.recvOnly, error: nil)
+        if lackingVideo > 0 {
+            for _ in 0..<lackingVideo {
+                pc.addTransceiver(of: .video)?.setDirection(.recvOnly, error: nil)
+            }
         }
     }
     

@@ -8,24 +8,56 @@ class CameraCapturer: VideoCapturer {
     }
     
     public func startCapture() {
-        guard
-           let frontCamera = (RTCCameraVideoCapturer.captureDevices().first { $0.position == .front }),
+        let devices = RTCCameraVideoCapturer.captureDevices()
         
-           // choose highest res
-           let format = (RTCCameraVideoCapturer.supportedFormats(for: frontCamera).sorted { (f1, f2) -> Bool in
-               let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
-               let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
-               return width1 < width2
-           }).last,
-        
-           // choose highest fps
-           let fps = (format.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }.last) else {
-           return
+        guard let frontCamera = devices.first(where: { $0.position == .front }) else {
+            return
         }
+        
+        let formats: Array<AVCaptureDevice.Format> = RTCCameraVideoCapturer.supportedFormats(for: frontCamera)
+        
+        let parameters = VideoParameters.presetHD169
+        let (targetWidth, targetHeight) = (parameters.dimensions.width,
+                                           parameters.dimensions.height)
 
+        var currentDiff = Int32.max
+        var selectedFormat: AVCaptureDevice.Format = formats[0]
+        var selectedDimension: Dimensions?
+        for format in formats {
+            let dimension = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            
+            let diff = abs(targetWidth - dimension.width) + abs(targetHeight - dimension.height)
+            if diff < currentDiff {
+                selectedFormat = format
+                currentDiff = diff
+                selectedDimension = dimension
+            }
+        }
+        
+        guard let dimension = selectedDimension else {
+            // FIXME: we need more graceful handling of errors than fatal one
+            fatalError("Could not get dimensions for video capture")
+        }
+        
+        sdkLogger.info("CameraCapturer selected dimensions of \(dimension)")
+
+        let fps = parameters.encoding.maxFps
+
+        // discover FPS limits
+        var minFps = 60
+        var maxFps = 0
+        for fpsRange in selectedFormat.videoSupportedFrameRateRanges {
+            minFps = min(minFps, Int(fpsRange.minFrameRate))
+            maxFps = max(maxFps, Int(fpsRange.maxFrameRate))
+        }
+        if fps < minFps || fps > maxFps {
+            // FIXME: we need more graceful handling of errors than fatal one
+            fatalError("unsported requested frame rate of (\(minFps) - \(maxFps)")
+        }
+        
         self.capturer.startCapture(with: frontCamera,
-                              format: format,
-                              fps: Int(fps.maxFrameRate))
+                                   format: selectedFormat,
+                                   fps: fps)
     }
     
     public func stopCapture() {

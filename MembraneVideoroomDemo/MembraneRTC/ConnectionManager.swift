@@ -18,13 +18,12 @@ extension ConnectionManager {
     }()
     
     internal static func createPeerConnection(_ configuration: RTCConfiguration, constraints: RTCMediaConstraints) -> RTCPeerConnection? {
-        DispatchQueue.webRTC.sync {
+         DispatchQueue.webRTC.sync {
             factory.peerConnection(with: configuration, constraints: constraints, delegate: nil)
         }
     }
 
     internal static func createAudioSource(_ constraints: RTCMediaConstraints?) -> RTCAudioSource {
-        // TODO: get to know why livekit is using dispatch queues for such simple tasks
         DispatchQueue.webRTC.sync {
             factory.audioSource(with: constraints)
         }
@@ -35,7 +34,6 @@ extension ConnectionManager {
             factory.audioTrack(with: source, trackId: UUID().uuidString)
         }
     }
-
 
     internal static func createVideoCapturer() -> RTCVideoCapturer {
         DispatchQueue.webRTC.sync { RTCVideoCapturer() }
