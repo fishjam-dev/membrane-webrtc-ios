@@ -36,7 +36,7 @@ class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
             }
             
         }, completionHandler: {
-            error in sdkLogger.error("Encountered error while capturing screen: \(error?.localizedDescription)")
+            error in sdkLogger.error("Encountered error while capturing screen: \(error?.localizedDescription ?? "")")
         })
     }
          
@@ -68,6 +68,8 @@ class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
     }
     
     func stopCapture() {
+        if self.screenRecorder.isRecording {
             self.screenRecorder.stopCapture()
+        }
     }
 }

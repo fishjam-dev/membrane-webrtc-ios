@@ -12,10 +12,10 @@ class OrientationReceiver: ObservableObject {
         self.orientation = UIDevice.current.orientation
     }
     
-    func update(orientataion: UIDeviceOrientation) {
+    func update(newOrientation: UIDeviceOrientation) {
         // in case of faceUp ignore the orientation and leave the old one
-        if orientation != .faceUp {
-            self.orientation = orientataion
+        if newOrientation != .faceUp {
+            self.orientation = newOrientation
         }
     }
 }
@@ -24,7 +24,6 @@ struct RoomView: View {
     @EnvironmentObject var appCtrl: AppController
     @ObservedObject var orientationReceiver: OrientationReceiver
     @ObservedObject var room: ObservableRoom
-    
     @State private var localDimensions: Dimensions?
     
     init(_ room: MembraneRTC) {
@@ -162,7 +161,8 @@ struct RoomView: View {
         }
         .onRotate { newOrientation in
             DispatchQueue.main.async {
-                self.orientationReceiver.update(orientataion: newOrientation)
+                print("New orientation", newOrientation.rawValue)
+                self.orientationReceiver.update(newOrientation: newOrientation)
             }
             
         }
