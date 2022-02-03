@@ -29,7 +29,9 @@ public class LocalVideoTrack: LocalTrack {
                 #if targetEnvironment(simulator)
                     self.capturer = FileCapturer(self.videoSource)
                 #else
-                    self.capturer = ScreenCapturer(self.videoSource)
+                    // self.capturer = ScreenCapturer(self.videoSource)
+//                    self.capturer = FileCapturer(self.videoSource)
+                    self.capturer = BroadcastScreenCapturer(self.videoSource)
                 #endif
         }
         

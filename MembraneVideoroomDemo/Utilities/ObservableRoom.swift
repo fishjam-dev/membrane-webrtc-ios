@@ -7,6 +7,7 @@
 
 import Foundation
 import WebRTC
+import SwiftUI
 
 
 
@@ -63,9 +64,7 @@ class ObservableRoom: ObservableObject {
         
         room.add(delegate: self)
         
-        // TODO: room probably should have other states indicating that it is awaiting a join
-        // for now we know that we need to trigger join here but it is not a must
-        room.join(metadata: ["displayName": "I am the king!"])
+        self.room?.join()
     }
     
     // TODO: this should not belong here...

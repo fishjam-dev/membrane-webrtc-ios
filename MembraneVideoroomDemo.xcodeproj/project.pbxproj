@@ -36,15 +36,52 @@
 		3B16A21627970B930095941F /* video.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3B16A21527970B8D0095941F /* video.mp4 */; };
 		3B4191F8279EEDD1000035C0 /* LocalAudioTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */; };
 		3B4191FA279EEE09000035C0 /* LocalTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191F9279EEE09000035C0 /* LocalTrack.swift */; };
+		3B601BE827ABCF0E00668122 /* ScreenBroadcastController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601BE727ABCF0E00668122 /* ScreenBroadcastController.swift */; };
+		3B601BF027ABD2FE00668122 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B601BEF27ABD2FE00668122 /* ReplayKit.framework */; };
+		3B601BF327ABD2FE00668122 /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601BF227ABD2FE00668122 /* SampleHandler.swift */; };
+		3B601BF727ABD2FE00668122 /* ScreenBroadcastExt.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 3B601BED27ABD2FE00668122 /* ScreenBroadcastExt.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3B601BFE27ABEF3100668122 /* IPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601BFD27ABEF3100668122 /* IPC.swift */; };
+		3B601C0127ABF88A00668122 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 3B601C0027ABF88A00668122 /* SwiftProtobuf */; };
+		3B601C0827AC06E800668122 /* broadcast_ipc.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601C0727AC06E800668122 /* broadcast_ipc.pb.swift */; };
+		3B601C0927AC06E800668122 /* broadcast_ipc.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601C0727AC06E800668122 /* broadcast_ipc.pb.swift */; };
+		3B601C0B27AC073300668122 /* BroadcastScreenCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601C0A27AC073300668122 /* BroadcastScreenCapturer.swift */; };
 		3B667FC0279943B1007E38C8 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B667FBF279943B1007E38C8 /* Metadata.swift */; };
 		3B667FC227995437007E38C8 /* ScreenCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B667FC127995437007E38C8 /* ScreenCapturer.swift */; };
 		3B84661B27A3E9A6009BF97D /* AdaptiveStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B84661A27A3E9A6009BF97D /* AdaptiveStack.swift */; };
 		3B84661D27A3FB10009BF97D /* DeviceRotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B84661C27A3FB10009BF97D /* DeviceRotation.swift */; };
+		3BA235D727AC10C10070031E /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235D627AC10C10070031E /* SwiftProtobuf */; };
+		3BA235DB27AC1F600070031E /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235DA27AC1F600070031E /* FBLPromises */; };
+		3BA235DC27AC1F7A0070031E /* IPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601BFD27ABEF3100668122 /* IPC.swift */; };
 		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; settings = {ATTRIBUTES = (Required, ); }; };
 		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
+		3BD7249327AAD3DE00AFE9D9 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BD7249227AAD3DE00AFE9D9 /* logo.png */; };
 		3BDAC1E027A2FCE200A2BB0D /* ParticipantVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3B601BF527ABD2FE00668122 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3BCCBEB32795619500A0AD4C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3B601BEC27ABD2FE00668122;
+			remoteInfo = MembraneVideoroomDemoScreensharing;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3B601BFB27ABD2FE00668122 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				3B601BF727ABD2FE00668122 /* ScreenBroadcastExt.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		3B04D3952798197500E2B755 /* PhoenixEventTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoenixEventTransport.swift; sourceTree = "<group>"; };
@@ -75,16 +112,38 @@
 		3B16A21527970B8D0095941F /* video.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = video.mp4; sourceTree = "<group>"; };
 		3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAudioTrack.swift; sourceTree = "<group>"; };
 		3B4191F9279EEE09000035C0 /* LocalTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTrack.swift; sourceTree = "<group>"; };
+		3B601BE727ABCF0E00668122 /* ScreenBroadcastController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenBroadcastController.swift; sourceTree = "<group>"; };
+		3B601BED27ABD2FE00668122 /* ScreenBroadcastExt.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScreenBroadcastExt.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		3B601BEF27ABD2FE00668122 /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
+		3B601BF227ABD2FE00668122 /* SampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
+		3B601BF427ABD2FE00668122 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3B601BFD27ABEF3100668122 /* IPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPC.swift; sourceTree = "<group>"; };
+		3B601C0427ABF8DE00668122 /* broadcast_ipc.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = broadcast_ipc.proto; sourceTree = "<group>"; };
+		3B601C0727AC06E800668122 /* broadcast_ipc.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = broadcast_ipc.pb.swift; sourceTree = "<group>"; };
+		3B601C0A27AC073300668122 /* BroadcastScreenCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastScreenCapturer.swift; sourceTree = "<group>"; };
 		3B667FBF279943B1007E38C8 /* Metadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
 		3B667FC127995437007E38C8 /* ScreenCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapturer.swift; sourceTree = "<group>"; };
 		3B84661A27A3E9A6009BF97D /* AdaptiveStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveStack.swift; sourceTree = "<group>"; };
 		3B84661C27A3FB10009BF97D /* DeviceRotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceRotation.swift; sourceTree = "<group>"; };
+		3BA235D827AC15340070031E /* MembraneVideoroomDemoDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoDebug.entitlements; sourceTree = "<group>"; };
+		3BA235D927AC156E0070031E /* MembraneVideoroomDemoScreensharingDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoScreensharingDebug.entitlements; sourceTree = "<group>"; };
 		3BCA53B927A0248900E3CABF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3BD7249227AAD3DE00AFE9D9 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantVideoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3B601BEA27ABD2FE00668122 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3BA235DB27AC1F600070031E /* FBLPromises in Frameworks */,
+				3B601BF027ABD2FE00668122 /* ReplayKit.framework in Frameworks */,
+				3BA235D727AC10C10070031E /* SwiftProtobuf in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3BCCBEB82795619500A0AD4C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -92,6 +151,7 @@
 				3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */,
 				3B04D3942798190F00E2B755 /* SwiftPhoenixClient in Frameworks */,
 				3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */,
+				3B601C0127ABF88A00668122 /* SwiftProtobuf in Frameworks */,
 				3BCCBEF92795701600A0AD4C /* Promises in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -102,6 +162,8 @@
 		3B16A1BE2796C42B0095941F /* MembraneVideoroomDemo */ = {
 			isa = PBXGroup;
 			children = (
+				3BA235D827AC15340070031E /* MembraneVideoroomDemoDebug.entitlements */,
+				3BD7249227AAD3DE00AFE9D9 /* logo.png */,
 				3BCA53B927A0248900E3CABF /* Info.plist */,
 				3B16A21527970B8D0095941F /* video.mp4 */,
 				3B16A1F02796C4970095941F /* MembraneRTC */,
@@ -150,6 +212,7 @@
 			children = (
 				3B84661927A3E967009BF97D /* Shared */,
 				3B16A1C92796C42B0095941F /* ConnectView.swift */,
+				3B601BE727ABCF0E00668122 /* ScreenBroadcastController.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -208,8 +271,36 @@
 				3B16A20F2796F4AF0095941F /* FileCapturer.swift */,
 				3B667FC127995437007E38C8 /* ScreenCapturer.swift */,
 				3B4191F9279EEE09000035C0 /* LocalTrack.swift */,
+				3B601C0A27AC073300668122 /* BroadcastScreenCapturer.swift */,
 			);
 			path = Media;
+			sourceTree = "<group>";
+		};
+		3B601BEE27ABD2FE00668122 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3B601BEF27ABD2FE00668122 /* ReplayKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3B601BF127ABD2FE00668122 /* ScreenBroadcastExt */ = {
+			isa = PBXGroup;
+			children = (
+				3B601BF227ABD2FE00668122 /* SampleHandler.swift */,
+				3B601BF427ABD2FE00668122 /* Info.plist */,
+			);
+			path = ScreenBroadcastExt;
+			sourceTree = "<group>";
+		};
+		3B601BFC27ABEEE000668122 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				3B601C0727AC06E800668122 /* broadcast_ipc.pb.swift */,
+				3B601BFD27ABEF3100668122 /* IPC.swift */,
+				3B601C0427ABF8DE00668122 /* broadcast_ipc.proto */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		3B84661927A3E967009BF97D /* Shared */ = {
@@ -223,7 +314,11 @@
 		3BCCBEB22795619500A0AD4C = {
 			isa = PBXGroup;
 			children = (
+				3BA235D927AC156E0070031E /* MembraneVideoroomDemoScreensharingDebug.entitlements */,
+				3B601BFC27ABEEE000668122 /* Shared */,
 				3B16A1BE2796C42B0095941F /* MembraneVideoroomDemo */,
+				3B601BF127ABD2FE00668122 /* ScreenBroadcastExt */,
+				3B601BEE27ABD2FE00668122 /* Frameworks */,
 				3BCCBEBC2795619500A0AD4C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -232,6 +327,7 @@
 			isa = PBXGroup;
 			children = (
 				3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */,
+				3B601BED27ABD2FE00668122 /* ScreenBroadcastExt.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -239,6 +335,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3B601BEC27ABD2FE00668122 /* ScreenBroadcastExt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3B601BF827ABD2FE00668122 /* Build configuration list for PBXNativeTarget "ScreenBroadcastExt" */;
+			buildPhases = (
+				3B601BE927ABD2FE00668122 /* Sources */,
+				3B601BEA27ABD2FE00668122 /* Frameworks */,
+				3B601BEB27ABD2FE00668122 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ScreenBroadcastExt;
+			packageProductDependencies = (
+				3BA235D627AC10C10070031E /* SwiftProtobuf */,
+				3BA235DA27AC1F600070031E /* FBLPromises */,
+			);
+			productName = MembraneVideoroomDemoScreensharing;
+			productReference = 3B601BED27ABD2FE00668122 /* ScreenBroadcastExt.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		3BCCBEBA2795619500A0AD4C /* MembraneVideoroomDemo */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3BCCBEC92795619600A0AD4C /* Build configuration list for PBXNativeTarget "MembraneVideoroomDemo" */;
@@ -246,10 +363,12 @@
 				3BCCBEB72795619500A0AD4C /* Sources */,
 				3BCCBEB82795619500A0AD4C /* Frameworks */,
 				3BCCBEB92795619500A0AD4C /* Resources */,
+				3B601BFB27ABD2FE00668122 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3B601BF627ABD2FE00668122 /* PBXTargetDependency */,
 			);
 			name = MembraneVideoroomDemo;
 			packageProductDependencies = (
@@ -257,6 +376,7 @@
 				3BCCBEF527956E1500A0AD4C /* Logging */,
 				3BCCBEF82795701600A0AD4C /* Promises */,
 				3B04D3932798190F00E2B755 /* SwiftPhoenixClient */,
+				3B601C0027ABF88A00668122 /* SwiftProtobuf */,
 			);
 			productName = MembraneVideoroomDemo;
 			productReference = 3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */;
@@ -272,6 +392,9 @@
 				LastSwiftUpdateCheck = 1320;
 				LastUpgradeCheck = 1320;
 				TargetAttributes = {
+					3B601BEC27ABD2FE00668122 = {
+						CreatedOnToolsVersion = 13.2.1;
+					};
 					3BCCBEBA2795619500A0AD4C = {
 						CreatedOnToolsVersion = 13.2.1;
 					};
@@ -291,21 +414,31 @@
 				3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */,
 				3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */,
 				3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */,
+				3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 			);
 			productRefGroup = 3BCCBEBC2795619500A0AD4C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				3BCCBEBA2795619500A0AD4C /* MembraneVideoroomDemo */,
+				3B601BEC27ABD2FE00668122 /* ScreenBroadcastExt */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3B601BEB27ABD2FE00668122 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3BCCBEB92795619500A0AD4C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3BD7249327AAD3DE00AFE9D9 /* logo.png in Resources */,
 				3B16A21627970B930095941F /* video.mp4 in Resources */,
 				3B16A1DE2796C42B0095941F /* Preview Assets.xcassets in Resources */,
 				3B16A1DD2796C42B0095941F /* Assets.xcassets in Resources */,
@@ -315,10 +448,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3B601BE927ABD2FE00668122 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3BA235DC27AC1F7A0070031E /* IPC.swift in Sources */,
+				3B601BF327ABD2FE00668122 /* SampleHandler.swift in Sources */,
+				3B601C0927AC06E800668122 /* broadcast_ipc.pb.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3BCCBEB72795619500A0AD4C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3B601BFE27ABEF3100668122 /* IPC.swift in Sources */,
 				3B16A2062796C4970095941F /* MembraneRTC.swift in Sources */,
 				3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */,
 				3B16A2022796C4970095941F /* NativeVideoView.swift in Sources */,
@@ -332,6 +476,7 @@
 				3B16A1E02796C42B0095941F /* Extensions.swift in Sources */,
 				3B16A2012796C4970095941F /* SwiftUIVideoView.swift in Sources */,
 				3B4191F8279EEDD1000035C0 /* LocalAudioTrack.swift in Sources */,
+				3B601C0B27AC073300668122 /* BroadcastScreenCapturer.swift in Sources */,
 				3B16A2092796C4970095941F /* EventTransport.swift in Sources */,
 				3B16A2082796C4970095941F /* MembraneRTCDelegate.swift in Sources */,
 				3B4191FA279EEE09000035C0 /* LocalTrack.swift in Sources */,
@@ -345,8 +490,10 @@
 				3B16A2102796F4AF0095941F /* FileCapturer.swift in Sources */,
 				3B667FC0279943B1007E38C8 /* Metadata.swift in Sources */,
 				3B1642DD27A13884008BBBA7 /* MulticastDelegate.swift in Sources */,
+				3B601C0827AC06E800668122 /* broadcast_ipc.pb.swift in Sources */,
 				3B16A2052796C4970095941F /* ConnectionManager.swift in Sources */,
 				3B16A2042796C4970095941F /* Peer.swift in Sources */,
+				3B601BE827ABCF0E00668122 /* ScreenBroadcastController.swift in Sources */,
 				3B667FC227995437007E38C8 /* ScreenCapturer.swift in Sources */,
 				3B16A2072796C4970095941F /* Event.swift in Sources */,
 			);
@@ -354,7 +501,68 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		3B601BF627ABD2FE00668122 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3B601BEC27ABD2FE00668122 /* ScreenBroadcastExt */;
+			targetProxy = 3B601BF527ABD2FE00668122 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		3B601BF927ABD2FE00668122 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MembraneVideoroomDemoScreensharingDebug.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YGRG6VYGY2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScreenBroadcastExt/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScreenBroadcastExt;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3B601BFA27ABD2FE00668122 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YGRG6VYGY2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScreenBroadcastExt/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScreenBroadcastExt;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		3BCCBEC72795619600A0AD4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -476,8 +684,10 @@
 		3BCCBECA2795619600A0AD4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MembraneVideoroomDemo/MembraneVideoroomDemoDebug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MembraneVideoroomDemo/Preview Content\"";
@@ -485,6 +695,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MembraneVideoroomDemo/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow the app to record using your camera";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow the app to record using your phone's microphone";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -507,6 +719,7 @@
 		3BCCBECB2795619600A0AD4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -516,6 +729,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MembraneVideoroomDemo/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow the app to record using your camera";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow the app to record using your phone's microphone";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -538,6 +753,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3B601BF827ABD2FE00668122 /* Build configuration list for PBXNativeTarget "ScreenBroadcastExt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3B601BF927ABD2FE00668122 /* Debug */,
+				3B601BFA27ABD2FE00668122 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		3BCCBEB62795619500A0AD4C /* Build configuration list for PBXProject "MembraneVideoroomDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -565,6 +789,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 4.0.0;
+			};
+		};
+		3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 		3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */ = {
@@ -598,6 +830,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */;
 			productName = SwiftPhoenixClient;
+		};
+		3B601C0027ABF88A00668122 /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+		3BA235D627AC10C10070031E /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+		3BA235DA27AC1F600070031E /* FBLPromises */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */;
+			productName = FBLPromises;
 		};
 		3BCCBEF227956DF600A0AD4C /* WebRTC */ = {
 			isa = XCSwiftPackageProductDependency;

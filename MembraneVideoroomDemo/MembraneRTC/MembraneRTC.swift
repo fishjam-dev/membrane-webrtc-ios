@@ -4,6 +4,11 @@ import Logging
 
 internal var sdkLogger = Logger(label: "org.membrane.ios")
 
+
+public struct ParticipantInfo {
+    let displayName: String
+}
+
 // TODO: document anything for your owns sake...
 public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObject {
     static let version = "0.1.0"
@@ -38,7 +43,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     // mapping from transceiver's mid to its remote track id
     var midToTrackId: [String: String] = [:]
     
-    public init(eventTransport: EventTransport, config: RTCConfiguration) {
+    public init(eventTransport: EventTransport, config: RTCConfiguration, localParticipantInfo: ParticipantInfo) {
         // RTCSetMinDebugLogLevel(.verbose)
         sdkLogger.logLevel = .info
         
@@ -46,6 +51,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         self.transport = eventTransport
         self.config = config
         self.iceServers = []
+        
+        // setup local peer
+        self.localPeer.metadata["displayName"] = localParticipantInfo.displayName
         
         super.init()
     }
@@ -56,8 +64,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         return RTCIceServer(urlStrings: [iceUrl])
     }
     
-    public func join(metadata: Metadata) {
-        self.transport.sendEvent(event: Events.joinEvent(metadata: metadata))
+    public func join() {
+        self.transport.sendEvent(event: Events.joinEvent(metadata: self.localPeer.metadata))
     }
     
     public func connect() {

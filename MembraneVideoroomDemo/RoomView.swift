@@ -1,9 +1,28 @@
 import Foundation
 import SwiftUI
 import WebRTC
+import ReplayKit
 
 extension RTCVideoTrack: Identifiable {
 }
+
+#if os(iOS)
+@available(iOS 12, *)
+
+extension RPSystemBroadcastPickerView {
+    public static func show(for preferredExtension: String? = nil,
+                            showsMicrophoneButton: Bool = true) {
+        let view = RPSystemBroadcastPickerView()
+        view.preferredExtension = preferredExtension
+        view.showsMicrophoneButton = showsMicrophoneButton
+        let selector = NSSelectorFromString("buttonPressed:")
+        if view.responds(to: selector) {
+            view.perform(selector, with: nil)
+        }
+    }
+}
+#endif
+
 
 class OrientationReceiver: ObservableObject {
     @Published var orientation: UIDeviceOrientation
@@ -28,7 +47,6 @@ struct RoomView: View {
     
     init(_ room: MembraneRTC) {
         self.orientationReceiver = OrientationReceiver()
-        
         self.room = ObservableRoom(room)
     }
     
@@ -67,6 +85,8 @@ struct RoomView: View {
         
         Button(action: {
             self.room.toggleLocalTrack(.screensharing)
+            
+            RPSystemBroadcastPickerView.show(for: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt", showsMicrophoneButton: false)
         }) {
             Image(systemName: label)
                 .font(.system(size: 32, weight: .bold))
@@ -161,7 +181,6 @@ struct RoomView: View {
         }
         .onRotate { newOrientation in
             DispatchQueue.main.async {
-                print("New orientation", newOrientation.rawValue)
                 self.orientationReceiver.update(newOrientation: newOrientation)
             }
             

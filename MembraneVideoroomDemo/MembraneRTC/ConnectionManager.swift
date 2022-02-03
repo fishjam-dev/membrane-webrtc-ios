@@ -39,10 +39,10 @@ extension ConnectionManager {
         DispatchQueue.webRTC.sync { RTCVideoCapturer() }
     }
     
-    internal static func createVideoSource() -> RTCVideoSource {
+    internal static func createVideoSource(forScreencast screencast: Bool = false) -> RTCVideoSource {
         DispatchQueue.webRTC.sync { factory.videoSource() }
     }
-
+    
     internal static func createVideoTrack(source: RTCVideoSource) -> RTCVideoTrack {
         DispatchQueue.webRTC.sync {
             factory.videoTrack(with: source, trackId: UUID().uuidString)

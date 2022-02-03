@@ -20,12 +20,21 @@ final class AppController: ObservableObject {
     }
     
     // let ip = "localhost"
-    let localAddress = "http://192.168.83.98:4000"
+    let localAddress = "http://192.168.83.95:4000"
     
     let remoteAddress = "https://dscout.membrane.work"
+    
 
-    public func connect() {
-        let client = MembraneRTC(eventTransport: PhoenixEventTransport(url: "\(remoteAddress)/socket", topic: "room:test"), config: RTCConfiguration())
+    public func connect(room: String, displayName: String) {
+        let transportUrl = "\(localAddress)/socket"
+        let transport = PhoenixEventTransport(url: transportUrl, topic: "room:\(room)")
+        
+        let client = MembraneRTC(
+            eventTransport: transport,
+            config: RTCConfiguration(),
+            localParticipantInfo: ParticipantInfo(displayName: displayName)
+        )
+        
         client.add(delegate: self)
         client.connect()
         
