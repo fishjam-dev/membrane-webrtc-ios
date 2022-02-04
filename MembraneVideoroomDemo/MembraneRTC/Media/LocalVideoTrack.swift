@@ -5,6 +5,10 @@ public class LocalVideoTrack: LocalTrack {
     private let capturer: VideoCapturer
     public let track: RTCVideoTrack
     
+    /// Contains one of the following capturers
+    ///  - camera - capturing video device's camera
+    ///  - screensharing - capturing video from ian n-app screensharing
+    ///   - file - capturing video from a file
     enum Capturer {
         case camera, screensharing, file
     }
@@ -29,9 +33,7 @@ public class LocalVideoTrack: LocalTrack {
                 #if targetEnvironment(simulator)
                     self.capturer = FileCapturer(self.videoSource)
                 #else
-                    // self.capturer = ScreenCapturer(self.videoSource)
-//                    self.capturer = FileCapturer(self.videoSource)
-                    self.capturer = BroadcastScreenCapturer(self.videoSource)
+                     self.capturer = ScreenCapturer(self.videoSource)
                 #endif
         }
         
@@ -48,6 +50,10 @@ public class LocalVideoTrack: LocalTrack {
     
     public func toggle() {
         self.track.isEnabled = !self.track.isEnabled
+    }
+    
+    public func rtcTrack() -> RTCMediaStreamTrack {
+        return self.track
     }
 }
 

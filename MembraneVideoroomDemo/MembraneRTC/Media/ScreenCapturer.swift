@@ -53,7 +53,6 @@ class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
         
-        // TODO: why is this so random? strange resolution and really low FPS
         self.source.adaptOutputFormat(toWidth: (Int32)(width/3), height: (Int32)(height/3), fps: 8)
         
         let rtcPixelBuffer = RTCCVPixelBuffer(pixelBuffer: pixelBuffer)

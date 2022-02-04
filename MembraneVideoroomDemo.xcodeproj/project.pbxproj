@@ -36,7 +36,7 @@
 		3B16A21627970B930095941F /* video.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3B16A21527970B8D0095941F /* video.mp4 */; };
 		3B4191F8279EEDD1000035C0 /* LocalAudioTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */; };
 		3B4191FA279EEE09000035C0 /* LocalTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4191F9279EEE09000035C0 /* LocalTrack.swift */; };
-		3B601BE827ABCF0E00668122 /* ScreenBroadcastController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601BE727ABCF0E00668122 /* ScreenBroadcastController.swift */; };
+		3B4BC68E27AD10440013EDEB /* LocalBroadcastScreenTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4BC68D27AD10440013EDEB /* LocalBroadcastScreenTrack.swift */; };
 		3B601BF027ABD2FE00668122 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B601BEF27ABD2FE00668122 /* ReplayKit.framework */; };
 		3B601BF327ABD2FE00668122 /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601BF227ABD2FE00668122 /* SampleHandler.swift */; };
 		3B601BF727ABD2FE00668122 /* ScreenBroadcastExt.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 3B601BED27ABD2FE00668122 /* ScreenBroadcastExt.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -112,7 +112,7 @@
 		3B16A21527970B8D0095941F /* video.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = video.mp4; sourceTree = "<group>"; };
 		3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAudioTrack.swift; sourceTree = "<group>"; };
 		3B4191F9279EEE09000035C0 /* LocalTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTrack.swift; sourceTree = "<group>"; };
-		3B601BE727ABCF0E00668122 /* ScreenBroadcastController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenBroadcastController.swift; sourceTree = "<group>"; };
+		3B4BC68D27AD10440013EDEB /* LocalBroadcastScreenTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalBroadcastScreenTrack.swift; sourceTree = "<group>"; };
 		3B601BED27ABD2FE00668122 /* ScreenBroadcastExt.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScreenBroadcastExt.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B601BEF27ABD2FE00668122 /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		3B601BF227ABD2FE00668122 /* SampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
@@ -212,7 +212,6 @@
 			children = (
 				3B84661927A3E967009BF97D /* Shared */,
 				3B16A1C92796C42B0095941F /* ConnectView.swift */,
-				3B601BE727ABCF0E00668122 /* ScreenBroadcastController.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -266,6 +265,7 @@
 				3B16A1FE2796C4970095941F /* VideoCapturer.swift */,
 				3B16A1FF2796C4970095941F /* LocalVideoTrack.swift */,
 				3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */,
+				3B4BC68D27AD10440013EDEB /* LocalBroadcastScreenTrack.swift */,
 				3B16A2002796C4970095941F /* CameraCapturer.swift */,
 				3B16A20D2796DEAC0095941F /* Dimensions.swift */,
 				3B16A20F2796F4AF0095941F /* FileCapturer.swift */,
@@ -467,6 +467,7 @@
 				3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */,
 				3B16A2022796C4970095941F /* NativeVideoView.swift in Sources */,
 				3B04D3962798197500E2B755 /* PhoenixEventTransport.swift in Sources */,
+				3B4BC68E27AD10440013EDEB /* LocalBroadcastScreenTrack.swift in Sources */,
 				3B16A20B2796C4970095941F /* LocalVideoTrack.swift in Sources */,
 				3B16A20C2796C4970095941F /* CameraCapturer.swift in Sources */,
 				3BDAC1E027A2FCE200A2BB0D /* ParticipantVideoView.swift in Sources */,
@@ -493,7 +494,6 @@
 				3B601C0827AC06E800668122 /* broadcast_ipc.pb.swift in Sources */,
 				3B16A2052796C4970095941F /* ConnectionManager.swift in Sources */,
 				3B16A2042796C4970095941F /* Peer.swift in Sources */,
-				3B601BE827ABCF0E00668122 /* ScreenBroadcastController.swift in Sources */,
 				3B667FC227995437007E38C8 /* ScreenCapturer.swift in Sources */,
 				3B16A2072796C4970095941F /* Event.swift in Sources */,
 			);

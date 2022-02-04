@@ -11,8 +11,10 @@ message BroadcastMessage {
     uint64 timestamp = 5;
     
     enum Notification {
-       STARTED = 0;
-       FINISHED = 1;
+        STARTED = 0;
+        FINISHED = 1;
+        PAUSED = 2;
+        RESUMED = 3;
     }
     
     message Video {

@@ -26,6 +26,14 @@ class SampleHandler: RPBroadcastSampleHandler {
             super.finishBroadcastWithError(NSError(domain: "", code: 0, userInfo: nil))
             return
         }
+        
+        let message = BroadcastMessage.with {
+            $0.notification = .started
+        }
+        
+        guard let protoData = try? message.serializedData() else { return }
+        
+        ipcClient?.send(protoData, messageId: 1)
     }
     
     override func broadcastPaused() {

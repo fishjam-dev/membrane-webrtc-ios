@@ -89,36 +89,43 @@ class ObservableRoom: ObservableObject {
             self.isCameraEnabled = !self.isCameraEnabled
             
         case .screensharing:
-            if self.isScreensharingEnabled {
-                room.stopScreensharing()
+            // we can't turn off broadcast screensharing by out own
+            // TODO: maybe decide to turn off the track but the sharing would remain or something?
+            guard self.isScreensharingEnabled == false else {
+                return
                 
-                guard let localScreensharingId = self.localScreensharingVideoId,
-                      let video = self.findParticipantVideo(id: localScreensharingId) else {
+            }
+            
+            room.startBroadcastScreensharing(onStart: { [weak self, weak room] in
+                guard let self = self,
+                      let room = room,
+                      let screensharingTrack = room.localScreensharingVideoTrack else {
+                          
                     return
                 }
                 
-                self.remove(video: video)
-                
-                
-            } else {
-                guard let localScreensharingTrack = room.startScreensharing() else {
-                    return
-                }
-                
-                self.localScreensharingVideoId = localScreensharingTrack.track.trackId
+                self.localScreensharingVideoId = screensharingTrack.rtcTrack().trackId
                 
                 let localParticipantScreensharing = ParticipantVideo(
                     id: self.localScreensharingVideoId!,
                     participant: localParticipant,
-                    videoTrack: localScreensharingTrack.track,
+                    videoTrack: screensharingTrack.rtcTrack() as! RTCVideoTrack,
                     isScreensharing: true
                 )
                 
                 self.add(video: localParticipantScreensharing)
                 self.focus(video: localParticipantScreensharing)
-            }
-            
-            self.isScreensharingEnabled = !self.isScreensharingEnabled
+                self.isScreensharingEnabled = true
+            }, onStop: { [weak self] in
+                guard let self = self,
+                    let localScreensharingId = self.localScreensharingVideoId,
+                      let video = self.findParticipantVideo(id: localScreensharingId) else {
+                    return
+                }
+                
+                self.remove(video: video)
+                self.isScreensharingEnabled = false
+            })
         }
     }
     

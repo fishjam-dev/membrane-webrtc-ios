@@ -20,7 +20,7 @@ final class AppController: ObservableObject {
     }
     
     // let ip = "localhost"
-    let localAddress = "http://192.168.83.95:4000"
+    let localAddress = "http://192.168.83.228:4000"
     
     let remoteAddress = "https://dscout.membrane.work"
     

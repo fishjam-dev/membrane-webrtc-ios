@@ -90,6 +90,8 @@ struct BroadcastMessage {
     typealias RawValue = Int
     case started // = 0
     case finished // = 1
+    case paused // = 2
+    case resumed // = 3
     case UNRECOGNIZED(Int)
 
     init() {
@@ -100,6 +102,8 @@ struct BroadcastMessage {
       switch rawValue {
       case 0: self = .started
       case 1: self = .finished
+      case 2: self = .paused
+      case 3: self = .resumed
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -108,6 +112,8 @@ struct BroadcastMessage {
       switch self {
       case .started: return 0
       case .finished: return 1
+      case .paused: return 2
+      case .resumed: return 3
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -152,6 +158,8 @@ extension BroadcastMessage.Notification: CaseIterable {
   static var allCases: [BroadcastMessage.Notification] = [
     .started,
     .finished,
+    .paused,
+    .resumed,
   ]
 }
 
@@ -258,6 +266,8 @@ extension BroadcastMessage.Notification: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "STARTED"),
     1: .same(proto: "FINISHED"),
+    2: .same(proto: "PAUSED"),
+    3: .same(proto: "RESUMED"),
   ]
 }
 

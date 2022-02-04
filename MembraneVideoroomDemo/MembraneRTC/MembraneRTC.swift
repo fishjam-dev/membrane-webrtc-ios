@@ -9,6 +9,24 @@ public struct ParticipantInfo {
     let displayName: String
 }
 
+public class BroadcastScreenReceiver: LocalBroadcastScreenTrackDelegate {
+    let onStart: () -> Void
+    let onStop: () -> Void
+    
+    init(onStart: @escaping () -> Void, onStop: @escaping () -> Void) {
+        self.onStart = onStart
+        self.onStop = onStop
+    }
+    
+    public func started() {
+        self.onStart()
+    }
+    
+    public func stopped() {
+        self.onStop()
+    }
+}
+
 // TODO: document anything for your owns sake...
 public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObject {
     static let version = "0.1.0"
@@ -29,7 +47,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     var iceServers: Array<RTCIceServer>
     
     @Published public var localVideoTrack: LocalVideoTrack?
-    @Published public var localScreensharingVideoTrack: LocalVideoTrack?
+    @Published public var localScreensharingVideoTrack: LocalBroadcastScreenTrack?
     @Published public var localAudioTrack: LocalAudioTrack?
     
     var localPeer = Peer(id: "", metadata: [:], trackIdToMetadata: [:])
@@ -43,8 +61,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     // mapping from transceiver's mid to its remote track id
     var midToTrackId: [String: String] = [:]
     
+    var broadcastScreenshareReceiver: BroadcastScreenReceiver?
+    
     public init(eventTransport: EventTransport, config: RTCConfiguration, localParticipantInfo: ParticipantInfo) {
-        // RTCSetMinDebugLogLevel(.verbose)
+        //RTCSetMinDebugLogLevel(.verbose)
         sdkLogger.logLevel = .info
         
         self.state = .uninitialized
@@ -91,18 +111,42 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
     }
     
-    // TODO: this is just a pure mock, refactor it once physical device becomes available
-    public func startScreensharing() -> LocalVideoTrack? {
+    public func startBroadcastScreensharing(onStart: @escaping () -> Void, onStop: @escaping () -> Void) {
+        guard self.localScreensharingVideoTrack == nil else {
+            return
+        }
+        
+        let screensharingTrack = LocalBroadcastScreenTrack()
+        self.localScreensharingVideoTrack = screensharingTrack
+        
+        self.broadcastScreenshareReceiver = BroadcastScreenReceiver(onStart: { [weak self, weak screensharingTrack] in
+            guard let screensharingTrack = screensharingTrack else {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self?.startScreensharing(track: screensharingTrack)
+                onStart()
+            }
+            
+        }, onStop: { [weak self] in
+            DispatchQueue.main.async {
+                self?.stopScreensharing()
+                onStop()
+            }
+        })
+        
+        screensharingTrack.delegate = self.broadcastScreenshareReceiver
+        screensharingTrack.start()
+    }
+    
+    private func startScreensharing(track: LocalBroadcastScreenTrack) {
         guard let pc = self.connection else {
-            return nil
+            return
         }
         
         let localStreamId = UUID().uuidString
-        
-        let screensharingTrack = LocalVideoTrack(capturer: .screensharing)
-        screensharingTrack.start()
-        
-        pc.add(screensharingTrack.track, streamIds: [localStreamId])
+        pc.add(track.rtcTrack(), streamIds: [localStreamId])
         
         // TODO: decide if all of those functions should be run on the webRTC queue
         pc.transceivers.forEach { transceiver in
@@ -112,15 +156,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
         
         self.transport.sendEvent(event: RenegotiateTracksEvent())
-        self.localScreensharingVideoTrack = screensharingTrack
         
         // add track's metadata and set the type to screensharing to indicate it to other clients
-        self.localPeer.trackIdToMetadata?[screensharingTrack.track.trackId] = ["type": "screensharing"]
-        
-        return screensharingTrack
+        self.localPeer.trackIdToMetadata?[track.rtcTrack().trackId] = ["type": "screensharing"]
     }
     
-    public func stopScreensharing() {
+    private func stopScreensharing() {
         guard
             let pc = self.connection,
             let screensharing = self.localScreensharingVideoTrack else {
@@ -132,13 +173,13 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         // remove screensharing's track from peer connection and trigger renegotiation
         if let sender = pc.senders.first(where: { sender in
-            sender.track?.trackId == screensharing.track.trackId
+            sender.track?.trackId == screensharing.rtcTrack().trackId
         }) {
             pc.removeTrack(sender)
-            screensharing.track.isEnabled = false
+            screensharing.rtcTrack().isEnabled = false
             
             self.localScreensharingVideoTrack = nil
-            self.localPeer.trackIdToMetadata?.removeValue(forKey: screensharing.track.trackId)
+            self.localPeer.trackIdToMetadata?.removeValue(forKey: screensharing.rtcTrack().trackId)
             self.transport.sendEvent(event: RenegotiateTracksEvent())
         }
     }

@@ -23,7 +23,6 @@ public class LocalAudioTrack: LocalTrack {
             "googHighpassFilter": "true"
         ]
 
-        // let audioConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: constraints)
         let audioConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: constraints)
         
         self.config = RTCAudioSessionConfiguration.webRTC()
@@ -33,7 +32,6 @@ public class LocalAudioTrack: LocalTrack {
          self.config.categoryOptions = AVAudioSession.CategoryOptions.duckOthers
         
         let audioSource = ConnectionManager.createAudioSource(audioConstraints)
-         audioSource.volume = 100
         
         let track = ConnectionManager.createAudioTrack(source: audioSource)
         track.isEnabled = true
@@ -53,16 +51,17 @@ public class LocalAudioTrack: LocalTrack {
         self.track.isEnabled = !self.track.isEnabled
     }
     
+    public func rtcTrack() -> RTCMediaStreamTrack {
+        return self.track
+    }
+    
     private func configure(setActive: Bool) {
         let audioSession = RTCAudioSession.sharedInstance()
         audioSession.lockForConfiguration()
         defer { audioSession.unlockForConfiguration() }
         
         do {
-//            try audioSession.setCategory(self.config.category)
-//            try audioSession.setMode(self.config.mode)
            try audioSession.setConfiguration(self.config, active: setActive)
-            // try audioSession.overrideOutputAudioPort(AVAudioSession.PortOverride.speaker)
         } catch {
             sdkLogger.error("Failed to set configuration for audio session")
         }
