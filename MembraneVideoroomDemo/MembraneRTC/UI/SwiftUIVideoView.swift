@@ -47,7 +47,10 @@ public struct SwiftUIVideoView: UIViewRepresentable {
     }
     
     public func updateUIView(_ videoView: NativeVideoView, context: Context) {
-        videoView.track = track
+        if videoView.track != track {
+            videoView.track = track
+        }
+        
         videoView.fit = fit
         videoView.mirror = mirror
     }

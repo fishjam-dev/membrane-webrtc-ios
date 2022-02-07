@@ -28,12 +28,14 @@ struct ParticipantVideo: Identifiable {
     // FIXME: this can change dynamically so it must be 'var' and be an observable object instead of simple struct...
     var videoTrack: RTCVideoTrack
     let isScreensharing: Bool
+    let mirror: Bool
     
-    init(id: String, participant: Participant, videoTrack: RTCVideoTrack, isScreensharing: Bool = false) {
+    init(id: String, participant: Participant, videoTrack: RTCVideoTrack, isScreensharing: Bool = false, mirror: Bool = false) {
         self.id = id
         self.participant = participant
         self.videoTrack = videoTrack
         self.isScreensharing = isScreensharing
+        self.mirror = mirror
     }
 }
 
@@ -242,7 +244,7 @@ extension ObservableRoom: MembraneRTCDelegate {
                 fatalError("failed to setup local video")
             }
             
-            self.primaryVideo = ParticipantVideo(id: track.trackId, participant: localParticipant, videoTrack: track)
+            self.primaryVideo = ParticipantVideo(id: track.trackId, participant: localParticipant, videoTrack: track, mirror: true)
             self.participants[localParticipant.id] = localParticipant
             participants.forEach { participant in self.participants[participant.id] = participant }
             
