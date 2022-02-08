@@ -35,6 +35,8 @@ extension CVPixelBuffer {
 internal protocol BroadcastScreenCapturerDelegate: AnyObject {
     func started();
     func stopped();
+    func paused();
+    func resumed();
 }
 
 // TODO: add a timer in case:
@@ -80,6 +82,12 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
                 case .finished:
                     sdkLogger.info("BroadcastScreenCapturer has been stopped")
                     self.capturerDelegate?.stopped()
+                case .paused:
+                    sdkLogger.info("BroadcastScreenCapturer has been paused")
+                    self.capturerDelegate?.paused()
+                case .resumed:
+                    sdkLogger.info("BroadcastScreenCapturer has been resumed")
+                    self.capturerDelegate?.resumed()
                 default:
                     break
                 }

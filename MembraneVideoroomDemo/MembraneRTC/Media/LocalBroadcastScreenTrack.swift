@@ -4,6 +4,8 @@ import WebRTC
 public protocol LocalBroadcastScreenTrackDelegate: AnyObject {
     func started();
     func stopped();
+    func paused();
+    func resumed();
 }
 
 /// Utility wrapper around a local `RTCVideoTrack` also managing a `BroadcastScreenCapturer`.
@@ -38,6 +40,14 @@ public class LocalBroadcastScreenTrack: LocalTrack, BroadcastScreenCapturerDeleg
     
     public func stop() {
         self.capturer.stopCapture()
+    }
+    
+    public func paused() {
+        self.delegate?.paused()
+    }
+    
+    public func resumed() {
+        self.delegate?.resumed()
     }
     
     public func toggle() {

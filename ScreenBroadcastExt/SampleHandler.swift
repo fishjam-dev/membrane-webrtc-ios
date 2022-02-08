@@ -37,11 +37,23 @@ class SampleHandler: RPBroadcastSampleHandler {
     }
     
     override func broadcastPaused() {
-        // User has requested to pause the broadcast. Samples will stop being delivered.
+        let message = BroadcastMessage.with {
+            $0.notification = .paused
+        }
+        
+        guard let protoData = try? message.serializedData() else { return }
+        
+        ipcClient?.send(protoData, messageId: 1)
     }
     
     override func broadcastResumed() {
-        // User has requested to resume the broadcast. Samples delivery will resume.
+        let message = BroadcastMessage.with {
+            $0.notification = .resumed
+        }
+        
+        guard let protoData = try? message.serializedData() else { return }
+        
+        ipcClient?.send(protoData, messageId: 1)
     }
     
     override func broadcastFinished() {

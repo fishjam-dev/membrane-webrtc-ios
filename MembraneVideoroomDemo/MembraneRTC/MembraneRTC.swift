@@ -27,6 +27,10 @@ internal class BroadcastScreenReceiver: LocalBroadcastScreenTrackDelegate {
     public func stopped() {
         self.onStop()
     }
+    
+    public func paused() { }
+    
+    public func resumed() { }
 }
 
 /// MembraneRTC client.

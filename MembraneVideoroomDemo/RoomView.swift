@@ -39,6 +39,7 @@ class OrientationReceiver: ObservableObject {
 }
 
 struct RoomView: View {
+    @Environment(\.scenePhase) var scenePhase
     @EnvironmentObject var appCtrl: AppController
     @ObservedObject var orientationReceiver: OrientationReceiver
     @ObservedObject var room: ObservableRoom
@@ -62,7 +63,6 @@ struct RoomView: View {
             }
         }
     }
-    
     @ViewBuilder
     func mediaControlButton(_ type: ObservableRoom.LocalTrackType, enabled: Bool) -> some View {
         let enabledLabel = type == .video ? "video.fill" : "mic.fill"
@@ -177,6 +177,12 @@ struct RoomView: View {
             }
             .padding(8)
             
+        }
+        .onChange(of: scenePhase) { newPhase in
+            // every time the phase change toggle the video track
+            // this can make some false deactivation while choosing a screensharing but it
+            // is the only option to send a black frame from the device before going to background mode
+            self.room.toggleLocalTrack(.video)
         }
         .onRotate { newOrientation in
             DispatchQueue.main.async {

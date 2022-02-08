@@ -45,7 +45,6 @@ class ObservableRoom: ObservableObject {
     var localParticipantId: String?
     var localScreensharingVideoId: String?
     
-    
     init(_ room: MembraneRTC) {
         self.room = room
         self.participants = [:]
