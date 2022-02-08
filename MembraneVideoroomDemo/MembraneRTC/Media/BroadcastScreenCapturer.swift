@@ -1,15 +1,8 @@
-//
-//  BroadcastScreenCapturer.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 03/02/2022.
-//
-
 import Foundation
 
-import SwiftUI
 import WebRTC
 
+/// Utility for creating a `CVPixelBuffer` from raw bytes.
 extension CVPixelBuffer {
     public static func from(_ data: Data, width: Int, height: Int, pixelFormat: OSType) -> CVPixelBuffer {
         data.withUnsafeBytes { buffer in
@@ -48,12 +41,20 @@ internal protocol BroadcastScreenCapturerDelegate: AnyObject {
 // - no frames arrive and no finished notification has been announced
 // - no started notification arrived before starting the capture
 
-// TODO: add delegates specifically for that delegate so that we can better control what happens with the screen boradcast
+/// `VideoCapturer` that is responsible for capturing media from a remote `Broadcast Extension` that sends samples
+/// via `IPC` mechanism.
+///
+/// The capturer works in a `Server` mode, receiving appropriate notifications/samples from the extension that is working in a `Client` mode.
+/// The expected behaviour is to start the capturer prior to starting the extension as the server is responsible for opening the `IPC` port first.
+/// If the client starts before the server it will automatically close as the port will be closed.
+///
+/// The communication is performed by using `Proto Buffers` to gracefully handle serialization and deserialization of raw bytes sent via IPC port.
 class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
     public weak var capturerDelegate: BroadcastScreenCapturerDelegate?
     
     private let ipcServer: IPCServer
     private let source: RTCVideoSource
+    private var started = false
     
     init(_ source: RTCVideoSource, delegate: BroadcastScreenCapturerDelegate? = nil) {
         self.source = source
@@ -75,6 +76,7 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
                 case .started:
                     sdkLogger.info("BroadcastScreenCapturer has been started")
                     self.capturerDelegate?.started()
+                    self.started = true
                 case .finished:
                     sdkLogger.info("BroadcastScreenCapturer has been stopped")
                     self.capturerDelegate?.stopped()
@@ -83,6 +85,10 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
                 }
                 
             case .video(let video):
+                if !self.started {
+                    fatalError("Started receiving video samples without `started` notificcation...")
+                }
+                
                 // TODO: do the recalculation of dimensions so that we don't end up with encoder errors
                 self.source.adaptOutputFormat(toWidth: (Int32)(video.width/2), height: (Int32)(video.height/2), fps: 15)
                 

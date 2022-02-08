@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Jakub Perzylo on 14/01/2022.
-//
-
 import Foundation
 import Promises
 
@@ -33,10 +26,12 @@ extension EventTransportError: CustomStringConvertible {
 }
 
 
+/// Protocol defining a behaviour of an events' transport used for exchaning messages
+/// between client and the server.
 public protocol EventTransport {
     func connect(delegate: EventTransportDelegate) -> Promise<Void>
     func disconnect()
-    func sendEvent(event: SendableEvent)
+    func send(event: SendableEvent)
 }
 
 public protocol EventTransportDelegate: AnyObject {

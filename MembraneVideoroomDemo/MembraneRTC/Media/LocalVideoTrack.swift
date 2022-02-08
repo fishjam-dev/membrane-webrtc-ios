@@ -1,5 +1,6 @@
 import WebRTC
 
+/// Utility wrapper around a local `RTCVideoTrack` also managing an instance of `VideoCapturer`
 public class LocalVideoTrack: LocalTrack {
     private let videoSource: RTCVideoSource
     private let capturer: VideoCapturer
@@ -16,6 +17,7 @@ public class LocalVideoTrack: LocalTrack {
     internal init(capturer: Capturer) {
         self.videoSource = ConnectionManager.createVideoSource()
         
+        // TODO: Add support for switching the camera to the face mode
         switch capturer {
             case .camera:
                 // camera capturing does not work on iOS

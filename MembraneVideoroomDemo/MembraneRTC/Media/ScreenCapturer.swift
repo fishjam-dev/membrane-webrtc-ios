@@ -1,16 +1,9 @@
-//
-//  ScreenCapturer.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 20/01/2022.
-//
-
 import Foundation
 import WebRTC
 import ReplayKit
 
 
-// NOTE: this may not work with a simulator though...
+/// `VideoCapturer` responsible for capturing in-app screen, for device screen capture go see `BroadcastScreenCapture`
 class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
     let screenRecorder: RPScreenRecorder
     let source: RTCVideoSource
@@ -27,7 +20,6 @@ class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
         }
     }
     
-    // TODO: this is available since iOS 11, make sure that you add a special warning or if statement here...
     func startCapture() {
         self.screenRecorder.startCapture(handler: { sampleBuffer, bufferType, error in
             // capture video only

@@ -1,10 +1,3 @@
-//
-//  LocalBroadcastScreenTrack.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 04/02/2022.
-//
-
 import Foundation
 import WebRTC
 
@@ -13,6 +6,7 @@ public protocol LocalBroadcastScreenTrackDelegate: AnyObject {
     func stopped();
 }
 
+/// Utility wrapper around a local `RTCVideoTrack` also managing a `BroadcastScreenCapturer`.
 public class LocalBroadcastScreenTrack: LocalTrack, BroadcastScreenCapturerDelegate {
     private let videoSource: RTCVideoSource
     private let capturer: VideoCapturer

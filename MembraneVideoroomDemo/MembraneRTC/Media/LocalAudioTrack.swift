@@ -1,14 +1,6 @@
-//
-//  LocalAudioTrack.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 24/01/2022.
-//
-
-import Foundation
 import WebRTC
-import Promises
-        
+
+/// Utility wrapper around a local `RTCAudioTrack` managing a local audio session.
 public class LocalAudioTrack: LocalTrack {
     public let track: RTCMediaStreamTrack
     

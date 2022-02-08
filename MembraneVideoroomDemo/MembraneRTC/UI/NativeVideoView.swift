@@ -7,6 +7,12 @@ public protocol NativeVideoViewDelegate: AnyObject {
     func didChange(dimensions: Dimensions);
 }
 
+/// `NativeVideoView` is responsible for receiving the `RTCVideoTrack` and accordingly
+/// making sure that it gets properly rendered.
+///
+/// It supports two types of fitting, `fit` and `fill` where the prior tries to keep the original dimensions
+/// and the later one tries to fil lthe available space. Additionaly one can set mirror mode to flip the video horizontally,
+/// usually expected when displaying the local user's view.
 public class NativeVideoView: UIView {
     public enum BoxFit {
         case fit
@@ -26,29 +32,26 @@ public class NativeVideoView: UIView {
         }
     }
     
-    /// Dimensions can change dynamically due to RTC changing the resolution itself or by rotation
+    /// Dimensions can change dynamically, either when the device changes the orientation
+    /// or when the resolution changes adaptively.
     public private(set) var dimensions: Dimensions? {
         didSet {
             guard oldValue != dimensions else { return }
             
+            // when the dimensions change force the new layout
             shouldLayout()
             
             guard let dimensions = dimensions else { return }
-            
             self.delegate?.didChange(dimensions: dimensions)
         }
     }
     
     /// usually should be equal to `frame.size`
-    public private(set) var viewSize: CGSize {
-        didSet {
-            guard oldValue != viewSize else { return }
-        }
-    }
+    private var viewSize: CGSize
+    
     override init(frame: CGRect) {
         self.viewSize = frame.size
         super.init(frame: frame)
-        shouldPrepare()
     }
     
     required init?(coder: NSCoder) {
@@ -57,7 +60,8 @@ public class NativeVideoView: UIView {
     
     public private(set) var rendererView: RTCVideoRenderer?
     
-    /// Calls addRenderer and/or removeRenderer internally for convenience.
+    /// When the track changes,a new renderer gets created and attached to the new track.
+    /// To avoid leaking resources the old renderer gets removed from the old track.
     public var track: RTCVideoTrack? {
         didSet {
             if let oldValue = oldValue,
@@ -66,6 +70,7 @@ public class NativeVideoView: UIView {
             }
             
             if let track = track {
+                // create a new renderer view for the new track
                 self.createAndPrepareRenderView()
                 
                 if let rendererView = rendererView {
@@ -77,16 +82,12 @@ public class NativeVideoView: UIView {
         }
     }
     
+    /// Delegate listening for the view's changes such as dimensions.
     public weak var delegate: NativeVideoViewDelegate?
     
-    func shouldPrepare() {
-        guard let rendererView = rendererView as? UIView else { return }
-        
-        rendererView.translatesAutoresizingMaskIntoConstraints = true
-        addSubview(rendererView)
-    }
-    
-    func createAndPrepareRenderView() {
+    /// In case of an old renderer view, it gets detached from the current view and a new instance
+    /// gets created and then reattached.
+    private func createAndPrepareRenderView() {
         if let view = self.rendererView as? UIView {
             view.removeFromSuperview()
         }
@@ -98,6 +99,8 @@ public class NativeVideoView: UIView {
         }
     }
     
+    // this somehow fixes a bug where the view would get layouted but somehow
+    // the frame size would be a `0` at the time therefore breaking the video display
     override public func layoutSubviews() {
         super.layoutSubviews()
         
@@ -109,9 +112,12 @@ public class NativeVideoView: UIView {
     func shouldLayout() {
         setNeedsLayout()
         
+        self.viewSize = frame.size
+        
         guard let rendererView = rendererView as? UIView else { return }
         
         guard let dimensions = self.dimensions else {
+            // hide the view until we receive the video's dimensions
             rendererView.isHidden = true
             return
         }
@@ -137,22 +143,18 @@ public class NativeVideoView: UIView {
             rendererView.frame = bounds
         }
         
-        
         rendererView.isHidden = false
     }
     
-    private static let mirrorTransform = CGAffineTransform(scaleX: -1.0, y: 1.0)
-    
     private func update(mirror: Bool) {
-        let layer = self.layer
+        let mirrorTransform = CGAffineTransform(scaleX: -1.0, y: 1.0)
         
-        layer.setAffineTransform(mirror ? NativeVideoView.mirrorTransform : .identity)
+        self.layer.setAffineTransform(mirror ? mirrorTransform : .identity)
     }
     
     public static func isMetalAvailable() -> Bool {
         MTLCreateSystemDefaultDevice() != nil
     }
-    
     
     private static func createNativeRendererView(delegate: RTCVideoViewDelegate) -> RTCVideoRenderer {
         DispatchQueue.webRTC.sync {
@@ -174,7 +176,6 @@ public class NativeVideoView: UIView {
 
 extension NativeVideoView: RTCVideoViewDelegate {
     public func videoView(_: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
-        
         guard let width = Int32(exactly: size.width),
               let height = Int32(exactly: size.height) else {
                   // CGSize is used by WebRTC but this should always be an integer

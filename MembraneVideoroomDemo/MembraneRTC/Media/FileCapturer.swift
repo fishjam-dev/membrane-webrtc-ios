@@ -1,13 +1,6 @@
-//
-//  FileCapturer.swift.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 18/01/2022.
-//
-
-import SwiftUI
 import WebRTC
 
+/// `VideoCapturer` responsible for capturing  video from given file
 class FileCapturer: VideoCapturer {
     private let capturer: RTCFileVideoCapturer
     

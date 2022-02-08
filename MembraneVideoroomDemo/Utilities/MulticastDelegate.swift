@@ -1,12 +1,7 @@
-//
-//  MulticastDelegate.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 26/01/2022.
-//
 
 import Foundation
 
+/// Implementation of a multicast delegate
 public class MulticastDelegate<T>: NSObject {
 
     private let queue = DispatchQueue(label: "membrane.multicast")

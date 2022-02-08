@@ -1,12 +1,9 @@
-//
-//  AdaptiveStack.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 28/01/2022.
-//
-
 import SwiftUI
 
+/// A `Stack` element that changes orientation from to  `VStack` to `HStack` accordinly to a device rotation.
+///
+/// The natural alignment for a `portrait` is `VStack`, for a `landscape` it is a `HStack`.
+/// One can specify that the alignment should not be natural then it is the opposite.
 struct AdaptiveStack<Content: View>: View {
     let orientation: UIDeviceOrientation
     let content: () -> Content

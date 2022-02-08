@@ -24,7 +24,7 @@ struct ParticipantVideoView: View {
     
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            SwiftUIVideoView(self.participantVideo.videoTrack, fit: self.fit, mirror: participantVideo.mirror, dimensions: $localDimensions)
+            SwiftUIVideoView(self.participantVideo.videoTrack, fit: self.fit, dimensions: $localDimensions)
                 .background(Color.blue.darker(by: 0.6))
                 .frame(width: self.width, height: self.height, alignment: .leading)
                 .clipShape(RoundedRectangle(cornerRadius: 15))

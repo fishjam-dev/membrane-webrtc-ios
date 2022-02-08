@@ -1,12 +1,4 @@
-//
-//  ContentView.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 17/01/2022.
-//
-
 import SwiftUI
-
 
 struct ContentView: View {
     @EnvironmentObject var appCtrl: AppController

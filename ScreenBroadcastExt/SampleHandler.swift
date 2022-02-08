@@ -1,10 +1,3 @@
-//
-//  SampleHandler.swift
-//  MembraneVideoroomDemoScreensharing
-//
-//  Created by Jakub Perzylo on 03/02/2022.
-//
-
 import Foundation
 import ReplayKit
 import WebRTC
@@ -12,6 +5,13 @@ import os.log
 
 let logger = OSLog(subsystem: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt", category: "Broadcaster")
 
+/// A `Broadcast Extension` responsbile for capturing the device's screen
+/// and sending through a `IPC` port.
+///
+/// The `SampleHandler` is working as a `IPC` client therefore the `IPC` port must be opened beforehand
+/// by the proper application.
+///
+/// All notifications and sample buffers are serialized to `Proto Buffers` and sent via the `IPC` port.
 class SampleHandler: RPBroadcastSampleHandler {
     
     override public init() {}
@@ -54,9 +54,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         ipcClient?.send(protoData, messageId: 1)
     }
     
-    // TODO: for now we only support video, skip all audio for app and mic
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
-        
         switch sampleBufferType {
         case .video:
             guard let buffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
@@ -93,6 +91,7 @@ class SampleHandler: RPBroadcastSampleHandler {
             ipcClient?.send(protoData, messageId: 1)
             
         default:
+            // skip audio pakcets
             break
         }
     }

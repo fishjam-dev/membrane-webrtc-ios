@@ -3,8 +3,7 @@ import SwiftUI
 import WebRTC
 import ReplayKit
 
-extension RTCVideoTrack: Identifiable {
-}
+extension RTCVideoTrack: Identifiable { }
 
 #if os(iOS)
 @available(iOS 12, *)

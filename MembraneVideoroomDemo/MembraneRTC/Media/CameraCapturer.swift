@@ -1,5 +1,6 @@
 import WebRTC
 
+/// `VideoCapturer` responsible for capturing device's camera.
 class CameraCapturer: VideoCapturer {
     private let capturer: RTCCameraVideoCapturer
     

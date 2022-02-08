@@ -1,9 +1,11 @@
 
+/// Delegate responsible for receiving notification from `MembraneRTC` client.
 public protocol MembraneRTCDelegate {
     
+    /// Callback invoked when client has successfully connected via transport layer.
     func onConnected() -> Void;
     
-    /// Callback invoked when the client has been let into the room.
+    /// Callback invoked when the client has been approved to participate in media exchange.
     func onJoinSuccess(peerID: String, peersInRoom: Array<Peer>) -> Void;
 
     /// Callback invoked when client has been denied access to enter the room. 

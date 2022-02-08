@@ -1,19 +1,14 @@
-//
-//  PhoenixEventTransport.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 19/01/2022.
-//
-
 import Foundation
 import SwiftPhoenixClient
 import Promises
 
+/// `EventTransport` implementation utilizing `Phoenix` socket and a channel.
 class PhoenixEventTransport: EventTransport {
     enum ConnectionState {
         case uninitialized, connecting, connected, closed, error
     }
     
+    /// Channel's topic
     let topic: String
     
     let socket: Socket
@@ -61,6 +56,7 @@ class PhoenixEventTransport: EventTransport {
             
             self.channel = channel
             
+            /// listen for media events
             self.channel!.on("mediaEvent", callback: { message in
                 guard let event: ReceivableEvent = Events.deserialize(payload: message.payload) else {
                     return
@@ -83,7 +79,7 @@ class PhoenixEventTransport: EventTransport {
         self.connectionState = .closed
     }
     
-    func sendEvent(event: SendableEvent) {
+    func send(event: SendableEvent) {
         guard self.connectionState == .connected,
             let channel = self.channel else {
                 sdkLogger.error("PhoenixEventTransport tried sending a message on a closed socket")

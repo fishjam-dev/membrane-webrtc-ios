@@ -1,5 +1,4 @@
 import SwiftUI
-import AVFoundation
 
 struct ConnectView: View {
     @EnvironmentObject var appCtrl: AppController

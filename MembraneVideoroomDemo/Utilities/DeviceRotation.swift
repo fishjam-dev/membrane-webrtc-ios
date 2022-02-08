@@ -1,13 +1,7 @@
-//
-//  DeviceRotation.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 28/01/2022.
-//
-
 import Foundation
 import SwiftUI
 
+/// Utility `ViewModifier` allowing for listening for a device rotation.
 struct DeviceRotationViewModifier: ViewModifier {
     let action: (UIDeviceOrientation) -> Void
 

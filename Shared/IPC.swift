@@ -1,15 +1,9 @@
-//
-//  IPC.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 03/02/2022.
-//
-
 import Foundation
 import simd
 
+// enables to attach the IPC instance to the existing CFMessagePort instance
+// this allows to
 internal extension CFMessagePort {
-
     private static var selfObjectHandle: UInt8 = 1
 
     func associatedSelf() -> IPC? {
@@ -17,14 +11,12 @@ internal extension CFMessagePort {
     }
 
     func associateSelf(_ obj: IPC) {
-        // attach self
         objc_setAssociatedObject(self as Any,
                                  &CFMessagePort.selfObjectHandle,
                                  obj,
                                  objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
 }
-
 
 public class IPC {
     internal var port: CFMessagePort?

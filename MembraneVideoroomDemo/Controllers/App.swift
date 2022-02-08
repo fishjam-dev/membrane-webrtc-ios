@@ -19,12 +19,9 @@ final class AppController: ObservableObject {
         self.state = .awaiting
     }
     
-    // let ip = "localhost"
     let localAddress = "http://192.168.83.228:4000"
-    
     let remoteAddress = "https://dscout.membrane.work"
     
-
     public func connect(room: String, displayName: String) {
         let transportUrl = "\(localAddress)/socket"
         let transport = PhoenixEventTransport(url: transportUrl, topic: "room:\(room)")
@@ -41,6 +38,7 @@ final class AppController: ObservableObject {
         DispatchQueue.main.async {
             self.state = .loading
             self.client = client
+            
         }
     }
     

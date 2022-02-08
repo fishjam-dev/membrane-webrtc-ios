@@ -1,15 +1,6 @@
-//
-//  ObservableRoom.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 26/01/2022.
-//
-
 import Foundation
 import WebRTC
 import SwiftUI
-
-
 
 struct Participant {
     let id: String
@@ -91,8 +82,8 @@ class ObservableRoom: ObservableObject {
             self.isCameraEnabled = !self.isCameraEnabled
             
         case .screensharing:
-            // we can't turn off broadcast screensharing by out own
-            // TODO: maybe decide to turn off the track but the sharing would remain or something?
+            // if screensharing is enabled it must be closed by the Broadcast Extension, not by our application
+            // the only thing we can do is to display stop recording button, which we already do
             guard self.isScreensharingEnabled == false else {
                 return
                 
@@ -108,6 +99,8 @@ class ObservableRoom: ObservableObject {
                 
                 self.localScreensharingVideoId = screensharingTrack.rtcTrack().trackId
                 
+                // FIXME: somehow broadcast screensharing does not gets displayed properly, instead
+                // a frozen, blank frame gets rendered
                 let localParticipantScreensharing = ParticipantVideo(
                     id: self.localScreensharingVideoId!,
                     participant: localParticipant,
@@ -116,6 +109,8 @@ class ObservableRoom: ObservableObject {
                 )
                 
                 self.add(video: localParticipantScreensharing)
+                
+                // once the screensharing has started we want to focus it
                 self.focus(video: localParticipantScreensharing)
                 self.isScreensharingEnabled = true
             }, onStop: { [weak self] in
@@ -296,8 +291,7 @@ extension ObservableRoom: MembraneRTCDelegate {
         }
     }
     
-    func onTrackAdded(ctx: TrackContext) {
-    }
+    func onTrackAdded(ctx: TrackContext) { }
     
     func onTrackRemoved(ctx: TrackContext) {
         if let primaryVideo = self.primaryVideo,
@@ -312,8 +306,7 @@ extension ObservableRoom: MembraneRTCDelegate {
         }
     }
     
-    func onTrackUpdated(ctx: TrackContext) {
-    }
+    func onTrackUpdated(ctx: TrackContext) { }
     
     func onPeerJoined(peer: Peer) {
         self.participants[peer.id] = Participant(id: peer.id, displayName: peer.metadata["displayName"] ?? "")
@@ -330,8 +323,7 @@ extension ObservableRoom: MembraneRTCDelegate {
         }
     }
     
-    func onPeerUpdated(peer: Peer) {
-    }
+    func onPeerUpdated(peer: Peer) { }
     
     func onConnectionError(message: String) {
         DispatchQueue.main.async {

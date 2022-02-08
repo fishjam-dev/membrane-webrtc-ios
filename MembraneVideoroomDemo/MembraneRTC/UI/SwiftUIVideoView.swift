@@ -3,7 +3,7 @@ import UIKit
 import SwiftUI
 import WebRTC
 
-class SwiftUIVideViewReceiver: NativeVideoViewDelegate {
+internal class SwiftUIVideViewReceiver: NativeVideoViewDelegate {
     @Binding var dimensions: Dimensions?
     
     init(dimensions: Binding<Dimensions?> = .constant(nil)) {
@@ -17,6 +17,7 @@ class SwiftUIVideViewReceiver: NativeVideoViewDelegate {
     }
 }
 
+/// A SwiftUI component wrapping underneath a `NativeVideoView`.
 public struct SwiftUIVideoView: UIViewRepresentable {
     let track: RTCVideoTrack
     let fit: NativeVideoView.BoxFit

@@ -1,16 +1,7 @@
-//
-//  Dimensions.swift
-//  MembraneVideoroomDemo
-//
-//  Created by Jakub Perzylo on 18/01/2022.
-//
-
-
-// This file is completely taken from LiveKit (as most of the codebase though...)
-
 import Foundation
 import CoreMedia
 
+// This file is completely taken from LiveKit (as most of the codebase though...)
 public typealias Dimensions = CMVideoDimensions
 
 extension Dimensions {
