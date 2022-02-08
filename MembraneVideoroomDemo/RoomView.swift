@@ -179,10 +179,14 @@ struct RoomView: View {
             
         }
         .onChange(of: scenePhase) { newPhase in
-            // every time the phase change toggle the video track
-            // this can make some false deactivation while choosing a screensharing but it
-            // is the only option to send a black frame from the device before going to background mode
-            self.room.toggleLocalTrack(.video)
+            switch newPhase {
+            case .background:
+                self.room.enableTrack(.video, enabled: false)
+            case .active:
+                self.room.enableTrack(.video, enabled: true)
+            default:
+                break
+            }
         }
         .onRotate { newOrientation in
             DispatchQueue.main.async {

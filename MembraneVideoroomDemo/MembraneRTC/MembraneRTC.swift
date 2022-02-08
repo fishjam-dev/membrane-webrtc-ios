@@ -79,6 +79,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     // receiver used for iOS screen broadcast
     private var broadcastScreenshareReceiver: BroadcastScreenReceiver?
     
+    static let mediaConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
+    
     public init(eventTransport: EventTransport, config: RTCConfiguration, localParticipantInfo: ParticipantInfo) {
         //RTCSetMinDebugLogLevel(.verbose)
         sdkLogger.logLevel = .debug
@@ -202,8 +204,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         guard
             let pc = self.connection,
             let screensharing = self.localScreensharingVideoTrack else {
-            return
-        }
+                return
+            }
         
         // stop capturing the screen
         screensharing.stop()
@@ -251,9 +253,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             self.config.iceServers = [Self.defaultIceServer()]
         }
         
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
-        
-        guard let peerConnection = ConnectionManager.createPeerConnection(config, constraints: constraints) else {
+        guard let peerConnection = ConnectionManager.createPeerConnection(config, constraints: Self.mediaConstraints) else {
             fatalError("Failed to initialize new PeerConnection")
         }
         self.connection = peerConnection
@@ -292,12 +292,12 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
         let descriptions: [RTCSignalingState: String] = [
-         .haveLocalOffer: "have local offer",
-         .haveRemoteOffer: "have remote offer",
-         .haveLocalPrAnswer: "have local pr answer",
-         .haveRemotePrAnswer: "have remote pr answer",
-         .stable: "stable",
-         .closed: "closed",
+            .haveLocalOffer: "have local offer",
+            .haveRemoteOffer: "have remote offer",
+            .haveLocalPrAnswer: "have local pr answer",
+            .haveRemotePrAnswer: "have remote pr answer",
+            .stable: "stable",
+            .closed: "closed",
         ]
         
         sdkLogger.debug("\(pcLogPrefix) changed signaling state to \(descriptions[stateChanged] ?? "unknown")")
@@ -305,10 +305,10 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
     
     public func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
         guard let trackId = self.midToTrackId[transceiver.mid],
-            var trackContext = self.trackContexts[trackId] else {
-            sdkLogger.error("\(pcLogPrefix) started receiving on a transceiver with an unknown 'mid' parameter or without registered track context")
-            return
-        }
+              var trackContext = self.trackContexts[trackId] else {
+                  sdkLogger.error("\(pcLogPrefix) started receiving on a transceiver with an unknown 'mid' parameter or without registered track context")
+                  return
+              }
         
         // assign given receiver to its track's context
         trackContext.track = transceiver.receiver.track
@@ -542,7 +542,7 @@ extension MembraneRTC: EventTransportDelegate {
                     $0.onTrackRemoved(ctx: context)
                 }
             }
-        
+            
         default:
             sdkLogger.error("Failed to handle ReceivableEvent of type \(event.type)")
             
@@ -576,28 +576,27 @@ extension MembraneRTC {
             pc.restartIce()
         }
         
-        let mandatoryContraints: [String: String] = [
-            kRTCMediaConstraintsOfferToReceiveAudio:kRTCMediaConstraintsValueTrue,
-            kRTCMediaConstraintsOfferToReceiveVideo:kRTCMediaConstraintsValueTrue
-        ]
-        
-        // TODO: why do we event need constanits here if we passed them when creating a peer connection
-        let constraints = RTCMediaConstraints(mandatoryConstraints: mandatoryContraints, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
-        
         // TODO: what should we do with the potential error?
-        pc.offer(for: constraints, completionHandler: { offer, error in
+        pc.offer(for: Self.mediaConstraints, completionHandler: { offer, error in
             guard let offer = offer else {
+                if let err = error {
+                    self.notify {
+                        $0.onConnectionError(message: err.localizedDescription)
+                    }
+                }
                 return
             }
             
             pc.setLocalDescription(offer, completionHandler: { error in
                 guard let err = error else {
                     self.transport.send(event: SdpOfferEvent(sdp: offer.sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata ?? [:], midToTrackId: self.getMidToTrackId()))
-                    
                     return
                 }
                 
-                sdkLogger.error("Error occured while setting a local description: \(err)")
+                self.notify {
+                    $0.onConnectionError(message: err.localizedDescription)
+                }
+                
             })
         })
     }
@@ -679,8 +678,8 @@ extension MembraneRTC {
     private func getMidToTrackId() -> [String: String] {
         guard let pc = self.connection,
               let localTracksKeys = self.localPeer.trackIdToMetadata?.keys else {
-            return [:]
-        }
+                  return [:]
+              }
         
         let localTracks: Array<String> = Array(localTracksKeys)
         
@@ -691,7 +690,7 @@ extension MembraneRTC {
             guard let trackId: String = transceiver.sender.track?.trackId,
                   localTracks.contains(trackId) else {
                       return
-              }
+                  }
             mapping[transceiver.mid] = trackId
         }
         

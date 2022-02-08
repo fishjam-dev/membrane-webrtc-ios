@@ -64,6 +64,19 @@ class ObservableRoom: ObservableObject {
         case audio, video, screensharing
     }
     
+    func enableTrack(_ type: LocalTrackType, enabled: Bool) {
+        switch type {
+        case .video:
+            room?.localVideoTrack?.track.isEnabled = enabled
+            self.isCameraEnabled = enabled
+        case .audio:
+            room?.localAudioTrack?.track.isEnabled = enabled
+            self.isMicEnabled = enabled
+        default:
+            break
+        }
+    }
+    
     func toggleLocalTrack(_ type: LocalTrackType) {
         guard let room = self.room,
               let localParticipantId = self.localParticipantId,
