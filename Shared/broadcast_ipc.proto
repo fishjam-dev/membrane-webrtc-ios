@@ -25,7 +25,7 @@ message BroadcastMessage {
     }
     
     bytes buffer = 4;
-    uint64 timestamp = 5;
+    int64 timestamp = 5;
     
     enum Notification {
         STARTED = 0;

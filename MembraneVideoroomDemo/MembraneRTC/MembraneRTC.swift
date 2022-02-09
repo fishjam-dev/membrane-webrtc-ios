@@ -82,8 +82,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     static let mediaConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
     
     public init(eventTransport: EventTransport, config: RTCConfiguration, localParticipantInfo: ParticipantInfo) {
-        //RTCSetMinDebugLogLevel(.verbose)
-        sdkLogger.logLevel = .debug
+        // RTCSetMinDebugLogLevel(.error)
+        sdkLogger.logLevel = .info
         
         
         self.state = .uninitialized
@@ -195,8 +195,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         self.transport.send(event: RenegotiateTracksEvent())
         
+        let displayName = self.localPeer.metadata["displayName"] ?? ""
         // add track's metadata and set the type to screensharing to indicate it to other clients
-        self.localPeer.trackIdToMetadata?[track.rtcTrack().trackId] = ["type": "screensharing"]
+        self.localPeer.trackIdToMetadata?[track.rtcTrack().trackId] = ["type": "screensharing", "user_id": displayName]
     }
     
     /// Cleans up after the existing screensharing
@@ -231,9 +232,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         self.localAudioTrack = LocalAudioTrack()
         self.localAudioTrack!.start()
         
+        let displayName = self.localPeer.metadata["displayName"] ?? ""
         self.localPeer.trackIdToMetadata = [
-            self.localVideoTrack!.track.trackId: [:],
-            self.localAudioTrack!.track.trackId: [:]
+            self.localVideoTrack!.track.trackId: ["user_id": displayName],
+            self.localAudioTrack!.track.trackId: ["user_id": displayName]
         ]
     }
     

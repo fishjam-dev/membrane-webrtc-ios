@@ -163,6 +163,7 @@ public class NativeVideoView: UIView {
                 mtlView.contentMode = .scaleAspectFit
                 mtlView.videoContentMode = .scaleAspectFit
                 mtlView.delegate = delegate
+                
                 return mtlView
             } else {
                 let glView = RTCEAGLVideoView()
@@ -175,7 +176,7 @@ public class NativeVideoView: UIView {
 }
 
 extension NativeVideoView: RTCVideoViewDelegate {
-    public func videoView(_: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
+    public func videoView(_ : RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         guard let width = Int32(exactly: size.width),
               let height = Int32(exactly: size.height) else {
                   // CGSize is used by WebRTC but this should always be an integer

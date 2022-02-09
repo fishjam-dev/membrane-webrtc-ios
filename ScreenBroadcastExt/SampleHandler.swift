@@ -84,7 +84,7 @@ class SampleHandler: RPBroadcastSampleHandler {
             }
 
             let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-            let timestampNs = UInt64(CMTimeGetSeconds(timestamp) * Double(NSEC_PER_SEC))
+            let timestampNs: Int64 = llround(CMTimeGetSeconds(timestamp) * Float64(NSEC_PER_SEC))
 
             let pixelFormat = CVPixelBufferGetPixelFormatType(buffer)
 

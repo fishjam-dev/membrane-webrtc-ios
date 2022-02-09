@@ -53,7 +53,7 @@ struct BroadcastMessage {
 
   var buffer: Data = Data()
 
-  var timestamp: UInt64 = 0
+  var timestamp: Int64 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -218,7 +218,7 @@ extension BroadcastMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         }
       }()
       case 4: try { try decoder.decodeSingularBytesField(value: &self.buffer) }()
-      case 5: try { try decoder.decodeSingularUInt64Field(value: &self.timestamp) }()
+      case 5: try { try decoder.decodeSingularInt64Field(value: &self.timestamp) }()
       default: break
       }
     }
@@ -248,7 +248,7 @@ extension BroadcastMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       try visitor.visitSingularBytesField(value: self.buffer, fieldNumber: 4)
     }
     if self.timestamp != 0 {
-      try visitor.visitSingularUInt64Field(value: self.timestamp, fieldNumber: 5)
+      try visitor.visitSingularInt64Field(value: self.timestamp, fieldNumber: 5)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
