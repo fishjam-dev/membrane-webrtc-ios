@@ -78,6 +78,17 @@ struct RoomView: View {
     }
     
     @ViewBuilder
+    func cameraSwitchButton() -> some View {
+        Button(action: {
+            self.room.switchCameraPosition()
+        }, label: {
+            Image(systemName: "arrow.triangle.2.circlepath.camera.fill")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundColor(Color.white)
+        })
+    }
+    
+    @ViewBuilder
     func screensharingControlButton() -> some View {
         let label = self.room.isScreensharingEnabled ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle"
         
@@ -88,7 +99,7 @@ struct RoomView: View {
         }) {
             Image(systemName: label)
                 .font(.system(size: 32, weight: .bold))
-                .foregroundColor(Color.white.darker())
+                .foregroundColor(Color.white)
         }
     }
     
@@ -109,6 +120,9 @@ struct RoomView: View {
                 .padding(.trailing)
             
             mediaControlButton(.video, enabled: self.room.isCameraEnabled)
+                .padding(.trailing)
+            
+            cameraSwitchButton()
                 .padding(.trailing)
             
             screensharingControlButton()

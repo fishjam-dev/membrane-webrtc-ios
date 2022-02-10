@@ -3,51 +3,45 @@ import WebRTC
 /// Utility wrapper around a local `RTCVideoTrack` also managing an instance of `VideoCapturer`
 public class LocalVideoTrack: LocalTrack {
     private let videoSource: RTCVideoSource
-    private let capturer: VideoCapturer
+    internal var capturer: VideoCapturer?
     public let track: RTCVideoTrack
     
     /// Contains one of the following capturers
     ///  - camera - capturing video device's camera
     ///  - screensharing - capturing video from ian n-app screensharing
     ///   - file - capturing video from a file
-    enum Capturer {
-        case camera, screensharing, file
+    public enum Capturer {
+        case camera, file
     }
     
-    internal init(capturer: Capturer) {
-        self.videoSource = ConnectionManager.createVideoSource()
+    internal init() {
+        let source = ConnectionManager.createVideoSource()
         
-        // TODO: Add support for switching the camera to the face mode
+        self.videoSource = source
+        self.track = ConnectionManager.createVideoTrack(source: source)
+        
+        self.capturer = self.createCapturer(videoSource: source)
+    }
+    
+    public static func create(for capturer: Capturer) -> LocalVideoTrack {
         switch capturer {
-            case .camera:
-                // camera capturing does not work on iOS
-                #if targetEnvironment(simulator)
-                    self.capturer = FileCapturer(self.videoSource)
-                #else
-                    self.capturer = CameraCapturer(self.videoSource)
-                #endif
-            
-            case .file:
-                self.capturer = FileCapturer(self.videoSource)
-            
-            case .screensharing:
-                // screen capturing does not work on iOS
-                #if targetEnvironment(simulator)
-                    self.capturer = FileCapturer(self.videoSource)
-                #else
-                     self.capturer = ScreenCapturer(self.videoSource)
-                #endif
+        case .camera:
+            return LocalCameraVideoTrack()
+        case .file:
+            return LocalFileVideoTrack()
         }
-        
-        self.track = ConnectionManager.createVideoTrack(source: self.videoSource)
+    }
+    
+    internal func createCapturer(videoSource: RTCVideoSource) -> VideoCapturer {
+        fatalError("Basic LocalVideoTrack does not provide a default capturer")
     }
     
     public func start() {
-        self.capturer.startCapture()
+        self.capturer?.startCapture()
     }
     
     public func stop() {
-        self.capturer.stopCapture()
+        self.capturer?.stopCapture()
     }
     
     public func toggle() {
@@ -59,3 +53,22 @@ public class LocalVideoTrack: LocalTrack {
     }
 }
 
+public class LocalCameraVideoTrack: LocalVideoTrack {
+    override internal func createCapturer(videoSource: RTCVideoSource) -> VideoCapturer {
+        return CameraCapturer(videoSource)
+    }
+    
+    public func switchCamera() {
+        guard let capturer = self.capturer as? CameraCapturer else {
+            return
+        }
+        
+        capturer.switchCamera()
+    }
+}
+
+public class LocalFileVideoTrack: LocalVideoTrack {
+    override internal func createCapturer(videoSource: RTCVideoSource) -> VideoCapturer {
+        return FileCapturer(videoSource)
+    }
+}

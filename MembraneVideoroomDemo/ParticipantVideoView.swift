@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct ParticipantVideoView: View {
-    let participantVideo: ParticipantVideo
+    @ObservedObject var participantVideo: ParticipantVideo
+    
     let height: CGFloat
     let width: CGFloat
     let fit: NativeVideoView.BoxFit

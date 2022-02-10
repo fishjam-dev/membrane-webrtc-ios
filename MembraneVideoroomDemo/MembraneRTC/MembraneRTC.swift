@@ -225,7 +225,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     
     /// Sets local audio and video media.
     private func setupMediaTracks() {
-        self.localVideoTrack = LocalVideoTrack(capturer: .camera)
+        self.localVideoTrack = LocalVideoTrack.create(for: .camera)
         self.localVideoTrack!.start()
         
         self.localAudioTrack = LocalAudioTrack()
@@ -535,8 +535,6 @@ extension MembraneRTC: EventTransportDelegate {
                     return
                 }
                 
-                // TODO: there are more fields to clear than just the track context mate...
-                // NOTE: can you explain which fields though?
                 self.trackContexts.removeValue(forKey: id)
                 
                 self.notify {
@@ -577,7 +575,8 @@ extension MembraneRTC {
             pc.restartIce()
         }
         
-        // TODO: what should we do with the potential error?
+        // TODO: onConnectionError should probably take different types of errors instead of string
+        // preferably TransportError, RTCError and so on...
         pc.offer(for: Self.mediaConstraints, completionHandler: { offer, error in
             guard let offer = offer else {
                 if let err = error {

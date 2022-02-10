@@ -12,14 +12,13 @@ struct Participant {
     }
 }
 
-struct ParticipantVideo: Identifiable {
+class ParticipantVideo: Identifiable, ObservableObject {
     let id: String
     let participant: Participant
-    // TODO: this videotrack could be wrapped to limit imports of webrtc package
-    // FIXME: this can change dynamically so it must be 'var' and be an observable object instead of simple struct...
-    var videoTrack: RTCVideoTrack
     let isScreensharing: Bool
     let mirror: Bool
+    
+    @Published var videoTrack: RTCVideoTrack
     
     init(id: String, participant: Participant, videoTrack: RTCVideoTrack, isScreensharing: Bool = false, mirror: Bool = false) {
         self.id = id
@@ -72,6 +71,14 @@ class ObservableRoom: ObservableObject {
         }
     }
     
+    func switchCameraPosition() {
+        guard let cameraTrack = room?.localVideoTrack as? LocalCameraVideoTrack else {
+            return
+        }
+        
+        cameraTrack.switchCamera()
+    }
+    
     func toggleLocalTrack(_ type: LocalTrackType) {
         guard let room = self.room,
               let localParticipantId = self.localParticipantId,
@@ -106,8 +113,6 @@ class ObservableRoom: ObservableObject {
                 
                 self.localScreensharingVideoId = screensharingTrack.rtcTrack().trackId
                 
-                // FIXME: somehow broadcast screensharing does not gets displayed properly, instead
-                // a frozen, blank frame gets rendered
                 let localParticipantScreensharing = ParticipantVideo(
                     id: self.localScreensharingVideoId!,
                     participant: localParticipant,
@@ -266,23 +271,12 @@ extension ObservableRoom: MembraneRTCDelegate {
         
         // there can be a situation where we simply need to replace `videoTrack` for
         // already existing video, happens when dynamically adding new local track
-        // TODO: Consider making each participant an observable object so that we don't have to refresh anything else
-        // TODO: refactor me here mate
-        if let idx = self.participantVideos.firstIndex(where: { $0.id == ctx.trackId }) {
+        if let participantVideo = self.participantVideos.first(where: { $0.id == ctx.trackId }) {
             guard let videoTrack = ctx.track as? RTCVideoTrack else {
                 return
             }
             
-            var participantVideo = self.participantVideos[idx]
             participantVideo.videoTrack = videoTrack
-            self.participantVideos[idx] = participantVideo
-            
-            // signal that participant video track has been changed
-            // TODO: this needs to be signalling the track change
-            // this is just a temporary fix
-            DispatchQueue.main.async {
-                self.objectWillChange.send()
-            }
             
             return
         }
@@ -317,17 +311,10 @@ extension ObservableRoom: MembraneRTCDelegate {
     
     func onPeerJoined(peer: Peer) {
         self.participants[peer.id] = Participant(id: peer.id, displayName: peer.metadata["displayName"] ?? "")
-        
-        DispatchQueue.main.async {
-            self.objectWillChange.send()
-        }
     }
     
     func onPeerLeft(peer: Peer) {
-        DispatchQueue.main.async {
-            self.participants.removeValue(forKey: peer.id)
-            self.objectWillChange.send()
-        }
+        self.participants.removeValue(forKey: peer.id)
     }
     
     func onPeerUpdated(peer: Peer) { }

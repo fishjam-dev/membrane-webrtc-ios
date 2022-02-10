@@ -2,6 +2,30 @@ import Foundation
 
 import WebRTC
 
+/// Scales the screensharing resolution to avoid potential RTC encoding errors which
+/// ocasionally happened with higher resolutions
+internal func scaleScreensharingResolution(_ dimensions: Dimensions) -> Dimensions {
+    let maxSize: Float = 960.0
+    
+    // dimensions are smaller than the max size so return it
+    if max(dimensions.height, dimensions.width) < Int32(maxSize) {
+        return dimensions
+    }
+    
+    var ratio: Float32 = 0.0
+    
+    if dimensions.height > dimensions.width {
+        ratio = maxSize / Float(dimensions.height)
+    } else {
+        ratio = maxSize / Float(dimensions.width)
+    }
+    
+    let height = Int32(ratio * Float(dimensions.height))
+    let width = Int32(ratio * Float(dimensions.width))
+    
+    return Dimensions(width: width, height: height)
+}
+
 /// Utility for creating a `CVPixelBuffer` from raw bytes.
 extension CVPixelBuffer {
     public static func from(_ data: Data, width: Int, height: Int, pixelFormat: OSType) -> CVPixelBuffer {
@@ -77,7 +101,7 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
             
             // NOTE: there is basically no way of telling if the user has still
             // an opened RPSystemBroadcastPickerView, but we can assume that if the application
-            // is in inactive state then this is a case therefore ignore the timeoutTimer tick 
+            // is in inactive state then this is a case therefore ignore the timeoutTimer tick
             if UIApplication.shared.applicationState == .inactive {
                 return
             }
@@ -125,8 +149,8 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
                 
                 self.isReceivingSamples = true
                 
-                // TODO: do the recalculation of dimensions so that we don't end up with encoder errors
-                self.source.adaptOutputFormat(toWidth: (Int32)(video.width/2), height: (Int32)(video.height/2), fps: 15)
+                let dimensions = scaleScreensharingResolution(Dimensions(width: Int32(video.width), height: Int32(video.height)))
+                self.source.adaptOutputFormat(toWidth: dimensions.width, height: dimensions.height, fps: 15)
                 
                 let pixelBuffer = CVPixelBuffer.from(sample.buffer, width: Int(video.width), height: Int(video.height), pixelFormat: video.format)
                 let height = Int32(CVPixelBufferGetHeight(pixelBuffer))
