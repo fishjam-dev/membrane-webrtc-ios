@@ -21,7 +21,8 @@ public class NativeVideoView: UIView {
     
     public var fit: BoxFit = .fill {
         didSet {
-            setNeedsLayout()
+            guard oldValue != fit else { return }
+            shouldLayout()
         }
     }
     

@@ -51,9 +51,10 @@ public struct SwiftUIVideoView: UIViewRepresentable {
         if videoView.track != track {
             videoView.track = track
         }
-        
         videoView.fit = fit
         videoView.mirror = mirror
+        
+        videoView.delegate = self.receiverDelegate
     }
     
     public static func dismantleUIView(_ videoView: NativeVideoView, coordinator: ()) {
