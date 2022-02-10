@@ -39,10 +39,6 @@ internal protocol BroadcastScreenCapturerDelegate: AnyObject {
     func resumed();
 }
 
-// TODO: add a timer in case:
-// - no frames arrive and no finished notification has been announced
-// - no started notification arrived before starting the capture
-
 /// `VideoCapturer` that is responsible for capturing media from a remote `Broadcast Extension` that sends samples
 /// via `IPC` mechanism.
 ///
@@ -57,6 +53,9 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
     private let ipcServer: IPCServer
     private let source: RTCVideoSource
     private var started = false
+    private var isReceivingSamples: Bool = false
+    
+    private var timeoutTimer: Timer?
     
     internal let supportedPixelFormats = DispatchQueue.webRTC.sync { RTCCVPixelBuffer.supportedPixelFormats() }
 
@@ -66,6 +65,31 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
         self.ipcServer = IPCServer()
         
         super.init(delegate: source)
+        
+        // check every 2 seconds if the screensharing is still active or crashed
+        // this is needed as we can't know if the IPC Client stopped working or not, so at least
+        // we can check that that we receiving some samples
+        self.timeoutTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] timer in
+            guard let self = self else {
+                timer.invalidate()
+                return
+            }
+            
+            // NOTE: there is basically no way of telling if the user has still
+            // an opened RPSystemBroadcastPickerView, but we can assume that if the application
+            // is in inactive state then this is a case therefore ignore the timeoutTimer tick 
+            if UIApplication.shared.applicationState == .inactive {
+                return
+            }
+            
+            if !self.isReceivingSamples {
+                self.capturerDelegate?.stopped()
+                timer.invalidate()
+                return
+            }
+            
+            self.isReceivingSamples = false
+        }
         
         self.ipcServer.onReceive = { [weak self] _, _, data in
             guard
@@ -98,6 +122,8 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
                 if !self.started {
                     fatalError("Started receiving video samples without `started` notificcation...")
                 }
+                
+                self.isReceivingSamples = true
                 
                 // TODO: do the recalculation of dimensions so that we don't end up with encoder errors
                 self.source.adaptOutputFormat(toWidth: (Int32)(video.width/2), height: (Int32)(video.height/2), fps: 15)
@@ -154,105 +180,3 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
         self.ipcServer.dispose()
     }
 }
-
-extension OSType {
-    // Get string representation of CVPixelFormatType
-    func toString() -> String {
-        let types = [
-            kCVPixelFormatType_TwoComponent8: "kCVPixelFormatType_TwoComponent8",
-            kCVPixelFormatType_TwoComponent32Float: "kCVPixelFormatType_TwoComponent32Float",
-            kCVPixelFormatType_TwoComponent16Half: "kCVPixelFormatType_TwoComponent16Half",
-            kCVPixelFormatType_TwoComponent16: "kCVPixelFormatType_TwoComponent16",
-            kCVPixelFormatType_OneComponent8: "kCVPixelFormatType_OneComponent8",
-            kCVPixelFormatType_OneComponent32Float: "kCVPixelFormatType_OneComponent32Float",
-            kCVPixelFormatType_OneComponent16Half: "kCVPixelFormatType_OneComponent16Half",
-            kCVPixelFormatType_OneComponent16: "kCVPixelFormatType_OneComponent16",
-            kCVPixelFormatType_OneComponent12: "kCVPixelFormatType_OneComponent12",
-            kCVPixelFormatType_OneComponent10: "kCVPixelFormatType_OneComponent10",
-            kCVPixelFormatType_Lossy_422YpCbCr10PackedBiPlanarVideoRange: "kCVPixelFormatType_Lossy_422YpCbCr10PackedBiPlanarVideoRange",
-            kCVPixelFormatType_Lossy_420YpCbCr8BiPlanarVideoRange: "kCVPixelFormatType_Lossy_420YpCbCr8BiPlanarVideoRange",
-            kCVPixelFormatType_Lossy_420YpCbCr8BiPlanarFullRange: "kCVPixelFormatType_Lossy_420YpCbCr8BiPlanarFullRange",
-            kCVPixelFormatType_Lossy_420YpCbCr10PackedBiPlanarVideoRange: "kCVPixelFormatType_Lossy_420YpCbCr10PackedBiPlanarVideoRange",
-            kCVPixelFormatType_Lossy_32BGRA: "kCVPixelFormatType_Lossy_32BGRA",
-            kCVPixelFormatType_Lossless_422YpCbCr10PackedBiPlanarVideoRange: "kCVPixelFormatType_Lossless_422YpCbCr10PackedBiPlanarVideoRange",
-            kCVPixelFormatType_Lossless_420YpCbCr8BiPlanarVideoRange: "kCVPixelFormatType_Lossless_420YpCbCr8BiPlanarVideoRange",
-            kCVPixelFormatType_Lossless_420YpCbCr8BiPlanarFullRange: "kCVPixelFormatType_Lossless_420YpCbCr8BiPlanarFullRange",
-            kCVPixelFormatType_Lossless_420YpCbCr10PackedBiPlanarVideoRange: "kCVPixelFormatType_Lossless_420YpCbCr10PackedBiPlanarVideoRange",
-            kCVPixelFormatType_Lossless_32BGRA: "kCVPixelFormatType_Lossless_32BGRA",
-            kCVPixelFormatType_DisparityFloat32: "kCVPixelFormatType_DisparityFloat32",
-            kCVPixelFormatType_DisparityFloat16: "kCVPixelFormatType_DisparityFloat16",
-            kCVPixelFormatType_DepthFloat32: "kCVPixelFormatType_DepthFloat32",
-            kCVPixelFormatType_DepthFloat16: "kCVPixelFormatType_DepthFloat16",
-            kCVPixelFormatType_ARGB2101010LEPacked: "kCVPixelFormatType_ARGB2101010LEPacked",
-            kCVPixelFormatType_8IndexedGray_WhiteIsZero: "kCVPixelFormatType_8IndexedGray_WhiteIsZero",
-            kCVPixelFormatType_8Indexed: "kCVPixelFormatType_8Indexed",
-            kCVPixelFormatType_64RGBALE: "kCVPixelFormatType_64RGBALE",
-            kCVPixelFormatType_64RGBAHalf: "kCVPixelFormatType_64RGBAHalf",
-            kCVPixelFormatType_64RGBA_DownscaledProResRAW: "kCVPixelFormatType_64RGBA_DownscaledProResRAW",
-            kCVPixelFormatType_64ARGB: "kCVPixelFormatType_64ARGB",
-            kCVPixelFormatType_4IndexedGray_WhiteIsZero: "kCVPixelFormatType_4IndexedGray_WhiteIsZero",
-            kCVPixelFormatType_4Indexed: "kCVPixelFormatType_4Indexed",
-            kCVPixelFormatType_48RGB: "kCVPixelFormatType_48RGB",
-            kCVPixelFormatType_444YpCbCr8BiPlanarVideoRange: "kCVPixelFormatType_444YpCbCr8BiPlanarVideoRange",
-            kCVPixelFormatType_444YpCbCr8BiPlanarFullRange: "kCVPixelFormatType_444YpCbCr8BiPlanarFullRange",
-            kCVPixelFormatType_444YpCbCr8: "kCVPixelFormatType_444YpCbCr8",
-            kCVPixelFormatType_444YpCbCr16VideoRange_16A_TriPlanar: "kCVPixelFormatType_444YpCbCr16VideoRange_16A_TriPlanar",
-            kCVPixelFormatType_444YpCbCr16BiPlanarVideoRange: "kCVPixelFormatType_444YpCbCr16BiPlanarVideoRange",
-            kCVPixelFormatType_444YpCbCr10BiPlanarVideoRange: "kCVPixelFormatType_444YpCbCr10BiPlanarVideoRange",
-            kCVPixelFormatType_444YpCbCr10BiPlanarFullRange: "kCVPixelFormatType_444YpCbCr10BiPlanarFullRange",
-            kCVPixelFormatType_444YpCbCr10: "kCVPixelFormatType_444YpCbCr10",
-            kCVPixelFormatType_4444YpCbCrA8R: "kCVPixelFormatType_4444YpCbCrA8R",
-            kCVPixelFormatType_4444YpCbCrA8: "kCVPixelFormatType_4444YpCbCrA8",
-            kCVPixelFormatType_4444AYpCbCr8: "kCVPixelFormatType_4444AYpCbCr8",
-            kCVPixelFormatType_4444AYpCbCr16: "kCVPixelFormatType_4444AYpCbCr16",
-            kCVPixelFormatType_422YpCbCr8FullRange: "kCVPixelFormatType_422YpCbCr8FullRange",
-            kCVPixelFormatType_422YpCbCr8BiPlanarVideoRange: "kCVPixelFormatType_422YpCbCr8BiPlanarVideoRange",
-            kCVPixelFormatType_422YpCbCr8BiPlanarFullRange: "kCVPixelFormatType_422YpCbCr8BiPlanarFullRange",
-            kCVPixelFormatType_422YpCbCr8_yuvs: "kCVPixelFormatType_422YpCbCr8_yuvs",
-            kCVPixelFormatType_422YpCbCr8: "kCVPixelFormatType_422YpCbCr8",
-            kCVPixelFormatType_422YpCbCr16BiPlanarVideoRange: "kCVPixelFormatType_422YpCbCr16BiPlanarVideoRange",
-            kCVPixelFormatType_422YpCbCr16: "kCVPixelFormatType_422YpCbCr16",
-            kCVPixelFormatType_422YpCbCr10BiPlanarVideoRange: "kCVPixelFormatType_422YpCbCr10BiPlanarVideoRange",
-            kCVPixelFormatType_422YpCbCr10BiPlanarFullRange: "kCVPixelFormatType_422YpCbCr10BiPlanarFullRange",
-            kCVPixelFormatType_422YpCbCr10: "kCVPixelFormatType_422YpCbCr10",
-            kCVPixelFormatType_422YpCbCr_4A_8BiPlanar: "kCVPixelFormatType_422YpCbCr_4A_8BiPlanar",
-            kCVPixelFormatType_420YpCbCr8VideoRange_8A_TriPlanar: "kCVPixelFormatType_420YpCbCr8VideoRange_8A_TriPlanar",
-            kCVPixelFormatType_420YpCbCr8PlanarFullRange: "kCVPixelFormatType_420YpCbCr8PlanarFullRange",
-            kCVPixelFormatType_420YpCbCr8Planar: "kCVPixelFormatType_420YpCbCr8Planar",
-            kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange: "kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange",
-            kCVPixelFormatType_420YpCbCr8BiPlanarFullRange: "kCVPixelFormatType_420YpCbCr8BiPlanarFullRange",
-            kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange: "kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange",
-            kCVPixelFormatType_420YpCbCr10BiPlanarFullRange: "kCVPixelFormatType_420YpCbCr10BiPlanarFullRange",
-            kCVPixelFormatType_40ARGBLEWideGamutPremultiplied: "kCVPixelFormatType_40ARGBLEWideGamutPremultiplied",
-            kCVPixelFormatType_40ARGBLEWideGamut: "kCVPixelFormatType_40ARGBLEWideGamut",
-            kCVPixelFormatType_32RGBA: "kCVPixelFormatType_32RGBA",
-            kCVPixelFormatType_32BGRA: "kCVPixelFormatType_32BGRA",
-            kCVPixelFormatType_32ARGB: "kCVPixelFormatType_32ARGB",
-            kCVPixelFormatType_32AlphaGray: "kCVPixelFormatType_32AlphaGray",
-            kCVPixelFormatType_32ABGR: "kCVPixelFormatType_32ABGR",
-            kCVPixelFormatType_30RGBLEPackedWideGamut: "kCVPixelFormatType_30RGBLEPackedWideGamut",
-            kCVPixelFormatType_30RGB: "kCVPixelFormatType_30RGB",
-            kCVPixelFormatType_2IndexedGray_WhiteIsZero: "kCVPixelFormatType_2IndexedGray_WhiteIsZero",
-            kCVPixelFormatType_2Indexed: "kCVPixelFormatType_2Indexed",
-            kCVPixelFormatType_24RGB: "kCVPixelFormatType_24RGB",
-            kCVPixelFormatType_24BGR: "kCVPixelFormatType_24BGR",
-            kCVPixelFormatType_1Monochrome: "kCVPixelFormatType_1Monochrome",
-            kCVPixelFormatType_1IndexedGray_WhiteIsZero: "kCVPixelFormatType_1IndexedGray_WhiteIsZero",
-            kCVPixelFormatType_16VersatileBayer: "kCVPixelFormatType_16VersatileBayer",
-            kCVPixelFormatType_16LE565: "kCVPixelFormatType_16LE565",
-            kCVPixelFormatType_16LE5551: "kCVPixelFormatType_16LE5551",
-            kCVPixelFormatType_16LE555: "kCVPixelFormatType_16LE555",
-            kCVPixelFormatType_16Gray: "kCVPixelFormatType_16Gray",
-            kCVPixelFormatType_16BE565: "kCVPixelFormatType_16BE565",
-            kCVPixelFormatType_16BE555: "kCVPixelFormatType_16BE555",
-            kCVPixelFormatType_14Bayer_RGGB: "kCVPixelFormatType_14Bayer_RGGB",
-            kCVPixelFormatType_14Bayer_GRBG: "kCVPixelFormatType_14Bayer_GRBG",
-            kCVPixelFormatType_14Bayer_GBRG: "kCVPixelFormatType_14Bayer_GBRG",
-            kCVPixelFormatType_14Bayer_BGGR: "kCVPixelFormatType_14Bayer_BGGR",
-            kCVPixelFormatType_128RGBAFloat: "kCVPixelFormatType_128RGBAFloat"
-        ]
-
-        return types[self] ?? "Unknown type"
-    }
-}
-

@@ -59,11 +59,6 @@ class ObservableRoom: ObservableObject {
         self.room?.join()
     }
     
-    // TODO: this should not belong here...
-    public enum LocalTrackType {
-        case audio, video, screensharing
-    }
-    
     func enableTrack(_ type: LocalTrackType, enabled: Bool) {
         switch type {
         case .video:

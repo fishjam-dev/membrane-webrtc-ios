@@ -139,7 +139,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
     }
     
-    // TODO: broadcast screensharing does not work in local preview...
     /// Starts listening for a media sent from a custom  `Broadcast Upload Extension`.
     ///
     /// The communication can only be performed with a `IPC` mechanism. The `MembraneRTC` works in a server mode

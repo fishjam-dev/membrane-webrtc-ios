@@ -9,8 +9,7 @@ extension RTCVideoTrack: Identifiable { }
 @available(iOS 12, *)
 
 extension RPSystemBroadcastPickerView {
-    public static func show(for preferredExtension: String? = nil,
-                            showsMicrophoneButton: Bool = true) {
+    public static func show(for preferredExtension: String? = nil, showsMicrophoneButton: Bool = false) {
         let view = RPSystemBroadcastPickerView()
         view.preferredExtension = preferredExtension
         view.showsMicrophoneButton = showsMicrophoneButton
@@ -64,7 +63,7 @@ struct RoomView: View {
         }
     }
     @ViewBuilder
-    func mediaControlButton(_ type: ObservableRoom.LocalTrackType, enabled: Bool) -> some View {
+    func mediaControlButton(_ type: LocalTrackType, enabled: Bool) -> some View {
         let enabledLabel = type == .video ? "video.fill" : "mic.fill"
         let disabledLabel = type == .video ? "video.slash.fill" : "mic.slash.fill"
         
@@ -85,7 +84,7 @@ struct RoomView: View {
         Button(action: {
             self.room.toggleLocalTrack(.screensharing)
             
-            RPSystemBroadcastPickerView.show(for: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt", showsMicrophoneButton: false)
+            RPSystemBroadcastPickerView.show(for: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt")
         }) {
             Image(systemName: label)
                 .font(.system(size: 32, weight: .bold))

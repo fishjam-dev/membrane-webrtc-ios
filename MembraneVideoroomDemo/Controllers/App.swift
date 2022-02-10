@@ -19,8 +19,7 @@ final class AppController: ObservableObject {
         self.state = .awaiting
     }
     
-//    let localAddress = "http://192.168.83.11:4000"
-    let localAddress = "http://192.168.83.228:4000"
+    let localAddress = "http://192.168.83.87:4000"
     let remoteAddress = "https://dscout.membrane.work"
     
     public func connect(room: String, displayName: String) {

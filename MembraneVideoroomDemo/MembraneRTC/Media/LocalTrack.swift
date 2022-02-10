@@ -6,3 +6,7 @@ public protocol LocalTrack {
     func toggle();
     func rtcTrack() -> RTCMediaStreamTrack;
 }
+
+public enum LocalTrackType {
+    case audio, video, screensharing
+}
