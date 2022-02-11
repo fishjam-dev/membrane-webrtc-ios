@@ -6,10 +6,6 @@ public class LocalVideoTrack: LocalTrack {
     internal var capturer: VideoCapturer?
     public let track: RTCVideoTrack
     
-    /// Contains one of the following capturers
-    ///  - camera - capturing video device's camera
-    ///  - screensharing - capturing video from ian n-app screensharing
-    ///   - file - capturing video from a file
     public enum Capturer {
         case camera, file
     }

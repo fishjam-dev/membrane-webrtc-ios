@@ -108,7 +108,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     ///
     /// Once completed either `onJoinSuccess` or `onJoinError` of client's delegate gets invovked.
     public func join() {
-        self.transport.send(event: Events.joinEvent(metadata: self.localPeer.metadata))
+        self.transport.send(event: JoinEvent(metadata: self.localPeer.metadata))
     }
     
     /// Initializes the connection with the `Membrane RTC Engine` transport layer

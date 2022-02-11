@@ -3,7 +3,7 @@ import SwiftPhoenixClient
 import Promises
 
 /// `EventTransport` implementation utilizing `Phoenix` socket and a channel.
-class PhoenixEventTransport: EventTransport {
+class PhoenixTransport: EventTransport {
     enum ConnectionState {
         case uninitialized, connecting, connected, closed, error
     }
@@ -96,7 +96,7 @@ class PhoenixEventTransport: EventTransport {
     }
 }
 
-extension PhoenixEventTransport {
+extension PhoenixTransport {
     func onOpen() {
         self.connectionState = .connected
     }

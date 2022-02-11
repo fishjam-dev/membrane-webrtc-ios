@@ -2,10 +2,10 @@ import Foundation
 
 public typealias Payload = [String: Any?]
 
+/// Protocol for outgoing `MembraneRTC` events
 public protocol SendableEvent {
     func serialize() -> Payload;
 }
-
 
 public enum ReceivableEventType: String, Codable {
     case PeerAccepted = "peerAccepted"
@@ -21,6 +21,7 @@ public enum ReceivableEventType: String, Codable {
     case SdpAnswer = "sdpAnswer"
 }
 
+/// Protocol for incoming `MembraneRTC` events
 public protocol ReceivableEvent {
     var type: ReceivableEventType { get }
 }
@@ -40,6 +41,37 @@ public class Events {
         }
     }
     
+    /*
+     Deserialization of incoming events is quite specific.
+     
+     Each incoming events if of given format:
+     ```
+     {
+        "type": "(dedicated event name)",
+        "data": "arbitrary event's payload"
+     }
+     ```
+     
+     It is quite problematic as we have to decode each event twice. Once to get the event's type.
+     Then we have to match on the type and again decode the payload to its related event.
+     
+     A subset of events are a part of one specific event of type "custom".
+     In this case the "data" payload contains a whole embedded event:
+     ```
+     {
+        "type": "custom",
+        "data": {
+            "type": "(dedicated event name)",
+            "data": "arbitrary event's payload"
+        }
+     }
+     ```
+     
+     This time we are basically performing the deserialization 3 times:
+     - to recognize "custom" type
+     - to recognize the nested event's type
+     - to finally deserialize the payload into the explicit event
+     */
     public static func deserialize(payload: Payload) -> ReceivableEvent? {
         guard let rawData = payload["data"] as? String else {
             sdkLogger.error("Failed to extract 'data' field from json payload: \(payload)")
@@ -124,10 +156,6 @@ public class Events {
         default:
             return nil
         }
-    }
-    
-    public static func joinEvent(metadata: Metadata) -> SendableEvent  {
-        return JoinEvent(metadata: metadata)
     }
 }
 

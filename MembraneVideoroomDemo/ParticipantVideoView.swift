@@ -7,46 +7,41 @@ struct ParticipantVideoView: View {
     let height: CGFloat
     let width: CGFloat
     
-    @State private var fit: NativeVideoView.BoxFit
+    @State private var layout: VideoView.Layout
     @State private var localDimensions: Dimensions?
     
     init(_ participantVideo: ParticipantVideo, height: CGFloat, width: CGFloat) {
         self.participantVideo = participantVideo
         self.height = height
         self.width = width
-        self.fit = .fill
+        self.layout = .fill
         
         guard let value = localDimensions else { return }
         
-        selectFit(width, height, value)
-        
-        if (height >= width) == (value.height > value.width) {
-            self.fit = .fill
-        } else {
-            self.fit = .fit
-        }
+        selectLayout(width, height, value)
     }
     
-    func selectFit(_ width: CGFloat, _ height: CGFloat, _ dimensions: Dimensions) {
+    func selectLayout(_ width: CGFloat, _ height: CGFloat, _ dimensions: Dimensions) {
         guard width != height else {
-            self.fit = .fill
+            // fill the square
+            self.layout = .fill
             return
         }
         
         if (height > width) == (dimensions.height > dimensions.width) {
-            self.fit = .fill
+            self.layout = .fill
         } else {
-            self.fit = .fit
+            self.layout = .fit
         }
     }
     
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            SwiftUIVideoView(self.participantVideo.videoTrack, fit: self.fit, dimensions: $localDimensions)
+            SwiftUIVideoView(self.participantVideo.videoTrack, layout: self.layout, dimensions: $localDimensions)
                 .onChange(of: localDimensions) { value in
                     guard let dimensions = value else { return }
                     
-                    selectFit(width, height, dimensions)
+                    selectLayout(width, height, dimensions)
                 }
                 .background(Color.blue.darker(by: 0.6))
                 .frame(width: self.width, height: self.height, alignment: .leading)

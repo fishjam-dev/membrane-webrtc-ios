@@ -3,25 +3,25 @@ import UIKit
 import WebRTC
 import ReplayKit
 
-public protocol NativeVideoViewDelegate: AnyObject {
+public protocol VideoViewDelegate: AnyObject {
     func didChange(dimensions: Dimensions);
 }
 
-/// `NativeVideoView` is responsible for receiving the `RTCVideoTrack` and accordingly
+/// `VideoView` is responsible for receiving the `RTCVideoTrack` and accordingly
 /// making sure that it gets properly rendered.
 ///
 /// It supports two types of fitting, `fit` and `fill` where the prior tries to keep the original dimensions
 /// and the later one tries to fil lthe available space. Additionaly one can set mirror mode to flip the video horizontally,
 /// usually expected when displaying the local user's view.
-public class NativeVideoView: UIView {
-    public enum BoxFit {
+public class VideoView: UIView {
+    public enum Layout {
         case fit
         case fill
     }
     
-    public var fit: BoxFit = .fill {
+    public var layout: Layout = .fill {
         didSet {
-            guard oldValue != fit else { return }
+            guard oldValue != layout else { return }
             shouldLayout()
         }
     }
@@ -84,7 +84,7 @@ public class NativeVideoView: UIView {
     }
     
     /// Delegate listening for the view's changes such as dimensions.
-    public weak var delegate: NativeVideoViewDelegate?
+    public weak var delegate: VideoViewDelegate?
     
     /// In case of an old renderer view, it gets detached from the current view and a new instance
     /// gets created and then reattached.
@@ -93,7 +93,7 @@ public class NativeVideoView: UIView {
             view.removeFromSuperview()
         }
         
-        self.rendererView = NativeVideoView.createNativeRendererView(delegate: self)
+        self.rendererView = VideoView.createNativeRendererView(delegate: self)
         if let view = self.rendererView as? UIView {
             view.translatesAutoresizingMaskIntoConstraints = true
             addSubview(view)
@@ -123,7 +123,7 @@ public class NativeVideoView: UIView {
             return
         }
         
-        if case .fill = fit {
+        if case .fill = layout {
             var size = self.viewSize
             
             let widthRatio = size.width / CGFloat(dimensions.width)
@@ -176,7 +176,7 @@ public class NativeVideoView: UIView {
     }
 }
 
-extension NativeVideoView: RTCVideoViewDelegate {
+extension VideoView: RTCVideoViewDelegate {
     public func videoView(_ : RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         guard let width = Int32(exactly: size.width),
               let height = Int32(exactly: size.height) else {

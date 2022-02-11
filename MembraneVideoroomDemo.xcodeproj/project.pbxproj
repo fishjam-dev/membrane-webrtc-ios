@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3B04D3942798190F00E2B755 /* SwiftPhoenixClient in Frameworks */ = {isa = PBXBuildFile; productRef = 3B04D3932798190F00E2B755 /* SwiftPhoenixClient */; };
-		3B04D3962798197500E2B755 /* PhoenixEventTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B04D3952798197500E2B755 /* PhoenixEventTransport.swift */; };
+		3B04D3962798197500E2B755 /* PhoenixTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B04D3952798197500E2B755 /* PhoenixTransport.swift */; };
 		3B1642DB27A134C4008BBBA7 /* ObservableRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1642DA27A134C4008BBBA7 /* ObservableRoom.swift */; };
 		3B1642DD27A13884008BBBA7 /* MulticastDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1642DC27A13884008BBBA7 /* MulticastDelegate.swift */; };
 		3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1BF2796C42B0095941F /* RoomView.swift */; };
@@ -20,7 +20,7 @@
 		3B16A1E22796C42B0095941F /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1C92796C42B0095941F /* ConnectView.swift */; };
 		3B16A1E32796C42B0095941F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1CA2796C42B0095941F /* ContentView.swift */; };
 		3B16A2012796C4970095941F /* SwiftUIVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1F22796C4970095941F /* SwiftUIVideoView.swift */; };
-		3B16A2022796C4970095941F /* NativeVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1F32796C4970095941F /* NativeVideoView.swift */; };
+		3B16A2022796C4970095941F /* VideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1F32796C4970095941F /* VideoView.swift */; };
 		3B16A2032796C4970095941F /* TrackContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1F52796C4970095941F /* TrackContext.swift */; };
 		3B16A2042796C4970095941F /* Peer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1F62796C4970095941F /* Peer.swift */; };
 		3B16A2052796C4970095941F /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1F72796C4970095941F /* ConnectionManager.swift */; };
@@ -85,7 +85,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		3B04D3952798197500E2B755 /* PhoenixEventTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoenixEventTransport.swift; sourceTree = "<group>"; };
+		3B04D3952798197500E2B755 /* PhoenixTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoenixTransport.swift; sourceTree = "<group>"; };
 		3B1642DA27A134C4008BBBA7 /* ObservableRoom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableRoom.swift; sourceTree = "<group>"; };
 		3B1642DC27A13884008BBBA7 /* MulticastDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MulticastDelegate.swift; sourceTree = "<group>"; };
 		3B16A1BF2796C42B0095941F /* RoomView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
@@ -97,7 +97,7 @@
 		3B16A1C92796C42B0095941F /* ConnectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
 		3B16A1CA2796C42B0095941F /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3B16A1F22796C4970095941F /* SwiftUIVideoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIVideoView.swift; sourceTree = "<group>"; };
-		3B16A1F32796C4970095941F /* NativeVideoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NativeVideoView.swift; sourceTree = "<group>"; };
+		3B16A1F32796C4970095941F /* VideoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoView.swift; sourceTree = "<group>"; };
 		3B16A1F52796C4970095941F /* TrackContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrackContext.swift; sourceTree = "<group>"; };
 		3B16A1F62796C4970095941F /* Peer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Peer.swift; sourceTree = "<group>"; };
 		3B16A1F72796C4970095941F /* ConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
@@ -169,7 +169,6 @@
 				3BCA53B927A0248900E3CABF /* Info.plist */,
 				3B16A21527970B8D0095941F /* video.mp4 */,
 				3B16A1F02796C4970095941F /* MembraneRTC */,
-				3B16A1BF2796C42B0095941F /* RoomView.swift */,
 				3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */,
 				3B16A1C02796C42B0095941F /* Assets.xcassets */,
 				3B16A1C12796C42B0095941F /* Preview Content */,
@@ -177,7 +176,6 @@
 				3B16A1C42796C42B0095941F /* Utilities */,
 				3B16A1C62796C42B0095941F /* Controllers */,
 				3B16A1C82796C42B0095941F /* Views */,
-				3B16A1CA2796C42B0095941F /* ContentView.swift */,
 			);
 			path = MembraneVideoroomDemo;
 			sourceTree = "<group>";
@@ -214,6 +212,8 @@
 			children = (
 				3B84661927A3E967009BF97D /* Shared */,
 				3B16A1C92796C42B0095941F /* ConnectView.swift */,
+				3B16A1BF2796C42B0095941F /* RoomView.swift */,
+				3B16A1CA2796C42B0095941F /* ContentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -221,15 +221,14 @@
 		3B16A1F02796C4970095941F /* MembraneRTC */ = {
 			isa = PBXGroup;
 			children = (
+				3BB68F4827B65B5F00596195 /* EventTransport */,
 				3B16A1F12796C4970095941F /* UI */,
 				3B16A1F42796C4970095941F /* Types */,
-				3B16A1F72796C4970095941F /* ConnectionManager.swift */,
-				3B16A1F82796C4970095941F /* MembraneRTC.swift */,
 				3B16A1F92796C4970095941F /* Events */,
+				3B16A1F82796C4970095941F /* MembraneRTC.swift */,
 				3B16A1FB2796C4970095941F /* MembraneRTCDelegate.swift */,
 				3BB68F4627B64BFD00596195 /* MembraneRTCError.swift */,
-				3B16A1FC2796C4970095941F /* EventTransport.swift */,
-				3B04D3952798197500E2B755 /* PhoenixEventTransport.swift */,
+				3B16A1F72796C4970095941F /* ConnectionManager.swift */,
 				3B16A1FD2796C4970095941F /* Media */,
 			);
 			path = MembraneRTC;
@@ -238,8 +237,8 @@
 		3B16A1F12796C4970095941F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				3B16A1F32796C4970095941F /* VideoView.swift */,
 				3B16A1F22796C4970095941F /* SwiftUIVideoView.swift */,
-				3B16A1F32796C4970095941F /* NativeVideoView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -265,16 +264,9 @@
 		3B16A1FD2796C4970095941F /* Media */ = {
 			isa = PBXGroup;
 			children = (
-				3B16A1FE2796C4970095941F /* VideoCapturer.swift */,
-				3B16A1FF2796C4970095941F /* LocalVideoTrack.swift */,
-				3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */,
-				3B4BC68D27AD10440013EDEB /* LocalBroadcastScreenTrack.swift */,
-				3B16A2002796C4970095941F /* CameraCapturer.swift */,
+				3BB68F4A27B6635800596195 /* Tracks */,
+				3BB68F4927B6632E00596195 /* Capturers */,
 				3B16A20D2796DEAC0095941F /* Dimensions.swift */,
-				3B16A20F2796F4AF0095941F /* FileCapturer.swift */,
-				3B667FC127995437007E38C8 /* ScreenCapturer.swift */,
-				3B4191F9279EEE09000035C0 /* LocalTrack.swift */,
-				3B601C0A27AC073300668122 /* BroadcastScreenCapturer.swift */,
 			);
 			path = Media;
 			sourceTree = "<group>";
@@ -312,6 +304,38 @@
 				3B84661A27A3E9A6009BF97D /* AdaptiveStack.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		3BB68F4827B65B5F00596195 /* EventTransport */ = {
+			isa = PBXGroup;
+			children = (
+				3B16A1FC2796C4970095941F /* EventTransport.swift */,
+				3B04D3952798197500E2B755 /* PhoenixTransport.swift */,
+			);
+			path = EventTransport;
+			sourceTree = "<group>";
+		};
+		3BB68F4927B6632E00596195 /* Capturers */ = {
+			isa = PBXGroup;
+			children = (
+				3B601C0A27AC073300668122 /* BroadcastScreenCapturer.swift */,
+				3B667FC127995437007E38C8 /* ScreenCapturer.swift */,
+				3B16A20F2796F4AF0095941F /* FileCapturer.swift */,
+				3B16A2002796C4970095941F /* CameraCapturer.swift */,
+				3B16A1FE2796C4970095941F /* VideoCapturer.swift */,
+			);
+			path = Capturers;
+			sourceTree = "<group>";
+		};
+		3BB68F4A27B6635800596195 /* Tracks */ = {
+			isa = PBXGroup;
+			children = (
+				3B4191F9279EEE09000035C0 /* LocalTrack.swift */,
+				3B4BC68D27AD10440013EDEB /* LocalBroadcastScreenTrack.swift */,
+				3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */,
+				3B16A1FF2796C4970095941F /* LocalVideoTrack.swift */,
+			);
+			path = Tracks;
 			sourceTree = "<group>";
 		};
 		3BCCBEB22795619500A0AD4C = {
@@ -468,8 +492,8 @@
 				3B601BFE27ABEF3100668122 /* IPC.swift in Sources */,
 				3B16A2062796C4970095941F /* MembraneRTC.swift in Sources */,
 				3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */,
-				3B16A2022796C4970095941F /* NativeVideoView.swift in Sources */,
-				3B04D3962798197500E2B755 /* PhoenixEventTransport.swift in Sources */,
+				3B16A2022796C4970095941F /* VideoView.swift in Sources */,
+				3B04D3962798197500E2B755 /* PhoenixTransport.swift in Sources */,
 				3B4BC68E27AD10440013EDEB /* LocalBroadcastScreenTrack.swift in Sources */,
 				3B16A20B2796C4970095941F /* LocalVideoTrack.swift in Sources */,
 				3B16A20C2796C4970095941F /* CameraCapturer.swift in Sources */,

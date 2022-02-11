@@ -24,7 +24,7 @@ final class AppController: ObservableObject {
     
     public func connect(room: String, displayName: String) {
         let transportUrl = "\(localAddress)/socket"
-        let transport = PhoenixEventTransport(url: transportUrl, topic: "room:\(room)")
+        let transport = PhoenixTransport(url: transportUrl, topic: "room:\(room)")
         
         let client = MembraneRTC(
             eventTransport: transport,
