@@ -1,4 +1,3 @@
-import Foundation
 import SwiftUI
 
 /// Utility `ViewModifier` allowing for listening for a device rotation.

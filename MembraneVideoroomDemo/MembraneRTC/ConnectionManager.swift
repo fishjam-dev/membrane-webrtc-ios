@@ -1,4 +1,3 @@
-import Foundation
 import WebRTC
 
 // class for managing RTCPeerConnection responsible for managing its media sources and

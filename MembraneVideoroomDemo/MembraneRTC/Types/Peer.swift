@@ -1,6 +1,3 @@
-import Foundation
-import UIKit
-
 public struct Peer: Codable {
     public var id: String
     public var metadata: Metadata

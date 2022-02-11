@@ -1,4 +1,3 @@
-
 /// Delegate responsible for receiving notification from `MembraneRTC` client.
 public protocol MembraneRTCDelegate {
     

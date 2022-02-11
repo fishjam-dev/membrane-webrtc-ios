@@ -1,6 +1,3 @@
-import Foundation
-import WebRTC
-
 public struct TrackContext {
     var track: RemoteTrack?
     
