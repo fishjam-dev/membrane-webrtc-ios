@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Jakub Perzylo on 14/01/2022.
-//
-
 import Foundation
 
 public typealias Payload = [String: Any?]

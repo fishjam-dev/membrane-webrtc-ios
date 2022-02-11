@@ -126,7 +126,7 @@ extension AppController: MembraneRTCDelegate {
     }
     
     /// Callback invoked when a connection errors happens.
-    func onConnectionError(message: String) {
+    func onError(_ error: MembraneRTCError) {
         DispatchQueue.main.async {
             self.state = .error
         }

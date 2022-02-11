@@ -32,6 +32,6 @@ public protocol MembraneRTCDelegate {
     /// Callback invoked when peer's metadata gets updated. 
     func onPeerUpdated(peer: Peer) -> Void;
     
-    /// Callback invoked when a connection errors happens.
-    func onConnectionError(message: String) -> Void
+    /// Callback invoked when an errors happens.
+    func onError(_ error: MembraneRTCError) -> Void
 }

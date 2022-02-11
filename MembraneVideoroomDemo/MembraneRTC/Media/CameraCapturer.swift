@@ -57,7 +57,6 @@ class CameraCapturer: VideoCapturer {
         }
         
         guard let dimension = selectedDimension else {
-            // FIXME: we need more graceful handling of errors than fatal one
             fatalError("Could not get dimensions for video capture")
         }
         

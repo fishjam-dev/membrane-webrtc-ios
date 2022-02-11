@@ -52,6 +52,7 @@
 		3BA235D727AC10C10070031E /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235D627AC10C10070031E /* SwiftProtobuf */; };
 		3BA235DB27AC1F600070031E /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235DA27AC1F600070031E /* FBLPromises */; };
 		3BA235DC27AC1F7A0070031E /* IPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601BFD27ABEF3100668122 /* IPC.swift */; };
+		3BB68F4727B64BFD00596195 /* MembraneRTCError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB68F4627B64BFD00596195 /* MembraneRTCError.swift */; };
 		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; settings = {ATTRIBUTES = (Required, ); }; };
 		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
@@ -127,6 +128,7 @@
 		3B84661C27A3FB10009BF97D /* DeviceRotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceRotation.swift; sourceTree = "<group>"; };
 		3BA235D827AC15340070031E /* MembraneVideoroomDemoDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoDebug.entitlements; sourceTree = "<group>"; };
 		3BA235D927AC156E0070031E /* MembraneVideoroomDemoScreensharingDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoScreensharingDebug.entitlements; sourceTree = "<group>"; };
+		3BB68F4627B64BFD00596195 /* MembraneRTCError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembraneRTCError.swift; sourceTree = "<group>"; };
 		3BCA53B927A0248900E3CABF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BD7249227AAD3DE00AFE9D9 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
@@ -225,6 +227,7 @@
 				3B16A1F82796C4970095941F /* MembraneRTC.swift */,
 				3B16A1F92796C4970095941F /* Events */,
 				3B16A1FB2796C4970095941F /* MembraneRTCDelegate.swift */,
+				3BB68F4627B64BFD00596195 /* MembraneRTCError.swift */,
 				3B16A1FC2796C4970095941F /* EventTransport.swift */,
 				3B04D3952798197500E2B755 /* PhoenixEventTransport.swift */,
 				3B16A1FD2796C4970095941F /* Media */,
@@ -486,6 +489,7 @@
 				3B84661B27A3E9A6009BF97D /* AdaptiveStack.swift in Sources */,
 				3B16A20E2796DEAC0095941F /* Dimensions.swift in Sources */,
 				3B16A20A2796C4970095941F /* VideoCapturer.swift in Sources */,
+				3BB68F4727B64BFD00596195 /* MembraneRTCError.swift in Sources */,
 				3B16A1E32796C42B0095941F /* ContentView.swift in Sources */,
 				3B1642DB27A134C4008BBBA7 /* ObservableRoom.swift in Sources */,
 				3B16A2102796F4AF0095941F /* FileCapturer.swift in Sources */,

@@ -319,9 +319,18 @@ extension ObservableRoom: MembraneRTCDelegate {
     
     func onPeerUpdated(peer: Peer) { }
     
-    func onConnectionError(message: String) {
+    func onError(_ error: MembraneRTCError) {
         DispatchQueue.main.async {
-            self.errorMessage = message
+            switch error {
+            case .rtc(let message):
+                self.errorMessage = message
+                
+            case .transport(let message):
+                self.errorMessage = message
+                
+            case .unknown(let message):
+                self.errorMessage = message
+            }
         }
     }
 }

@@ -123,7 +123,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             }
         }.catch { error in
             self.notify {
-                $0.onConnectionError(message: error.localizedDescription)
+                $0.onError(.transport(error.localizedDescription))
             }
         }
         
@@ -551,7 +551,7 @@ extension MembraneRTC: EventTransportDelegate {
     
     public func didReceive(error: EventTransportError) {
         self.notify {
-            $0.onConnectionError(message: error.description)
+            $0.onError(.transport(error.description))
         }
     }
 }
@@ -575,13 +575,11 @@ extension MembraneRTC {
             pc.restartIce()
         }
         
-        // TODO: onConnectionError should probably take different types of errors instead of string
-        // preferably TransportError, RTCError and so on...
         pc.offer(for: Self.mediaConstraints, completionHandler: { offer, error in
             guard let offer = offer else {
                 if let err = error {
                     self.notify {
-                        $0.onConnectionError(message: err.localizedDescription)
+                        $0.onError(.rtc(err.localizedDescription))
                     }
                 }
                 return
@@ -594,7 +592,7 @@ extension MembraneRTC {
                 }
                 
                 self.notify {
-                    $0.onConnectionError(message: err.localizedDescription)
+                    $0.onError(.rtc(err.localizedDescription))
                 }
                 
             })
