@@ -50,7 +50,7 @@ struct RoomView: View {
         ScrollView(self.orientationReceiver.orientation.isLandscape ? .vertical : .horizontal) {
             AdaptiveStack(orientation: self.orientationReceiver.orientation, naturalAlignment: false) {
                 ForEach(participantVideos) { video in
-                    ParticipantVideoView(video, height: size, width: size)
+                    ParticipantVideoView(video, height: size, width: size, mirror: video.mirror)
                         .onTapGesture {
                             self.room.focus(video: video)
                         }
@@ -172,7 +172,7 @@ struct RoomView: View {
                 } else {
                     AdaptiveStack(orientation: self.orientationReceiver.orientation) {
                         if let primaryVideo = room.primaryVideo {
-                            ParticipantVideoView(primaryVideo, height: videoFrameHeight, width: videoFrameWidth)
+                            ParticipantVideoView(primaryVideo, height: videoFrameHeight, width: videoFrameWidth, mirror: primaryVideo.mirror)
                                 .padding(.bottom)
                         } else {
                             Text("Local video track is not available yet...").foregroundColor(.white)
