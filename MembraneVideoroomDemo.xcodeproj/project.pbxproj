@@ -53,6 +53,12 @@
 		3BA235DB27AC1F600070031E /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235DA27AC1F600070031E /* FBLPromises */; };
 		3BA235DC27AC1F7A0070031E /* IPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B601BFD27ABEF3100668122 /* IPC.swift */; };
 		3BB68F4727B64BFD00596195 /* MembraneRTCError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB68F4627B64BFD00596195 /* MembraneRTCError.swift */; };
+		3BB68F4C27B67C8700596195 /* MediaTrackProvider.swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB68F4B27B67C8700596195 /* MediaTrackProvider.swift.swift */; };
+		3BB68F4E27B67DE000596195 /* RemoteTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB68F4D27B67DE000596195 /* RemoteTrack.swift */; };
+		3BB68F5027B67E5500596195 /* RemoteAudioTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB68F4F27B67E5500596195 /* RemoteAudioTrack.swift */; };
+		3BB68F5227B67F5700596195 /* RemoteVideoTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB68F5127B67F5700596195 /* RemoteVideoTrack.swift */; };
+		3BB68F5627B6834000596195 /* AudioTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB68F5527B6834000596195 /* AudioTrack.swift */; };
+		3BB68F5827B6887900596195 /* VideoTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB68F5727B6887900596195 /* VideoTrack.swift */; };
 		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; settings = {ATTRIBUTES = (Required, ); }; };
 		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
@@ -129,6 +135,12 @@
 		3BA235D827AC15340070031E /* MembraneVideoroomDemoDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoDebug.entitlements; sourceTree = "<group>"; };
 		3BA235D927AC156E0070031E /* MembraneVideoroomDemoScreensharingDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoScreensharingDebug.entitlements; sourceTree = "<group>"; };
 		3BB68F4627B64BFD00596195 /* MembraneRTCError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembraneRTCError.swift; sourceTree = "<group>"; };
+		3BB68F4B27B67C8700596195 /* MediaTrackProvider.swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTrackProvider.swift.swift; sourceTree = "<group>"; };
+		3BB68F4D27B67DE000596195 /* RemoteTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteTrack.swift; sourceTree = "<group>"; };
+		3BB68F4F27B67E5500596195 /* RemoteAudioTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteAudioTrack.swift; sourceTree = "<group>"; };
+		3BB68F5127B67F5700596195 /* RemoteVideoTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteVideoTrack.swift; sourceTree = "<group>"; };
+		3BB68F5527B6834000596195 /* AudioTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTrack.swift; sourceTree = "<group>"; };
+		3BB68F5727B6887900596195 /* VideoTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTrack.swift; sourceTree = "<group>"; };
 		3BCA53B927A0248900E3CABF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BD7249227AAD3DE00AFE9D9 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
@@ -334,6 +346,12 @@
 				3B4BC68D27AD10440013EDEB /* LocalBroadcastScreenTrack.swift */,
 				3B4191F7279EEDD1000035C0 /* LocalAudioTrack.swift */,
 				3B16A1FF2796C4970095941F /* LocalVideoTrack.swift */,
+				3BB68F4B27B67C8700596195 /* MediaTrackProvider.swift.swift */,
+				3BB68F4D27B67DE000596195 /* RemoteTrack.swift */,
+				3BB68F4F27B67E5500596195 /* RemoteAudioTrack.swift */,
+				3BB68F5127B67F5700596195 /* RemoteVideoTrack.swift */,
+				3BB68F5527B6834000596195 /* AudioTrack.swift */,
+				3BB68F5727B6887900596195 /* VideoTrack.swift */,
 			);
 			path = Tracks;
 			sourceTree = "<group>";
@@ -503,6 +521,8 @@
 				3B16A1DF2796C42B0095941F /* MembraneVideoroomDemoApp.swift in Sources */,
 				3B16A1E02796C42B0095941F /* Extensions.swift in Sources */,
 				3B16A2012796C4970095941F /* SwiftUIVideoView.swift in Sources */,
+				3BB68F5227B67F5700596195 /* RemoteVideoTrack.swift in Sources */,
+				3BB68F4E27B67DE000596195 /* RemoteTrack.swift in Sources */,
 				3B4191F8279EEDD1000035C0 /* LocalAudioTrack.swift in Sources */,
 				3B601C0B27AC073300668122 /* BroadcastScreenCapturer.swift in Sources */,
 				3B16A2092796C4970095941F /* EventTransport.swift in Sources */,
@@ -513,17 +533,21 @@
 				3B84661B27A3E9A6009BF97D /* AdaptiveStack.swift in Sources */,
 				3B16A20E2796DEAC0095941F /* Dimensions.swift in Sources */,
 				3B16A20A2796C4970095941F /* VideoCapturer.swift in Sources */,
+				3BB68F5627B6834000596195 /* AudioTrack.swift in Sources */,
 				3BB68F4727B64BFD00596195 /* MembraneRTCError.swift in Sources */,
 				3B16A1E32796C42B0095941F /* ContentView.swift in Sources */,
 				3B1642DB27A134C4008BBBA7 /* ObservableRoom.swift in Sources */,
 				3B16A2102796F4AF0095941F /* FileCapturer.swift in Sources */,
+				3BB68F4C27B67C8700596195 /* MediaTrackProvider.swift.swift in Sources */,
 				3B667FC0279943B1007E38C8 /* Metadata.swift in Sources */,
 				3B1642DD27A13884008BBBA7 /* MulticastDelegate.swift in Sources */,
 				3B601C0827AC06E800668122 /* broadcast_ipc.pb.swift in Sources */,
 				3B16A2052796C4970095941F /* ConnectionManager.swift in Sources */,
 				3B16A2042796C4970095941F /* Peer.swift in Sources */,
 				3B667FC227995437007E38C8 /* ScreenCapturer.swift in Sources */,
+				3BB68F5027B67E5500596195 /* RemoteAudioTrack.swift in Sources */,
 				3B16A2072796C4970095941F /* Event.swift in Sources */,
+				3BB68F5827B6887900596195 /* VideoTrack.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

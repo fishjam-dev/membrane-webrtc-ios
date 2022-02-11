@@ -1,4 +1,3 @@
-import Foundation
 import WebRTC
 
 public protocol LocalBroadcastScreenTrackDelegate: AnyObject {
@@ -9,7 +8,8 @@ public protocol LocalBroadcastScreenTrackDelegate: AnyObject {
 }
 
 /// Utility wrapper around a local `RTCVideoTrack` also managing a `BroadcastScreenCapturer`.
-public class LocalBroadcastScreenTrack: LocalTrack, BroadcastScreenCapturerDelegate {
+public class LocalBroadcastScreenTrack: VideoTrack, LocalTrack, BroadcastScreenCapturerDelegate {
+    
     private let videoSource: RTCVideoSource
     private let capturer: VideoCapturer
     private let track: RTCVideoTrack
@@ -22,6 +22,8 @@ public class LocalBroadcastScreenTrack: LocalTrack, BroadcastScreenCapturerDeleg
         
         let capturer = BroadcastScreenCapturer(videoSource)
         self.capturer = capturer
+        
+        super.init()
         
         capturer.capturerDelegate = self
     }
@@ -54,7 +56,11 @@ public class LocalBroadcastScreenTrack: LocalTrack, BroadcastScreenCapturerDeleg
         self.track.isEnabled = !self.track.isEnabled
     }
     
-    public func rtcTrack() -> RTCMediaStreamTrack {
+    public func enabled() -> Bool {
+        return self.track.isEnabled
+    }
+    
+    override func rtcTrack() -> RTCMediaStreamTrack {
         return self.track
     }
 }

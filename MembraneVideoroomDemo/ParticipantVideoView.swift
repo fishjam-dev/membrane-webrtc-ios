@@ -1,6 +1,5 @@
 import SwiftUI
 
-
 struct ParticipantVideoView: View {
     @ObservedObject var participantVideo: ParticipantVideo
     

@@ -1,4 +1,3 @@
-
 import Foundation
 
 /// Implementation of a multicast delegate

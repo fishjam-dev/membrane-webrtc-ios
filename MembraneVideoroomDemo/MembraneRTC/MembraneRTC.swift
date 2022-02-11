@@ -5,10 +5,6 @@ import Logging
 internal var sdkLogger = Logger(label: "org.membrane.ios")
 internal let pcLogPrefix = "[PeerConnection]"
 
-public struct ParticipantInfo {
-    let displayName: String
-}
-
 /// `BroadcastScreenReceiver` is responsible for receiving screen broadcast events such as
 /// `started` or `stopped` and accorindly calls given callbacks passed during initialization.
 internal class BroadcastScreenReceiver: LocalBroadcastScreenTrackDelegate {
@@ -48,6 +44,16 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         case disconnected
     }
     
+    public struct ConnectOptions {
+        let transport: EventTransport
+        let config: Metadata
+        
+        init(transport: EventTransport, config: Metadata) {
+            self.transport = transport
+            self.config = config
+        }
+    }
+    
     
     var state: State
     private var transport: EventTransport
@@ -81,7 +87,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     
     static let mediaConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
     
-    public init(eventTransport: EventTransport, config: RTCConfiguration, localParticipantInfo: ParticipantInfo) {
+    internal init(eventTransport: EventTransport, config: RTCConfiguration, peerMetadata: Metadata) {
         // RTCSetMinDebugLogLevel(.error)
         sdkLogger.logLevel = .info
         
@@ -92,9 +98,22 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         self.iceServers = []
         
         // setup local peer
-        self.localPeer.metadata["displayName"] = localParticipantInfo.displayName
+        self.localPeer.metadata = peerMetadata
         
         super.init()
+    }
+    
+    /// Initializes the connection with the `Membrane RTC Engine` transport layer
+    /// and sets up local audio and video track.
+    ///
+    /// Should not be confused with joining the actual room, which is a separate process.
+    public static func connect(with options: ConnectOptions, delegate: MembraneRTCDelegate) -> MembraneRTC {
+        let client = MembraneRTC(eventTransport: options.transport, config: RTCConfiguration(), peerMetadata: options.config)
+        
+        client.add(delegate: delegate)
+        client.connect()
+        
+        return client
     }
     
     /// Default ICE server when no turn servers are specified
@@ -111,11 +130,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         self.transport.send(event: JoinEvent(metadata: self.localPeer.metadata))
     }
     
-    /// Initializes the connection with the `Membrane RTC Engine` transport layer
-    /// and sets up local audio and video track.
-    ///
-    /// Should not be confused with joining the actual room, which is a separate process.
-    public func connect() {
+    internal func connect() {
         // initiate a transport connection
         self.transport.connect(delegate: self).then {
             self.notify {
@@ -233,8 +248,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         let displayName = self.localPeer.metadata["displayName"] ?? ""
         self.localPeer.trackIdToMetadata = [
-            self.localVideoTrack!.track.trackId: ["user_id": displayName],
-            self.localAudioTrack!.track.trackId: ["user_id": displayName]
+            self.localVideoTrack!.rtcTrack().trackId: ["user_id": displayName],
+            self.localAudioTrack!.rtcTrack().trackId: ["user_id": displayName]
         ]
     }
     
@@ -264,11 +279,11 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         // common stream id for the local video and audio tracks
         let localStreamId = UUID().uuidString
         
-        if let videoTrack = self.localVideoTrack?.track {
+        if let videoTrack = self.localVideoTrack?.rtcTrack() {
             peerConnection.add(videoTrack, streamIds: [localStreamId])
         }
         
-        if let audioTrack = self.localAudioTrack?.track {
+        if let audioTrack = self.localAudioTrack?.rtcTrack() {
             peerConnection.add(audioTrack, streamIds: [localStreamId])
         }
         
@@ -312,7 +327,16 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
               }
         
         // assign given receiver to its track's context
-        trackContext.track = transceiver.receiver.track
+        
+        let track = transceiver.receiver.track
+        if let audioTrack = track as? RTCAudioTrack {
+            trackContext.track = RemoteAudioTrack(track: audioTrack)
+        }
+        
+        if let videoTrack = track as? RTCVideoTrack {
+            trackContext.track = RemoteVideoTrack(track: videoTrack)
+        }
+        
         self.trackContexts[trackId] = trackContext
         
         self.notify {
@@ -398,7 +422,7 @@ extension MembraneRTC: EventTransportDelegate {
                 
                 // initialize peer's track contexts
                 peer.trackIdToMetadata?.forEach { trackId, metadata in
-                    let context = TrackContext(track: nil, stream: nil, peer: peer, trackId: trackId, metadata: metadata)
+                    let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
                     
                     self.trackContexts[trackId] = context
                     
@@ -513,7 +537,7 @@ extension MembraneRTC: EventTransportDelegate {
             
             // for each track create a corresponding track context
             peer.trackIdToMetadata?.forEach { trackId, metadata in
-                let context = TrackContext(track: nil, stream: nil, peer: peer, trackId: trackId, metadata: metadata)
+                let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
                 
                 self.trackContexts[trackId] = context
                 

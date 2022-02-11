@@ -1,20 +1,22 @@
 import WebRTC
 
 /// Utility wrapper around a local `RTCVideoTrack` also managing an instance of `VideoCapturer`
-public class LocalVideoTrack: LocalTrack {
+public class LocalVideoTrack: VideoTrack, LocalTrack {
     private let videoSource: RTCVideoSource
     internal var capturer: VideoCapturer?
-    public let track: RTCVideoTrack
+    private let track: RTCVideoTrack
     
     public enum Capturer {
         case camera, file
     }
     
-    internal init() {
+    internal override init() {
         let source = ConnectionManager.createVideoSource()
         
         self.videoSource = source
         self.track = ConnectionManager.createVideoTrack(source: source)
+        
+        super.init()
         
         self.capturer = self.createCapturer(videoSource: source)
     }
@@ -44,7 +46,11 @@ public class LocalVideoTrack: LocalTrack {
         self.track.isEnabled = !self.track.isEnabled
     }
     
-    public func rtcTrack() -> RTCMediaStreamTrack {
+    public func enabled() -> Bool {
+        return self.track.isEnabled
+    }
+    
+    override func rtcTrack() -> RTCMediaStreamTrack {
         return self.track
     }
 }

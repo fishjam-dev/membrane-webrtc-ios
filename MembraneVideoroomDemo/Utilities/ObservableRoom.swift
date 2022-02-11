@@ -1,5 +1,3 @@
-import Foundation
-import WebRTC
 import SwiftUI
 
 struct Participant {
@@ -18,9 +16,9 @@ class ParticipantVideo: Identifiable, ObservableObject {
     let isScreensharing: Bool
     let mirror: Bool
     
-    @Published var videoTrack: RTCVideoTrack
+    @Published var videoTrack: VideoTrack
     
-    init(id: String, participant: Participant, videoTrack: RTCVideoTrack, isScreensharing: Bool = false, mirror: Bool = false) {
+    init(id: String, participant: Participant, videoTrack: VideoTrack, isScreensharing: Bool = false, mirror: Bool = false) {
         self.id = id
         self.participant = participant
         self.videoTrack = videoTrack
@@ -61,10 +59,16 @@ class ObservableRoom: ObservableObject {
     func enableTrack(_ type: LocalTrackType, enabled: Bool) {
         switch type {
         case .video:
-            room?.localVideoTrack?.track.isEnabled = enabled
+            if let track = room?.localVideoTrack, track.enabled() != enabled {
+                track.toggle()
+            }
+               
             self.isCameraEnabled = enabled
         case .audio:
-            room?.localAudioTrack?.track.isEnabled = enabled
+            if let track = room?.localAudioTrack, track.enabled() != enabled {
+                track.toggle()
+            }
+            
             self.isMicEnabled = enabled
         default:
             break
@@ -116,7 +120,7 @@ class ObservableRoom: ObservableObject {
                 let localParticipantScreensharing = ParticipantVideo(
                     id: self.localScreensharingVideoId!,
                     participant: localParticipant,
-                    videoTrack: screensharingTrack.rtcTrack() as! RTCVideoTrack,
+                    videoTrack: screensharingTrack,
                     isScreensharing: true
                 )
                 
@@ -247,11 +251,11 @@ extension ObservableRoom: MembraneRTCDelegate {
         }
         
         DispatchQueue.main.async {
-            guard let track = room.localVideoTrack?.track else {
+            guard let videoTrack = room.localVideoTrack else {
                 fatalError("failed to setup local video")
             }
             
-            self.primaryVideo = ParticipantVideo(id: track.trackId, participant: localParticipant, videoTrack: track, mirror: true)
+            self.primaryVideo = ParticipantVideo(id: localParticipant.id, participant: localParticipant, videoTrack: videoTrack, mirror: true)
             self.participants[localParticipant.id] = localParticipant
             participants.forEach { participant in self.participants[participant.id] = participant }
             
@@ -265,18 +269,16 @@ extension ObservableRoom: MembraneRTCDelegate {
     
     func onTrackReady(ctx: TrackContext) {
         guard let participant = self.participants[ctx.peer.id],
-            let videoTrack = ctx.track as? RTCVideoTrack else {
+            let videoTrack = ctx.track as? VideoTrack else {
             return
         }
         
         // there can be a situation where we simply need to replace `videoTrack` for
         // already existing video, happens when dynamically adding new local track
         if let participantVideo = self.participantVideos.first(where: { $0.id == ctx.trackId }) {
-            guard let videoTrack = ctx.track as? RTCVideoTrack else {
-                return
+            DispatchQueue.main.async {
+                participantVideo.videoTrack = videoTrack
             }
-            
-            participantVideo.videoTrack = videoTrack
             
             return
         }

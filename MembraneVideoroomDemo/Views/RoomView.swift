@@ -1,13 +1,9 @@
 import Foundation
 import SwiftUI
-import WebRTC
 import ReplayKit
-
-extension RTCVideoTrack: Identifiable { }
 
 #if os(iOS)
 @available(iOS 12, *)
-
 extension RPSystemBroadcastPickerView {
     public static func show(for preferredExtension: String? = nil, showsMicrophoneButton: Bool = false) {
         let view = RPSystemBroadcastPickerView()
@@ -125,8 +121,10 @@ struct RoomView: View {
             cameraSwitchButton()
                 .padding(.trailing)
             
-            screensharingControlButton()
-                .padding(.trailing)
+            if #available(iOS 12, *) {
+                screensharingControlButton()
+                    .padding(.trailing)
+            }
             
             Spacer()
         }.padding()

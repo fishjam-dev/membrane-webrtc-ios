@@ -1,7 +1,5 @@
-import Foundation
 import UIKit
 import WebRTC
-import ReplayKit
 
 public protocol VideoViewDelegate: AnyObject {
     func didChange(dimensions: Dimensions);
@@ -63,19 +61,21 @@ public class VideoView: UIView {
     
     /// When the track changes,a new renderer gets created and attached to the new track.
     /// To avoid leaking resources the old renderer gets removed from the old track.
-    public var track: RTCVideoTrack? {
+    public var track: VideoTrack? {
         didSet {
             if let oldValue = oldValue,
-               let rendererView = self.rendererView {
-                oldValue.remove(rendererView)
+               let rendererView = self.rendererView,
+               let rtcVideoTrack = oldValue.rtcTrack() as? RTCVideoTrack {
+                rtcVideoTrack.remove(rendererView)
             }
             
-            if let track = track {
+            if let track = track,
+               let rtcVideoTrack = track.rtcTrack() as? RTCVideoTrack {
                 // create a new renderer view for the new track
                 self.createAndPrepareRenderView()
                 
                 if let rendererView = rendererView {
-                    track.add(rendererView)
+                    rtcVideoTrack.add(rendererView)
                 }
             }
             

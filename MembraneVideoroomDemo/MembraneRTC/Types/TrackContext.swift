@@ -2,8 +2,7 @@ import Foundation
 import WebRTC
 
 public struct TrackContext {
-    var track: RTCMediaStreamTrack?
-    var stream: RTCMediaStream?
+    var track: RemoteTrack?
     
     let peer: Peer
     let trackId: String
