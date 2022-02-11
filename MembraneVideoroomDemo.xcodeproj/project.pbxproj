@@ -205,7 +205,6 @@
 			children = (
 				3B16A1C52796C42B0095941F /* Extensions.swift */,
 				3B1642DA27A134C4008BBBA7 /* ObservableRoom.swift */,
-				3B1642DC27A13884008BBBA7 /* MulticastDelegate.swift */,
 				3B84661C27A3FB10009BF97D /* DeviceRotation.swift */,
 			);
 			path = Utilities;
@@ -233,6 +232,7 @@
 		3B16A1F02796C4970095941F /* MembraneRTC */ = {
 			isa = PBXGroup;
 			children = (
+				3BB68F5927B6981100596195 /* Utilities */,
 				3BB68F4827B65B5F00596195 /* EventTransport */,
 				3B16A1F12796C4970095941F /* UI */,
 				3B16A1F42796C4970095941F /* Types */,
@@ -354,6 +354,14 @@
 				3BB68F5727B6887900596195 /* VideoTrack.swift */,
 			);
 			path = Tracks;
+			sourceTree = "<group>";
+		};
+		3BB68F5927B6981100596195 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				3B1642DC27A13884008BBBA7 /* MulticastDelegate.swift */,
+			);
+			path = Utilities;
 			sourceTree = "<group>";
 		};
 		3BCCBEB22795619500A0AD4C = {
