@@ -1,34 +1,34 @@
 import Foundation
-import SwiftUI
+import MembraneRTC
 import ReplayKit
+import SwiftUI
 
 #if os(iOS)
-@available(iOS 12, *)
-extension RPSystemBroadcastPickerView {
-    public static func show(for preferredExtension: String? = nil, showsMicrophoneButton: Bool = false) {
-        let view = RPSystemBroadcastPickerView()
-        view.preferredExtension = preferredExtension
-        view.showsMicrophoneButton = showsMicrophoneButton
-        let selector = NSSelectorFromString("buttonPressed:")
-        if view.responds(to: selector) {
-            view.perform(selector, with: nil)
+    @available(iOS 12, *)
+    public extension RPSystemBroadcastPickerView {
+        static func show(for preferredExtension: String? = nil, showsMicrophoneButton: Bool = false) {
+            let view = RPSystemBroadcastPickerView()
+            view.preferredExtension = preferredExtension
+            view.showsMicrophoneButton = showsMicrophoneButton
+            let selector = NSSelectorFromString("buttonPressed:")
+            if view.responds(to: selector) {
+                view.perform(selector, with: nil)
+            }
         }
     }
-}
 #endif
-
 
 class OrientationReceiver: ObservableObject {
     @Published var orientation: UIDeviceOrientation
-    
+
     init() {
-        self.orientation = UIDevice.current.orientation
+        orientation = UIDevice.current.orientation
     }
-    
+
     func update(newOrientation: UIDeviceOrientation) {
         // in case of faceUp ignore the orientation and leave the old one
         if newOrientation != .faceUp {
-            self.orientation = newOrientation
+            orientation = newOrientation
         }
     }
 }
@@ -36,21 +36,21 @@ class OrientationReceiver: ObservableObject {
 struct RoomView: View {
     @Environment(\.scenePhase) var scenePhase
     @EnvironmentObject var appCtrl: AppController
+    @ObservedObject var room: RoomController
     @ObservedObject var orientationReceiver: OrientationReceiver
-    @ObservedObject var room: ObservableRoom
     @State private var localDimensions: Dimensions?
-    
+
     init(_ room: MembraneRTC) {
-        self.orientationReceiver = OrientationReceiver()
-        self.room = ObservableRoom(room)
+        orientationReceiver = OrientationReceiver()
+        self.room = RoomController(room)
     }
-    
+
     @ViewBuilder
-    func participantsVideoViews(_ participantVideos: Array<ParticipantVideo>, size: CGFloat) -> some View {
-        ScrollView(self.orientationReceiver.orientation.isLandscape ? .vertical : .horizontal) {
+    func participantsVideoViews(_ participantVideos: [ParticipantVideo], size: CGFloat) -> some View {
+        ScrollView(orientationReceiver.orientation.isLandscape ? .vertical : .horizontal) {
             AdaptiveStack(orientation: self.orientationReceiver.orientation, naturalAlignment: false) {
                 ForEach(participantVideos) { video in
-                    ParticipantVideoView(video, height: size, width: size, mirror: video.mirror)
+                    ParticipantVideoView(video, height: size, width: size)
                         .onTapGesture {
                             self.room.focus(video: video)
                         }
@@ -58,21 +58,21 @@ struct RoomView: View {
             }
         }
     }
+
     @ViewBuilder
     func mediaControlButton(_ type: LocalTrackType, enabled: Bool) -> some View {
         let enabledLabel = type == .video ? "video.fill" : "mic.fill"
         let disabledLabel = type == .video ? "video.slash.fill" : "mic.slash.fill"
-        
-        
+
         Button(action: {
             self.room.toggleLocalTrack(type)
         }) {
-        Image(systemName: enabled ? enabledLabel : disabledLabel)
-            .font(.system(size: 32, weight: .medium))
-            .foregroundColor(enabled ? Color.white : Color.red.darker())
+            Image(systemName: enabled ? enabledLabel : disabledLabel)
+                .font(.system(size: 32, weight: .medium))
+                .foregroundColor(enabled ? Color.white : Color.red.darker())
         }
     }
-    
+
     @ViewBuilder
     func cameraSwitchButton() -> some View {
         Button(action: {
@@ -83,14 +83,14 @@ struct RoomView: View {
                 .foregroundColor(Color.white)
         })
     }
-    
+
     @ViewBuilder
     func screensharingControlButton() -> some View {
-        let label = self.room.isScreensharingEnabled ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle"
-        
+        let label = room.isScreensharingEnabled ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle"
+
         Button(action: {
             self.room.toggleLocalTrack(.screensharing)
-            
+
             RPSystemBroadcastPickerView.show(for: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt")
         }) {
             Image(systemName: label)
@@ -98,12 +98,12 @@ struct RoomView: View {
                 .foregroundColor(Color.white)
         }
     }
-    
+
     @ViewBuilder
     func controls() -> some View {
         HStack {
             Spacer()
-            
+
             Button(action: {
                 self.appCtrl.disconnect()
             }) {
@@ -111,43 +111,43 @@ struct RoomView: View {
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(Color.red.darker())
             }.padding(.trailing)
-            
+
             mediaControlButton(.audio, enabled: self.room.isMicEnabled)
                 .padding(.trailing)
-            
+
             mediaControlButton(.video, enabled: self.room.isCameraEnabled)
                 .padding(.trailing)
-            
+
             cameraSwitchButton()
                 .padding(.trailing)
-            
+
             if #available(iOS 12, *) {
                 screensharingControlButton()
                     .padding(.trailing)
             }
-            
+
             Spacer()
         }.padding()
     }
-    
+
     private func calculatePrimaryFrameHeight(geometry: GeometryProxy) -> CGFloat {
-        if self.orientationReceiver.orientation.isLandscape {
+        if orientationReceiver.orientation.isLandscape {
             return geometry.size.height * 0.9 - 20
         } else {
-           return geometry.size.height * 0.70 - 20 - geometry.safeAreaInsets.top
+            return geometry.size.height * 0.70 - 20 - geometry.safeAreaInsets.top
         }
     }
-    
+
     private func calculatePrimaryFrameWidth(geometry: GeometryProxy) -> CGFloat {
-        if self.orientationReceiver.orientation.isLandscape {
+        if orientationReceiver.orientation.isLandscape {
             return geometry.size.width * 0.67 - 20
         } else {
             return geometry.size.width - 40
         }
     }
-    
+
     private func calculateSecondaryFrameSize(geometry: GeometryProxy) -> CGFloat {
-        if self.orientationReceiver.orientation.isLandscape {
+        if orientationReceiver.orientation.isLandscape {
             return geometry.size.height * 0.5 - 20
         } else {
             return geometry.size.height * 0.2 - 40
@@ -159,25 +159,25 @@ struct RoomView: View {
             let videoFrameHeight = calculatePrimaryFrameHeight(geometry: geometry)
             let videoFrameWidth = calculatePrimaryFrameWidth(geometry: geometry)
             let participantVideoSize = calculateSecondaryFrameSize(geometry: geometry)
-            
+
             VStack {
                 Text("Membrane iOS Demo")
                     .bold()
                     .font(.system(size: 20))
                     .frame(maxWidth: .infinity, alignment: .center)
                     .foregroundColor(.white)
-                
+
                 if let errorMessage = room.errorMessage {
                     Text(errorMessage).foregroundColor(.red)
                 } else {
                     AdaptiveStack(orientation: self.orientationReceiver.orientation) {
                         if let primaryVideo = room.primaryVideo {
-                            ParticipantVideoView(primaryVideo, height: videoFrameHeight, width: videoFrameWidth, mirror: primaryVideo.mirror)
+                            ParticipantVideoView(primaryVideo, height: videoFrameHeight, width: videoFrameWidth)
                                 .padding(.bottom)
                         } else {
                             Text("Local video track is not available yet...").foregroundColor(.white)
                         }
-                        
+
                         VStack {
                             participantsVideoViews(room.participantVideos, size: participantVideoSize)
                             Spacer()
@@ -187,7 +187,6 @@ struct RoomView: View {
                 }
             }
             .padding(8)
-            
         }
         .onChange(of: scenePhase) { newPhase in
             switch newPhase {
@@ -203,7 +202,6 @@ struct RoomView: View {
             DispatchQueue.main.async {
                 self.orientationReceiver.update(newOrientation: newOrientation)
             }
-            
         }
     }
 }
