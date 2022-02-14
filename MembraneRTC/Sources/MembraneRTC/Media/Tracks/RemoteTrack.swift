@@ -1,4 +1,4 @@
 public protocol RemoteTrack {
-    func toggle();
-    func enabled() -> Bool;
+    func toggle()
+    func enabled() -> Bool
 }

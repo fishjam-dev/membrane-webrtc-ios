@@ -4,40 +4,40 @@ import WebRTC
 class CameraCapturer: VideoCapturer {
     private let capturer: RTCCameraVideoCapturer
     private var isFront: Bool = true
-    
+
     init(_ delegate: RTCVideoCapturerDelegate) {
-        self.capturer = RTCCameraVideoCapturer(delegate: delegate)
+        capturer = RTCCameraVideoCapturer(delegate: delegate)
     }
-    
+
     public func startCapture() {
         if isFront {
-            self.startCapturing(for: .front)
+            startCapturing(for: .front)
         } else {
-            self.startCapturing(for: .back)
+            startCapturing(for: .back)
         }
     }
-    
+
     public func stopCapture() {
-        self.capturer.stopCapture()
+        capturer.stopCapture()
     }
-    
+
     public func switchCamera() {
-        self.stopCapture()
-        
-        self.isFront = !self.isFront
-        
-        self.startCapture()
+        stopCapture()
+
+        isFront = !isFront
+
+        startCapture()
     }
-    
+
     internal func startCapturing(for position: AVCaptureDevice.Position) {
         let devices = RTCCameraVideoCapturer.captureDevices()
-        
+
         guard let frontCamera = devices.first(where: { $0.position == position }) else {
             return
         }
-        
-        let formats: Array<AVCaptureDevice.Format> = RTCCameraVideoCapturer.supportedFormats(for: frontCamera)
-        
+
+        let formats: [AVCaptureDevice.Format] = RTCCameraVideoCapturer.supportedFormats(for: frontCamera)
+
         let parameters = VideoParameters.presetHD169
         let (targetWidth, targetHeight) = (parameters.dimensions.width,
                                            parameters.dimensions.height)
@@ -47,7 +47,7 @@ class CameraCapturer: VideoCapturer {
         var selectedDimension: Dimensions?
         for format in formats {
             let dimension = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
-            
+
             let diff = abs(targetWidth - dimension.width) + abs(targetHeight - dimension.height)
             if diff < currentDiff {
                 selectedFormat = format
@@ -55,11 +55,11 @@ class CameraCapturer: VideoCapturer {
                 selectedDimension = dimension
             }
         }
-        
+
         guard let dimension = selectedDimension else {
             fatalError("Could not get dimensions for video capture")
         }
-        
+
         sdkLogger.info("CameraCapturer selected dimensions of \(dimension)")
 
         let fps = parameters.encoding.maxFps
@@ -74,9 +74,9 @@ class CameraCapturer: VideoCapturer {
         if fps < minFps || fps > maxFps {
             fatalError("unsported requested frame rate of (\(minFps) - \(maxFps)")
         }
-        
-        self.capturer.startCapture(with: frontCamera,
-                                   format: selectedFormat,
-                                   fps: fps)
+
+        capturer.startCapture(with: frontCamera,
+                              format: selectedFormat,
+                              fps: fps)
     }
 }

@@ -2,11 +2,11 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var appCtrl: AppController
-    
+
     var body: some View {
         ZStack {
             Color.blue.darker(by: 0.5).ignoresSafeArea()
-            
+
             switch appCtrl.state {
             case .connected:
                 RoomView(appCtrl.client!)
@@ -14,7 +14,7 @@ struct ContentView: View {
                 ConnectView()
             }
         }
-            .foregroundColor(Color.white)
+        .foregroundColor(Color.white)
     }
 }
 

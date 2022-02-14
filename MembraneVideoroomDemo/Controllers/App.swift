@@ -1,29 +1,28 @@
 import Foundation
-import SwiftUI
 import MembraneRTC
-
+import SwiftUI
 
 final class AppController: ObservableObject {
     public static let shared = AppController()
-    
+
     public private(set) var client: MembraneRTC?
-    
+
     enum State {
         case awaiting, loading, connected, disconnected, error
     }
-    
+
     @Published private(set) var state: State
-    
+
     private init() {
-        self.state = .awaiting
+        state = .awaiting
     }
-    
+
     let localAddress = "http://192.168.83.89:4000"
     let remoteAddress = "https://dscout.membrane.work"
-    
+
     public func connect(room: String, displayName: String) {
         let transportUrl = "\(localAddress)/socket"
-        
+
         let client = MembraneRTC.connect(
             with: MembraneRTC.ConnectOptions(
                 transport: PhoenixTransport(url: transportUrl, topic: "room:\(room)"),
@@ -31,41 +30,40 @@ final class AppController: ObservableObject {
             ),
             delegate: self
         )
-        
+
         DispatchQueue.main.async {
             self.state = .loading
             self.client = client
-            
         }
     }
-    
+
     public func disconnect() {
         DispatchQueue.main.async {
             guard let client = self.client else {
                 return
             }
-            
+
             client.remove(delegate: self)
-            
+
             client.disconnect()
-            
+
             self.client = nil
             self.state = .disconnected
         }
     }
-    
+
     public func reset() {
-        if let client = self.client {
+        if let client = client {
             client.remove(delegate: self)
             client.disconnect()
         }
-        
+
         DispatchQueue.main.async {
             self.client = nil
             self.state = .awaiting
         }
     }
-    
+
     deinit {
         self.client?.remove(delegate: self)
     }
@@ -77,25 +75,26 @@ extension AppController: MembraneRTCDelegate {
             self.state = .connected
         }
     }
-    func onJoinSuccess(peerID: String, peersInRoom: Array<Peer>) { }
-    
-    func onJoinError(metadata: Any) { }
-    
-    func onTrackReady(ctx: TrackContext) { }
-    
-    func onTrackAdded(ctx: TrackContext) { }
-    
-    func onTrackRemoved(ctx: TrackContext) { }
-    
-    func onTrackUpdated(ctx: TrackContext) { }
-    
-    func onPeerJoined(peer: Peer) { }
-    
-    func onPeerLeft(peer: Peer) { }
-    
-    func onPeerUpdated(peer: Peer) { }
-    
-    func onError(_ error: MembraneRTCError) {
+
+    func onJoinSuccess(peerID _: String, peersInRoom _: [Peer]) {}
+
+    func onJoinError(metadata _: Any) {}
+
+    func onTrackReady(ctx _: TrackContext) {}
+
+    func onTrackAdded(ctx _: TrackContext) {}
+
+    func onTrackRemoved(ctx _: TrackContext) {}
+
+    func onTrackUpdated(ctx _: TrackContext) {}
+
+    func onPeerJoined(peer _: Peer) {}
+
+    func onPeerLeft(peer _: Peer) {}
+
+    func onPeerUpdated(peer _: Peer) {}
+
+    func onError(_: MembraneRTCError) {
         DispatchQueue.main.async {
             self.state = .error
         }

@@ -4,7 +4,7 @@ public typealias Payload = [String: Any?]
 
 /// Protocol for outgoing `MembraneRTC` events
 public protocol SendableEvent {
-    func serialize() -> Payload;
+    func serialize() -> Payload
 }
 
 public enum ReceivableEventType: String, Codable {
@@ -30,20 +30,19 @@ internal struct ReceivableEventBase: Decodable {
     let type: ReceivableEventType
 }
 
-public class Events {
+public enum Events {
     internal static func decodeEvent<T: Decodable>(from data: Data) -> T? {
         do {
-            
-         return try JSONDecoder().decode(T.self, from: data)
+            return try JSONDecoder().decode(T.self, from: data)
         } catch {
             sdkLogger.error("failed to decode an event: \(error)")
             return nil
         }
     }
-    
+
     /*
      Deserialization of incoming events is quite specific.
-     
+
      Each incoming events if of given format:
      ```
      {
@@ -51,10 +50,10 @@ public class Events {
         "data": "arbitrary event's payload"
      }
      ```
-     
+
      It is quite problematic as we have to decode each event twice. Once to get the event's type.
      Then we have to match on the type and again decode the payload to its related event.
-     
+
      A subset of events are a part of one specific event of type "custom".
      In this case the "data" payload contains a whole embedded event:
      ```
@@ -66,7 +65,7 @@ public class Events {
         }
      }
      ```
-     
+
      This time we are basically performing the deserialization 3 times:
      - to recognize "custom" type
      - to recognize the nested event's type
@@ -77,80 +76,80 @@ public class Events {
             sdkLogger.error("Failed to extract 'data' field from json payload: \(payload)")
             return nil
         }
-        
+
         let data = rawData.data(using: .utf8)!
-        
+
         guard let base: ReceivableEventBase = decodeEvent(from: data) else {
             sdkLogger.error("Failed to decode ReceivableEventBase")
             return nil
         }
-        
+
         switch base.type {
         case .PeerAccepted:
             let event: PeerAcceptedEvent? = decodeEvent(from: data)
-            
+
             return event
-            
+
         case .PeerJoined:
             let event: PeerJoinedEvent? = decodeEvent(from: data)
-            
+
             return event
-            
+
         case .PeerLeft:
             let event: PeerLeftEvent? = decodeEvent(from: data)
-            
+
             return event
-            
+
         case .PeerUpdated:
             let event: PeerUpdateEvent? = decodeEvent(from: data)
-            
+
             return event
-            
+
         case .TracksAdded:
             let event: TracksAddedEvent? = decodeEvent(from: data)
-            
+
             return event
-            
+
         case .TracksRemoved:
             let event: TracksRemovedEvent? = decodeEvent(from: data)
-            
+
             return event
-            
+
         case .TrackUpdated:
             let event: TracksUpdatedEvent? = decodeEvent(from: data)
-            
+
             return event
-            
+
         case .Custom:
             guard let baseEvent: BaseCustomEvent = decodeEvent(from: data) else {
                 return nil
             }
-            
+
             switch baseEvent.data.type {
             case .OfferData:
                 guard let event: CustomEvent<OfferDataEvent> = decodeEvent(from: data) else {
                     return nil
                 }
-                
+
                 return event.data
-                
+
             case .Candidate:
                 guard let event: CustomEvent<RemoteCandidateEvent> = decodeEvent(from: data) else {
                     return nil
                 }
-                
+
                 return event.data
-                
+
             case .SdpAnswer:
                 guard let event: CustomEvent<SdpAnswerEvent> = decodeEvent(from: data) else {
                     return nil
                 }
-                
+
                 return event.data
-                
+
             default:
                 sdkLogger.warning("Unhandled custom event parsing for \(baseEvent.data.type)")
-                
+
                 return nil
             }
         default:
@@ -164,15 +163,15 @@ public class Events {
  */
 struct JoinEvent: SendableEvent {
     let metadata: Metadata
-    
+
     init(metadata: Metadata) {
         self.metadata = metadata
     }
-    
+
     func serialize() -> Payload {
         return [
             "type": "join",
-            "data": ["metadata": self.metadata]
+            "data": ["metadata": metadata],
         ]
     }
 }
@@ -181,13 +180,13 @@ struct SdpOfferEvent: SendableEvent {
     let sdp: String
     let trackIdToTrackMetadata: [String: Metadata]
     let midToTrackId: [String: String]
-    
+
     init(sdp: String, trackIdToTrackMetadata: [String: Metadata], midToTrackId: [String: String]) {
         self.sdp = sdp
         self.trackIdToTrackMetadata = trackIdToTrackMetadata
         self.midToTrackId = midToTrackId
     }
-    
+
     func serialize() -> Payload {
         return [
             "type": "custom",
@@ -196,13 +195,12 @@ struct SdpOfferEvent: SendableEvent {
                 "data": [
                     "sdpOffer": [
                         "type": "offer",
-                        "sdp": self.sdp
+                        "sdp": sdp,
                     ],
-                    "trackIdToTrackMetadata": self.trackIdToTrackMetadata,
-                    "midToTrackId": self.midToTrackId
-                ]
-                
-            ]
+                    "trackIdToTrackMetadata": trackIdToTrackMetadata,
+                    "midToTrackId": midToTrackId,
+                ],
+            ],
         ]
     }
 }
@@ -210,36 +208,35 @@ struct SdpOfferEvent: SendableEvent {
 struct LocalCandidateEvent: SendableEvent {
     let candidate: String
     let sdpMLineIndex: Int32
-    
+
     init(candidate: String, sdpMLineIndex: Int32) {
         self.candidate = candidate
         self.sdpMLineIndex = sdpMLineIndex
     }
-    
+
     func serialize() -> Payload {
         return [
             "type": "custom",
             "data": [
                 "type": "candidate",
                 "data": [
-                    "candidate": self.candidate,
-                    "sdpMLineIndex": self.sdpMLineIndex
-                ]
-                
-            ]
+                    "candidate": candidate,
+                    "sdpMLineIndex": sdpMLineIndex,
+                ],
+            ],
         ]
     }
 }
 
 struct RenegotiateTracksEvent: SendableEvent {
     init() {}
-    
+
     func serialize() -> Payload {
         return [
             "type": "custom",
             "data": [
-                "type": "renegotiateTracks"
-            ]
+                "type": "renegotiateTracks",
+            ],
         ]
     }
 }
@@ -251,9 +248,9 @@ struct RenegotiateTracksEvent: SendableEvent {
 struct PeerAcceptedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let id: String
-        let peersInRoom: Array<Peer>
+        let peersInRoom: [Peer]
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -262,7 +259,7 @@ struct PeerJoinedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let peer: Peer
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -271,7 +268,7 @@ struct PeerLeftEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let peerId: String
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -281,7 +278,7 @@ struct PeerUpdateEvent: ReceivableEvent, Codable {
         let peerId: String
         let metadata: Metadata
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -294,13 +291,13 @@ struct OfferDataEvent: ReceivableEvent, Codable {
         let serverPort: UInt32
         let transport: String
     }
-    
+
     struct Data: Codable {
         let iceTransportPolicy: String
-        let integratedTurnServers: Array<TurnServer>
+        let integratedTurnServers: [TurnServer]
         let tracksTypes: [String: Int]
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -310,7 +307,7 @@ struct TracksAddedEvent: ReceivableEvent, Codable {
         let peerId: String
         let trackIdToMetadata: [String: Metadata]
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -318,9 +315,9 @@ struct TracksAddedEvent: ReceivableEvent, Codable {
 struct TracksRemovedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let peerId: String
-        let trackIds: Array<String>
+        let trackIds: [String]
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -331,7 +328,7 @@ struct TracksUpdatedEvent: ReceivableEvent, Codable {
         let trackId: String
         let metadata: Metadata
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -342,7 +339,7 @@ struct SdpAnswerEvent: ReceivableEvent, Codable {
         let sdp: String
         let midToTrackId: [String: String]
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -353,7 +350,7 @@ struct RemoteCandidateEvent: ReceivableEvent, Codable {
         let sdpMLineIndex: Int32
         let sdpMid: String?
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -366,7 +363,7 @@ struct BaseCustomEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let type: ReceivableEventType
     }
-    
+
     let type: ReceivableEventType
     let data: Data
 }
@@ -375,4 +372,3 @@ struct CustomEvent<EventType: ReceivableEvent & Codable>: ReceivableEvent, Codab
     let type: ReceivableEventType
     let data: EventType
 }
-

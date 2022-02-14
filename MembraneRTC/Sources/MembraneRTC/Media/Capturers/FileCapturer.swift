@@ -3,14 +3,14 @@ import WebRTC
 /// `VideoCapturer` responsible for capturing  video from given file
 class FileCapturer: VideoCapturer {
     private let capturer: RTCFileVideoCapturer
-    
+
     init(_ delegate: RTCVideoCapturerDelegate) {
-        self.capturer = RTCFileVideoCapturer(delegate: delegate)
+        capturer = RTCFileVideoCapturer(delegate: delegate)
     }
-    
+
     public func startCapture() {
         if let _ = Bundle.main.path(forResource: "video.mp4", ofType: nil) {
-            self.capturer.startCapturing(fromFileNamed: "video.mp4") { error in
+            capturer.startCapturing(fromFileNamed: "video.mp4") { error in
                 sdkLogger.error("Error while capturing from file: \(error.localizedDescription)")
             }
 
@@ -18,8 +18,8 @@ class FileCapturer: VideoCapturer {
             fatalError("Fatal when capturing video from file")
         }
     }
-    
+
     public func stopCapture() {
-        self.capturer.stopCapture()
+        capturer.stopCapture()
     }
 }

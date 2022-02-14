@@ -1,16 +1,15 @@
-import Foundation
 import CoreMedia
+import Foundation
 
 // This file is completely taken from LiveKit (as most of the codebase though...)
 public typealias Dimensions = CMVideoDimensions
 
-extension Dimensions {
-    public static let aspect16By9 = 16.0 / 9.0
-    public static let aspect4By3 = 4.0 / 3.0
+public extension Dimensions {
+    static let aspect16By9 = 16.0 / 9.0
+    static let aspect4By3 = 4.0 / 3.0
 }
 
 extension Dimensions: Equatable {
-
     public static func == (lhs: Dimensions, rhs: Dimensions) -> Bool {
         lhs.width == rhs.width &&
             lhs.height == rhs.height
@@ -61,11 +60,10 @@ public struct VideoEncoding {
 
 /// Once again stolen...
 public struct VideoParameters {
-
     // 4:3 aspect ratio
     public static let presetQVGA43 = VideoParameters(
         dimensions: Dimensions(width: 240, height: 180),
-        encoding: VideoEncoding(maxBitrate: 90_000, maxFps: 10)
+        encoding: VideoEncoding(maxBitrate: 90000, maxFps: 10)
     )
     public static let presetVGA43 = VideoParameters(
         dimensions: Dimensions(width: 480, height: 360),
@@ -129,11 +127,11 @@ public struct VideoParameters {
     )
 
     public static let presets43 = [
-        presetQVGA43, presetVGA43, presetQHD43, presetHD43, presetFHD43
+        presetQVGA43, presetVGA43, presetQHD43, presetHD43, presetFHD43,
     ]
 
     public static let presets169 = [
-        presetQVGA169, presetVGA169, presetQHD169, presetHD169, presetFHD169
+        presetQVGA169, presetVGA169, presetQHD169, presetHD169, presetFHD169,
     ]
 
     public static let presetsScreenShare = [
@@ -141,7 +139,7 @@ public struct VideoParameters {
         presetScreenShareHD5,
         presetScreenShareHD15,
         presetScreenShareFHD15,
-        presetScreenShareFHD30
+        presetScreenShareFHD30,
     ]
 
     public let dimensions: Dimensions
@@ -152,5 +150,3 @@ public struct VideoParameters {
         self.encoding = encoding
     }
 }
-
-

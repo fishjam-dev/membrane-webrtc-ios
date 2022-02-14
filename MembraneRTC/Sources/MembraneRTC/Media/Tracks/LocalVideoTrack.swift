@@ -5,22 +5,22 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
     private let videoSource: RTCVideoSource
     internal var capturer: VideoCapturer?
     private let track: RTCVideoTrack
-    
+
     public enum Capturer {
         case camera, file
     }
-    
-    internal override init() {
+
+    override internal init() {
         let source = ConnectionManager.createVideoSource()
-        
-        self.videoSource = source
-        self.track = ConnectionManager.createVideoTrack(source: source)
-        
+
+        videoSource = source
+        track = ConnectionManager.createVideoTrack(source: source)
+
         super.init()
-        
-        self.capturer = self.createCapturer(videoSource: source)
+
+        capturer = createCapturer(videoSource: source)
     }
-    
+
     public static func create(for capturer: Capturer) -> LocalVideoTrack {
         switch capturer {
         case .camera:
@@ -29,29 +29,29 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
             return LocalFileVideoTrack()
         }
     }
-    
-    internal func createCapturer(videoSource: RTCVideoSource) -> VideoCapturer {
+
+    internal func createCapturer(videoSource _: RTCVideoSource) -> VideoCapturer {
         fatalError("Basic LocalVideoTrack does not provide a default capturer")
     }
-    
+
     public func start() {
-        self.capturer?.startCapture()
+        capturer?.startCapture()
     }
-    
+
     public func stop() {
-        self.capturer?.stopCapture()
+        capturer?.stopCapture()
     }
-    
+
     public func toggle() {
-        self.track.isEnabled = !self.track.isEnabled
+        track.isEnabled = !track.isEnabled
     }
-    
+
     public func enabled() -> Bool {
-        return self.track.isEnabled
+        return track.isEnabled
     }
-    
+
     override func rtcTrack() -> RTCMediaStreamTrack {
-        return self.track
+        return track
     }
 }
 
@@ -59,12 +59,12 @@ public class LocalCameraVideoTrack: LocalVideoTrack {
     override internal func createCapturer(videoSource: RTCVideoSource) -> VideoCapturer {
         return CameraCapturer(videoSource)
     }
-    
+
     public func switchCamera() {
-        guard let capturer = self.capturer as? CameraCapturer else {
+        guard let capturer = capturer as? CameraCapturer else {
             return
         }
-        
+
         capturer.switchCamera()
     }
 }

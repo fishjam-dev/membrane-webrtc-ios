@@ -8,13 +8,13 @@ struct AdaptiveStack<Content: View>: View {
     let orientation: UIDeviceOrientation
     let content: () -> Content
     let naturalAlignment: Bool
-    
+
     init(orientation: UIDeviceOrientation, naturalAlignment: Bool = true, @ViewBuilder content: @escaping () -> Content) {
         self.orientation = orientation
         self.naturalAlignment = naturalAlignment
         self.content = content
     }
-    
+
     var body: some View {
         Group {
             if orientation.isLandscape {

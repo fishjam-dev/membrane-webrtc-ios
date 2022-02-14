@@ -1,4 +1,4 @@
 protocol VideoCapturer {
-    func startCapture();
-    func stopCapture();
+    func startCapture()
+    func stopCapture()
 }

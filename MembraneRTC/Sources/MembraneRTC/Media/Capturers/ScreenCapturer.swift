@@ -1,66 +1,66 @@
 import Foundation
-import WebRTC
 import ReplayKit
-
+import WebRTC
 
 /// `VideoCapturer` responsible for capturing in-app screen, for device screen capture go see `BroadcastScreenCapture`
 class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
     let screenRecorder: RPScreenRecorder
     let source: RTCVideoSource
-    
+
     init(_ source: RTCVideoSource) {
-        self.screenRecorder = RPScreenRecorder.shared()
+        screenRecorder = RPScreenRecorder.shared()
         self.source = source
-        
+
         super.init()
-        
-        guard self.screenRecorder.isAvailable else {
+
+        guard screenRecorder.isAvailable else {
             sdkLogger.error("Screen recording is not available")
             return
         }
     }
-    
+
     func startCapture() {
-        self.screenRecorder.startCapture(handler: { sampleBuffer, bufferType, error in
+        screenRecorder.startCapture(handler: { sampleBuffer, bufferType, _ in
             // capture video only
             if bufferType == RPSampleBufferType.video {
                 self.handleSourceBuffer(buffer: sampleBuffer, type: bufferType)
             }
-            
+
         }, completionHandler: {
             error in sdkLogger.error("Encountered error while capturing screen: \(error?.localizedDescription ?? "")")
         })
     }
-         
-    private func handleSourceBuffer(buffer: CMSampleBuffer, type: RPSampleBufferType) {
-        if (CMSampleBufferGetNumSamples(buffer) != 1 || !CMSampleBufferIsValid(buffer) ||
-            !CMSampleBufferDataIsReady(buffer)) {
-            return;
+
+    private func handleSourceBuffer(buffer: CMSampleBuffer, type _: RPSampleBufferType) {
+        if CMSampleBufferGetNumSamples(buffer) != 1 || !CMSampleBufferIsValid(buffer) ||
+            !CMSampleBufferDataIsReady(buffer)
+        {
+            return
         }
-        
+
         guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(buffer) else {
             return
         }
-        
+
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
-        
-        self.source.adaptOutputFormat(toWidth: (Int32)(width/3), height: (Int32)(height/3), fps: 8)
-        
+
+        source.adaptOutputFormat(toWidth: Int32(width / 3), height: Int32(height / 3), fps: 8)
+
         let rtcPixelBuffer = RTCCVPixelBuffer(pixelBuffer: pixelBuffer)
-        
-        let timeStampNs: Int64 = Int64(CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(buffer))) * Int64(NSEC_PER_SEC)
-        
+
+        let timeStampNs = Int64(CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(buffer))) * Int64(NSEC_PER_SEC)
+
         let videoFrame = RTCVideoFrame(buffer: rtcPixelBuffer, rotation: RTCVideoRotation._0, timeStampNs: timeStampNs)
-        
-        let delegate = self.source as RTCVideoCapturerDelegate
-        
+
+        let delegate = source as RTCVideoCapturerDelegate
+
         delegate.capturer(self, didCapture: videoFrame)
     }
-    
+
     func stopCapture() {
-        if self.screenRecorder.isRecording {
-            self.screenRecorder.stopCapture()
+        if screenRecorder.isRecording {
+            screenRecorder.stopCapture()
         }
     }
 }

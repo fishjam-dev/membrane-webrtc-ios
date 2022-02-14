@@ -2,7 +2,6 @@ import Foundation
 
 /// Implementation of a multicast delegate
 public class MulticastDelegate<T>: NSObject {
-
     private let queue = DispatchQueue(label: "membrane.multicast")
     private let delegates = NSHashTable<AnyObject>.weakObjects()
 
@@ -16,7 +15,6 @@ public class MulticastDelegate<T>: NSObject {
     }
 
     public func remove(delegate: T) {
-
         guard let delegate = delegate as AnyObject? else {
             return
         }

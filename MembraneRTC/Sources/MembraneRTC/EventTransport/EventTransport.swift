@@ -7,7 +7,7 @@ public enum EventTransportError: Error {
 
     // Throw when transport fails to connect
     case connectionError
-    
+
     // Throw when you have no idea what happened...
     case unexpected(reason: String)
 }
@@ -19,12 +19,11 @@ extension EventTransportError: CustomStringConvertible {
             return "User is unauthorized to use the transport"
         case .connectionError:
             return "Failed to connect with the remote side"
-        case .unexpected(reason: let reason):
+        case let .unexpected(reason: reason):
             return "Encountered unexpected error: \(reason)"
         }
     }
 }
-
 
 /// Protocol defining a behaviour of an events' transport used for exchaning messages
 /// between client and the server.
