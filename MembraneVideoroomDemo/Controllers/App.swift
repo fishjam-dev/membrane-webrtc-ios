@@ -21,7 +21,7 @@ final class AppController: ObservableObject {
     let remoteAddress = "https://dscout.membrane.work"
 
     public func connect(room: String, displayName: String) {
-        let transportUrl = "\(localAddress)/socket"
+        let transportUrl = "\(remoteAddress)/socket"
 
         let client = MembraneRTC.connect(
             with: MembraneRTC.ConnectOptions(
