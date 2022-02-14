@@ -15,9 +15,9 @@ class ParticipantVideo: Identifiable, ObservableObject {
     let id: String
     let participant: Participant
     let isScreensharing: Bool
-    let mirror: Bool
 
     @Published var videoTrack: VideoTrack
+    @Published var mirror: Bool
 
     init(id: String, participant: Participant, videoTrack: VideoTrack, isScreensharing: Bool = false, mirror: Bool = false) {
         self.id = id
@@ -42,6 +42,7 @@ class RoomController: ObservableObject {
     var participantVideos: [ParticipantVideo]
     var localParticipantId: String?
     var localScreensharingVideoId: String?
+    var isFrontCamera: Bool = true
 
     init(_ room: MembraneRTC) {
         self.room = room
@@ -82,6 +83,18 @@ class RoomController: ObservableObject {
         }
 
         cameraTrack.switchCamera()
+        isFrontCamera = !isFrontCamera
+        
+        guard let id = localParticipantId,
+              let localVideo = findParticipantVideo(id: id) else {
+                  return
+        }
+        
+        let localIsFrontCamera = isFrontCamera
+        // HACK: there is a delay when we set the mirror and the camer actually switches
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            localVideo.mirror = localIsFrontCamera
+        }
     }
 
     func toggleLocalTrack(_ type: LocalTrackType) {
@@ -257,7 +270,7 @@ extension RoomController: MembraneRTCDelegate {
                 fatalError("failed to setup local video")
             }
 
-            self.primaryVideo = ParticipantVideo(id: localParticipant.id, participant: localParticipant, videoTrack: videoTrack, mirror: true)
+            self.primaryVideo = ParticipantVideo(id: localParticipant.id, participant: localParticipant, videoTrack: videoTrack, mirror: self.isFrontCamera)
             self.participants[localParticipant.id] = localParticipant
             participants.forEach { participant in self.participants[participant.id] = participant }
 

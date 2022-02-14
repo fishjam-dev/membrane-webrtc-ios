@@ -6,17 +6,15 @@ struct ParticipantVideoView: View {
 
     let height: CGFloat
     let width: CGFloat
-    let mirror: Bool
 
     @State private var layout: VideoView.Layout
     @State private var localDimensions: Dimensions?
 
-    init(_ participantVideo: ParticipantVideo, height: CGFloat, width: CGFloat, mirror: Bool = false) {
+    init(_ participantVideo: ParticipantVideo, height: CGFloat, width: CGFloat) {
         self.participantVideo = participantVideo
         self.height = height
         self.width = width
         layout = .fill
-        self.mirror = mirror
 
         guard let value = localDimensions else { return }
 
@@ -39,7 +37,7 @@ struct ParticipantVideoView: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            SwiftUIVideoView(self.participantVideo.videoTrack, layout: self.layout, mirror: self.mirror, dimensions: $localDimensions)
+            SwiftUIVideoView(self.participantVideo.videoTrack, layout: self.layout, mirror: self.participantVideo.mirror, dimensions: $localDimensions)
                 .onChange(of: localDimensions) { value in
                     guard let dimensions = value else { return }
 
