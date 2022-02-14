@@ -2,7 +2,6 @@ import Foundation
 import simd
 
 // enables to attach the IPC instance to the existing CFMessagePort instance
-// this allows to
 internal extension CFMessagePort {
     private static var selfObjectHandle: UInt8 = 1
 
@@ -36,9 +35,10 @@ public class IPC {
     }
 }
 
-typealias IPCOnReceiveData = (_ server: IPCServer, _ messageId: Int32, _ data: Data) -> Void
+public typealias IPCOnReceiveData = (_ server: IPCServer, _ messageId: Int32, _ data: Data) -> Void
 
-class IPCServer: IPC {
+/// `IPCServer`  class responsible for opening an `CFMessagePort` and listening on new messages.
+public class IPCServer: IPC {
     private static let loopMode = CFRunLoopMode.commonModes
     
     private let loop: CFRunLoop
@@ -101,7 +101,8 @@ class IPCServer: IPC {
     }
 }
 
-class IPCCLient: IPC {
+/// `IPCClient`  class responsible for writing to a `CFMessagePort` that has been opened by certain `IPCServer`.
+public class IPCCLient: IPC {
     private static var selfObjectHandle: UInt8 = 1
     
     public override init() {}

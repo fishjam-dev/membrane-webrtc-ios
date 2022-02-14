@@ -1,4 +1,5 @@
 import SwiftUI
+import MembraneRTC
 
 struct ParticipantVideoView: View {
     @ObservedObject var participantVideo: ParticipantVideo

@@ -1,6 +1,7 @@
 import Foundation
 import ReplayKit
 import WebRTC
+import MembraneRTC
 import os.log
 
 let logger = OSLog(subsystem: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt", category: "Broadcaster")

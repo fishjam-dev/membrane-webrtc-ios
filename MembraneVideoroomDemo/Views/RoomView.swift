@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import ReplayKit
+import MembraneRTC
 
 #if os(iOS)
 @available(iOS 12, *)
@@ -36,13 +37,13 @@ class OrientationReceiver: ObservableObject {
 struct RoomView: View {
     @Environment(\.scenePhase) var scenePhase
     @EnvironmentObject var appCtrl: AppController
+    @ObservedObject var room: RoomController
     @ObservedObject var orientationReceiver: OrientationReceiver
-    @ObservedObject var room: ObservableRoom
     @State private var localDimensions: Dimensions?
     
     init(_ room: MembraneRTC) {
         self.orientationReceiver = OrientationReceiver()
-        self.room = ObservableRoom(room)
+        self.room = RoomController(room)
     }
     
     @ViewBuilder

@@ -1,4 +1,5 @@
 import SwiftUI
+import MembraneRTC
 
 struct Participant {
     let id: String
@@ -27,7 +28,7 @@ class ParticipantVideo: Identifiable, ObservableObject {
     }
 }
 
-class ObservableRoom: ObservableObject {
+class RoomController: ObservableObject {
     weak var room: MembraneRTC?
     
     @Published var errorMessage: String?
@@ -115,7 +116,8 @@ class ObservableRoom: ObservableObject {
                     return
                 }
                 
-                self.localScreensharingVideoId = screensharingTrack.rtcTrack().trackId
+                // TODO: check if that breaks anything
+                self.localScreensharingVideoId = UUID().uuidString
                 
                 let localParticipantScreensharing = ParticipantVideo(
                     id: self.localScreensharingVideoId!,
@@ -176,7 +178,7 @@ class ObservableRoom: ObservableObject {
     func add(video: ParticipantVideo) {
         DispatchQueue.main.async {
             guard self.findParticipantVideo(id: video.id) == nil else {
-                sdkLogger.error("ObservableRoom tried to add already existing ParticipantVideo")
+                print("RoomController tried to add already existing ParticipantVideo")
                 return
             }
             
@@ -233,7 +235,7 @@ class ObservableRoom: ObservableObject {
     }
 }
 
-extension ObservableRoom: MembraneRTCDelegate {
+extension RoomController: MembraneRTCDelegate {
     func onConnected() {
     }
     

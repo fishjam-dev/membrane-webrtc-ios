@@ -20,14 +20,14 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-struct BroadcastMessage {
+public struct BroadcastMessage {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var type: BroadcastMessage.OneOf_Type? = nil
+  public var type: BroadcastMessage.OneOf_Type? = nil
 
-  var notification: BroadcastMessage.Notification {
+  public var notification: BroadcastMessage.Notification {
     get {
       if case .notification(let v)? = type {return v}
       return .started
@@ -35,7 +35,7 @@ struct BroadcastMessage {
     set {type = .notification(newValue)}
   }
 
-  var video: BroadcastMessage.Video {
+  public var video: BroadcastMessage.Video {
     get {
       if case .video(let v)? = type {return v}
       return BroadcastMessage.Video()
@@ -43,7 +43,7 @@ struct BroadcastMessage {
     set {type = .video(newValue)}
   }
 
-  var audio: BroadcastMessage.Audio {
+  public var audio: BroadcastMessage.Audio {
     get {
       if case .audio(let v)? = type {return v}
       return BroadcastMessage.Audio()
@@ -51,19 +51,19 @@ struct BroadcastMessage {
     set {type = .audio(newValue)}
   }
 
-  var buffer: Data = Data()
+  public var buffer: Data = Data()
 
-  var timestamp: Int64 = 0
+  public var timestamp: Int64 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  enum OneOf_Type: Equatable {
+  public enum OneOf_Type: Equatable {
     case notification(BroadcastMessage.Notification)
     case video(BroadcastMessage.Video)
     case audio(BroadcastMessage.Audio)
 
   #if !swift(>=4.1)
-    static func ==(lhs: BroadcastMessage.OneOf_Type, rhs: BroadcastMessage.OneOf_Type) -> Bool {
+    public static func ==(lhs: BroadcastMessage.OneOf_Type, rhs: BroadcastMessage.OneOf_Type) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -86,19 +86,19 @@ struct BroadcastMessage {
   #endif
   }
 
-  enum Notification: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum Notification: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
     case started // = 0
     case finished // = 1
     case paused // = 2
     case resumed // = 3
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .started
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .started
       case 1: self = .finished
@@ -108,7 +108,7 @@ struct BroadcastMessage {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .started: return 0
       case .finished: return 1
@@ -120,42 +120,42 @@ struct BroadcastMessage {
 
   }
 
-  struct Video {
+  public struct Video {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
-    var format: UInt32 = 0
+    public var format: UInt32 = 0
 
-    var rotation: UInt32 = 0
+    public var rotation: UInt32 = 0
 
-    var width: UInt32 = 0
+    public var width: UInt32 = 0
 
-    var height: UInt32 = 0
+    public var height: UInt32 = 0
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
-  struct Audio {
+  public struct Audio {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=4.2)
 
 extension BroadcastMessage.Notification: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [BroadcastMessage.Notification] = [
+  public static var allCases: [BroadcastMessage.Notification] = [
     .started,
     .finished,
     .paused,
@@ -168,8 +168,8 @@ extension BroadcastMessage.Notification: CaseIterable {
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension BroadcastMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "BroadcastMessage"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "BroadcastMessage"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "notification"),
     2: .same(proto: "video"),
     3: .same(proto: "audio"),
@@ -177,7 +177,7 @@ extension BroadcastMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     5: .same(proto: "timestamp"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -224,7 +224,7 @@ extension BroadcastMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -253,7 +253,7 @@ extension BroadcastMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: BroadcastMessage, rhs: BroadcastMessage) -> Bool {
+  public static func ==(lhs: BroadcastMessage, rhs: BroadcastMessage) -> Bool {
     if lhs.type != rhs.type {return false}
     if lhs.buffer != rhs.buffer {return false}
     if lhs.timestamp != rhs.timestamp {return false}
@@ -263,7 +263,7 @@ extension BroadcastMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
 }
 
 extension BroadcastMessage.Notification: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "STARTED"),
     1: .same(proto: "FINISHED"),
     2: .same(proto: "PAUSED"),
@@ -272,15 +272,15 @@ extension BroadcastMessage.Notification: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension BroadcastMessage.Video: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = BroadcastMessage.protoMessageName + ".Video"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = BroadcastMessage.protoMessageName + ".Video"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "format"),
     2: .same(proto: "rotation"),
     3: .same(proto: "width"),
     4: .same(proto: "height"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -295,7 +295,7 @@ extension BroadcastMessage.Video: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.format != 0 {
       try visitor.visitSingularUInt32Field(value: self.format, fieldNumber: 1)
     }
@@ -311,7 +311,7 @@ extension BroadcastMessage.Video: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: BroadcastMessage.Video, rhs: BroadcastMessage.Video) -> Bool {
+  public static func ==(lhs: BroadcastMessage.Video, rhs: BroadcastMessage.Video) -> Bool {
     if lhs.format != rhs.format {return false}
     if lhs.rotation != rhs.rotation {return false}
     if lhs.width != rhs.width {return false}
@@ -322,19 +322,19 @@ extension BroadcastMessage.Video: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 }
 
 extension BroadcastMessage.Audio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = BroadcastMessage.protoMessageName + ".Audio"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  public static let protoMessageName: String = BroadcastMessage.protoMessageName + ".Audio"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let _ = try decoder.nextFieldNumber() {
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: BroadcastMessage.Audio, rhs: BroadcastMessage.Audio) -> Bool {
+  public static func ==(lhs: BroadcastMessage.Audio, rhs: BroadcastMessage.Audio) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

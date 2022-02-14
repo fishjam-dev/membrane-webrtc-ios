@@ -3,7 +3,7 @@ import SwiftPhoenixClient
 import Promises
 
 /// `EventTransport` implementation utilizing `Phoenix` socket and a channel.
-class PhoenixTransport: EventTransport {
+public class PhoenixTransport: EventTransport {
     enum ConnectionState {
         case uninitialized, connecting, connected, closed, error
     }
@@ -20,13 +20,13 @@ class PhoenixTransport: EventTransport {
     
     let queue = DispatchQueue(label: "membrane.rtc.transport", qos: .background)
     
-    init(url: String, topic: String) {
+    public init(url: String, topic: String) {
         self.topic = topic
         
         self.socket = Socket(endPoint: url, transport: { URLSessionTransport(url: $0)})
     }
     
-    func connect(delegate: EventTransportDelegate) -> Promise<Void> {
+    public func connect(delegate: EventTransportDelegate) -> Promise<Void> {
         return Promise(on: queue) { resolve, fail in
             guard case .uninitialized = self.connectionState else {
                 fail(EventTransportError.unexpected(reason: "Tried to connect on a pending socket"))
@@ -67,7 +67,7 @@ class PhoenixTransport: EventTransport {
         }
     }
     
-    func disconnect() {
+    public func disconnect() {
         if let channel = self.channel {
             channel.leave()
             
@@ -79,7 +79,7 @@ class PhoenixTransport: EventTransport {
         self.connectionState = .closed
     }
     
-    func send(event: SendableEvent) {
+    public func send(event: SendableEvent) {
         guard self.connectionState == .connected,
             let channel = self.channel else {
                 sdkLogger.error("PhoenixEventTransport tried sending a message on a closed socket")

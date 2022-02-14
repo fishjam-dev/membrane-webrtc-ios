@@ -1,6 +1,6 @@
 import Foundation
 import SwiftUI
-import Promises
+import MembraneRTC
 
 
 final class AppController: ObservableObject {
@@ -18,7 +18,7 @@ final class AppController: ObservableObject {
         self.state = .awaiting
     }
     
-    let localAddress = "http://192.168.83.87:4000"
+    let localAddress = "http://192.168.83.89:4000"
     let remoteAddress = "https://dscout.membrane.work"
     
     public func connect(room: String, displayName: String) {
@@ -77,57 +77,27 @@ extension AppController: MembraneRTCDelegate {
             self.state = .connected
         }
     }
-    /// Callback invoked when the client has been let into the room.
-    func onJoinSuccess(peerID: String, peersInRoom: Array<Peer>) {
-        sdkLogger.info("AppController joined successfully")
-    }
+    func onJoinSuccess(peerID: String, peersInRoom: Array<Peer>) { }
     
-    /// Callback invoked when client has been denied access to enter the room.
-    func onJoinError(metadata: Any) {
-        sdkLogger.info("AppController failed to join: \(metadata)")
-    }
+    func onJoinError(metadata: Any) { }
     
-    /// Callback invoked a track is ready to be played.
-    func onTrackReady(ctx: TrackContext) {
-        sdkLogger.debug("AppController a track is ready: \(ctx.trackId)")
-    }
+    func onTrackReady(ctx: TrackContext) { }
     
-    /// Callback invoked a peer already present in a room adds a new track.
-    func onTrackAdded(ctx: TrackContext) {
-        sdkLogger.debug("AppController a track has been added: \(ctx.trackId)")
-    }
+    func onTrackAdded(ctx: TrackContext) { }
     
-    /// Callback invoked when a track will no longer receive any data.
-    func onTrackRemoved(ctx: TrackContext) {
-        sdkLogger.debug("AppController a track has been removed: \(ctx.trackId)")
-    }
+    func onTrackRemoved(ctx: TrackContext) { }
     
-    /// Callback invoked when track's metadata gets updated
-    func onTrackUpdated(ctx: TrackContext) {
-        sdkLogger.debug("AppController a track has been updated: \(ctx.trackId)")
-    }
+    func onTrackUpdated(ctx: TrackContext) { }
     
-    /// Callback invoked when a new peer joins the room.
-    func onPeerJoined(peer: Peer) {
-        sdkLogger.debug("AppController a new peer has joined")
-    }
+    func onPeerJoined(peer: Peer) { }
     
-    /// Callback invoked when a peer leaves the room.
-    func onPeerLeft(peer: Peer) {
-        sdkLogger.debug("AppController a peer has left")
-    }
+    func onPeerLeft(peer: Peer) { }
     
-    /// Callback invoked when peer's metadata gets updated.
-    func onPeerUpdated(peer: Peer) {
-        sdkLogger.debug("AppController a peer has been updated")
-    }
+    func onPeerUpdated(peer: Peer) { }
     
-    /// Callback invoked when a connection errors happens.
     func onError(_ error: MembraneRTCError) {
         DispatchQueue.main.async {
             self.state = .error
         }
-        
-        sdkLogger.debug("AppController encountered connection error..")
     }
 }

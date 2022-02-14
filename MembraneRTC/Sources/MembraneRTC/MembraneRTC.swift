@@ -47,7 +47,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         let transport: EventTransport
         let config: Metadata
         
-        init(transport: EventTransport, config: Metadata) {
+        public init(transport: EventTransport, config: Metadata) {
             self.transport = transport
             self.config = config
         }
