@@ -104,6 +104,13 @@ struct RoomView: View {
         HStack {
             Spacer()
 
+
+            mediaControlButton(.audio, enabled: self.room.isMicEnabled)
+                .padding(.trailing)
+
+            mediaControlButton(.video, enabled: self.room.isCameraEnabled)
+                .padding(.trailing)
+            
             Button(action: {
                 self.appCtrl.disconnect()
             }) {
@@ -111,12 +118,6 @@ struct RoomView: View {
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(Color.red.darker())
             }.padding(.trailing)
-
-            mediaControlButton(.audio, enabled: self.room.isMicEnabled)
-                .padding(.trailing)
-
-            mediaControlButton(.video, enabled: self.room.isCameraEnabled)
-                .padding(.trailing)
 
             cameraSwitchButton()
                 .padding(.trailing)

@@ -5,7 +5,7 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            Color.blue.darker(by: 0.5).ignoresSafeArea()
+             Color.blue.darker(by: 0.5).ignoresSafeArea()
 
             switch appCtrl.state {
             case .connected:

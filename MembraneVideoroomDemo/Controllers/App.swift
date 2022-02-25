@@ -18,7 +18,7 @@ final class AppController: ObservableObject {
     }
 
     let localAddress = "http://192.168.83.89:4000"
-    let remoteAddress = "https://dscout.membrane.work"
+    let remoteAddress = "https://dscout-us.membrane.work"
 
     public func connect(room: String, displayName: String) {
         let transportUrl = "\(remoteAddress)/socket"
