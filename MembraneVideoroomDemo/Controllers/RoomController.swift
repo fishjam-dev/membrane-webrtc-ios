@@ -30,6 +30,10 @@ class ParticipantVideo: Identifiable, ObservableObject {
 
 class RoomController: ObservableObject {
     weak var room: MembraneRTC?
+    
+    var localVideoTrack: LocalVideoTrack?
+    var localAudioTrack: LocalAudioTrack?
+    var localScreencastTrack: LocalBroadcastScreenTrack?
 
     @Published var errorMessage: String?
     @Published var isMicEnabled: Bool
@@ -43,6 +47,7 @@ class RoomController: ObservableObject {
     var localParticipantId: String?
     var localScreensharingVideoId: String?
     var isFrontCamera: Bool = true
+    
 
     init(_ room: MembraneRTC) {
         self.room = room
@@ -52,8 +57,16 @@ class RoomController: ObservableObject {
         isMicEnabled = true
         isCameraEnabled = true
         isScreensharingEnabled = false
+        
+        let localPeer = room.currentPeer()
+        let trackMetadata = ["user_id": localPeer.metadata["displayName"] ?? "UNKNOWN"]
+        
+        localVideoTrack = room.createVideoTrack(metadata: trackMetadata)
+        localAudioTrack = room.createAudioTrack(metadata: trackMetadata)
 
         room.add(delegate: self)
+        
+        
 
         self.room?.join()
     }
@@ -61,13 +74,13 @@ class RoomController: ObservableObject {
     func enableTrack(_ type: LocalTrackType, enabled: Bool) {
         switch type {
         case .video:
-            if let track = room?.localVideoTrack, track.enabled() != enabled {
+            if let track = localVideoTrack, track.enabled() != enabled {
                 track.toggle()
             }
 
             isCameraEnabled = enabled
         case .audio:
-            if let track = room?.localAudioTrack, track.enabled() != enabled {
+            if let track = localAudioTrack, track.enabled() != enabled {
                 track.toggle()
             }
 
@@ -78,7 +91,7 @@ class RoomController: ObservableObject {
     }
 
     func switchCameraPosition() {
-        guard let cameraTrack = room?.localVideoTrack as? LocalCameraVideoTrack else {
+        guard let cameraTrack = localVideoTrack as? LocalCameraVideoTrack else {
             return
         }
 
@@ -107,11 +120,11 @@ class RoomController: ObservableObject {
 
         switch type {
         case .audio:
-            room.localAudioTrack?.toggle()
+            localAudioTrack?.toggle()
             isMicEnabled = !isMicEnabled
 
         case .video:
-            room.localVideoTrack?.toggle()
+            localVideoTrack?.toggle()
             isCameraEnabled = !isCameraEnabled
 
         case .screensharing:
@@ -120,22 +133,21 @@ class RoomController: ObservableObject {
             guard isScreensharingEnabled == false else {
                 return
             }
-
-            room.startBroadcastScreensharing(onStart: { [weak self, weak room] in
-                guard let self = self,
-                      let room = room,
-                      let screensharingTrack = room.localScreensharingVideoTrack
-                else {
+            
+            
+            let displayName = room.currentPeer().metadata["displayName"] ?? "UNKNOWN"
+            
+            room.createScreencastTrack(metadata: ["user_id": displayName, "type": "screensharing"], onStart: { [weak self] screencastTrack in
+                guard let self = self else {
                     return
                 }
 
-                // TODO: check if that breaks anything
                 self.localScreensharingVideoId = UUID().uuidString
 
                 let localParticipantScreensharing = ParticipantVideo(
                     id: self.localScreensharingVideoId!,
                     participant: localParticipant,
-                    videoTrack: screensharingTrack,
+                    videoTrack: screencastTrack,
                     isScreensharing: true
                 )
 
@@ -253,10 +265,6 @@ extension RoomController: MembraneRTCDelegate {
     func onConnected() {}
 
     func onJoinSuccess(peerID: String, peersInRoom: [Peer]) {
-        guard let room = room else {
-            return
-        }
-
         localParticipantId = peerID
 
         let localParticipant = Participant(id: peerID, displayName: "Me")
@@ -266,7 +274,7 @@ extension RoomController: MembraneRTCDelegate {
         }
 
         DispatchQueue.main.async {
-            guard let videoTrack = room.localVideoTrack else {
+            guard let videoTrack = self.localVideoTrack else {
                 fatalError("failed to setup local video")
             }
 
