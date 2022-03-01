@@ -4,29 +4,6 @@ import WebRTC
 internal var sdkLogger = Logger(label: "org.membrane.ios")
 internal let pcLogPrefix = "[PeerConnection]"
 
-/// `BroadcastScreenReceiver` is responsible for receiving screen broadcast events such as
-/// `started` or `stopped` and accorindly calls given callbacks passed during initialization.
-internal class BroadcastScreenReceiver: LocalBroadcastScreenTrackDelegate {
-    let onStart: () -> Void
-    let onStop: () -> Void
-
-    init(onStart: @escaping () -> Void, onStop: @escaping () -> Void) {
-        self.onStart = onStart
-        self.onStop = onStop
-    }
-
-    public func started() {
-        onStart()
-    }
-
-    public func stopped() {
-        onStop()
-    }
-
-    public func paused() {}
-
-    public func resumed() {}
-}
 
 /// MembraneRTC client.
 ///
@@ -65,9 +42,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     /// List of ice (may be turn) servers that are used for initializing the `RTCPeerConnection`
     private var iceServers: [RTCIceServer]
 
-    @Published public var localVideoTrack: LocalVideoTrack?
-    @Published public var localScreensharingVideoTrack: LocalBroadcastScreenTrack?
-    @Published public var localAudioTrack: LocalAudioTrack?
+    private var localTracks: [LocalTrack] = []
 
     private var localPeer = Peer(id: "", metadata: [:], trackIdToMetadata: [:])
 
@@ -95,7 +70,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         iceServers = []
 
         // setup local peer
-        localPeer.metadata = peerMetadata
+        localPeer = localPeer.with(metadata: peerMetadata)
 
         super.init()
     }
@@ -138,8 +113,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
                 $0.onError(.transport(error.localizedDescription))
             }
         }
-
-        setupMediaTracks()
     }
 
     /// Disconnects from the `Membrane RTC Engine` transport and closes the exisitng `RTCPeerConnection`.
@@ -150,36 +123,63 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             pc.close()
         }
     }
-
-    /// Starts listening for a media sent from a custom  `Broadcast Upload Extension`.
+    
+    public func createVideoTrack(metadata: Metadata) -> LocalVideoTrack {
+        let videoTrack = LocalVideoTrack.create(for: .camera)
+        videoTrack.start()
+        
+        localTracks.append(videoTrack)
+        
+        localPeer = localPeer.withTrack(trackId: videoTrack.rtcTrack().trackId, metadata: metadata)
+        
+        if state == .connected {
+            transport.send(event: RenegotiateTracksEvent())
+        }
+        
+        return videoTrack
+    }
+    
+    public func createAudioTrack(metadata: Metadata) -> LocalAudioTrack {
+        let audioTrack = LocalAudioTrack()
+        audioTrack.start()
+        
+        localTracks.append(audioTrack)
+        
+        localPeer = localPeer.withTrack(trackId: audioTrack.rtcTrack().trackId, metadata: metadata)
+        
+        if state == .connected {
+            transport.send(event: RenegotiateTracksEvent())
+        }
+        
+        return audioTrack
+    }
+    
+    /// Creates a screencast track. The track starts listening for a media sent from a custom  `Broadcast Upload Extension`.
+    ///
+    /// NOTE: Screencast track should never get removed on its own. It is being controlled by the Broadcast extension and can't be stopped arbitrarly by the application itself.
     ///
     /// The communication can only be performed with a `IPC` mechanism. The `MembraneRTC` works in a server mode
     /// while the broadcaster should work in a client mode utilizing the `IPCClient` class.
     ///
     /// The captured media gets forwarded to a new `RTCVideoTrack` which can be freely sent via `RTCPeerConnection`.
-    public func startBroadcastScreensharing(onStart: @escaping () -> Void, onStop: @escaping () -> Void) {
-        guard localScreensharingVideoTrack == nil else {
-            return
-        }
-
+    public func createScreencastTrack(metadata: Metadata, onStart: @escaping (_ track: LocalBroadcastScreenTrack) -> Void, onStop: @escaping () -> Void) {
         let screensharingTrack = LocalBroadcastScreenTrack()
-        localScreensharingVideoTrack = screensharingTrack
+        localTracks.append(screensharingTrack)
 
         broadcastScreenshareReceiver = BroadcastScreenReceiver(onStart: { [weak self, weak screensharingTrack] in
-            guard let screensharingTrack = screensharingTrack else {
+            guard let track = screensharingTrack else {
                 return
             }
 
             DispatchQueue.main.async {
-                self?.startScreensharing(track: screensharingTrack)
-
-                onStart()
+                self?.setupScreencastTrack(track: track, metadata: metadata)
+                onStart(track)
             }
-
-        }, onStop: { [weak self] in
+        }, onStop: { [weak self, weak screensharingTrack] in
             DispatchQueue.main.async {
-                self?.stopScreensharing()
-
+                if let track = screensharingTrack {
+                    self?.removeTrack(trackId: track.rtcTrack().trackId)
+                }
                 onStop()
             }
         })
@@ -187,9 +187,35 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         screensharingTrack.delegate = broadcastScreenshareReceiver
         screensharingTrack.start()
     }
+    
+    @discardableResult
+    public func removeTrack(trackId: String) -> Bool {
+        guard let index = localTracks.firstIndex(where: { $0.rtcTrack().trackId == trackId}) else {
+            return false
+        }
+        
+        let track = localTracks.remove(at: index)
+        let rtcTrack = track.rtcTrack()
+        track.stop()
+        
+        if let pc = connection,
+           let sender = pc.transceivers.first(where: { $0.sender.track?.trackId == rtcTrack.trackId })?.sender {
+            pc.removeTrack(sender)
+        }
+        
+        localPeer = localPeer.withoutTrack(trackId: trackId)
+        
+        transport.send(event: RenegotiateTracksEvent())
+        
+        return true
+    }
+    
+    public func currentPeer() -> Peer {
+        return localPeer
+    }
 
     /// Adds given broadcast track to the peer connection and forces track renegotiation.
-    private func startScreensharing(track: LocalBroadcastScreenTrack) {
+    private func setupScreencastTrack(track: LocalBroadcastScreenTrack, metadata: Metadata) {
         guard let pc = connection else {
             return
         }
@@ -197,58 +223,11 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         let localStreamId = UUID().uuidString
         pc.add(track.rtcTrack(), streamIds: [localStreamId])
 
-        // TODO: decide if all of those functions should be run on the webRTC queue
-        pc.transceivers.forEach { transceiver in
-            if transceiver.direction == .sendRecv {
-                transceiver.setDirection(.sendOnly, error: nil)
-            }
-        }
+        pc.enforceSendOnlyDirection()
 
+        localPeer = localPeer.withTrack(trackId: track.rtcTrack().trackId, metadata: metadata)
+        
         transport.send(event: RenegotiateTracksEvent())
-
-        let displayName = localPeer.metadata["displayName"] ?? ""
-        // add track's metadata and set the type to screensharing to indicate it to other clients
-        localPeer.trackIdToMetadata?[track.rtcTrack().trackId] = ["type": "screensharing", "user_id": displayName]
-    }
-
-    /// Cleans up after the existing screensharing
-    private func stopScreensharing() {
-        guard
-            let pc = connection,
-            let screensharing = localScreensharingVideoTrack
-        else {
-            return
-        }
-
-        // stop capturing the screen
-        screensharing.stop()
-
-        // remove screensharing's track from peer connection and trigger renegotiation
-        if let sender = pc.senders.first(where: { sender in
-            sender.track?.trackId == screensharing.rtcTrack().trackId
-        }) {
-            pc.removeTrack(sender)
-            screensharing.rtcTrack().isEnabled = false
-
-            localScreensharingVideoTrack = nil
-            localPeer.trackIdToMetadata?.removeValue(forKey: screensharing.rtcTrack().trackId)
-            transport.send(event: RenegotiateTracksEvent())
-        }
-    }
-
-    /// Sets local audio and video media.
-    private func setupMediaTracks() {
-        localVideoTrack = LocalVideoTrack.create(for: .camera)
-        localVideoTrack!.start()
-
-        localAudioTrack = LocalAudioTrack()
-        localAudioTrack!.start()
-
-        let displayName = localPeer.metadata["displayName"] ?? ""
-        localPeer.trackIdToMetadata = [
-            localVideoTrack!.rtcTrack().trackId: ["user_id": displayName],
-            localAudioTrack!.rtcTrack().trackId: ["user_id": displayName],
-        ]
     }
 
     /// Sets up the local peer connection with previously prepared config and local media tracks.
@@ -276,21 +255,13 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
         // common stream id for the local video and audio tracks
         let localStreamId = UUID().uuidString
-
-        if let videoTrack = localVideoTrack?.rtcTrack() {
-            peerConnection.add(videoTrack, streamIds: [localStreamId])
+        
+        localTracks.forEach { track in
+            peerConnection.add(track.rtcTrack(), streamIds: [localStreamId])
+            
         }
-
-        if let audioTrack = localAudioTrack?.rtcTrack() {
-            peerConnection.add(audioTrack, streamIds: [localStreamId])
-        }
-
-        // sever does not accept sendRecv direction so change all local tracks to sendOnly
-        peerConnection.transceivers.forEach { tc in
-            if tc.direction == .sendRecv {
-                tc.setDirection(.sendOnly, error: nil)
-            }
-        }
+        
+        peerConnection.enforceSendOnlyDirection()
     }
 }
 
@@ -413,14 +384,14 @@ extension MembraneRTC: EventTransportDelegate {
         case .PeerAccepted:
             let peerAccepted = event as! PeerAcceptedEvent
 
-            localPeer.id = peerAccepted.data.id
+            localPeer = localPeer.with(id: peerAccepted.data.id)
 
             // initialize all present peers
             peerAccepted.data.peersInRoom.forEach { peer in
                 self.remotePeers[peer.id] = peer
 
                 // initialize peer's track contexts
-                peer.trackIdToMetadata?.forEach { trackId, metadata in
+                peer.trackIdToMetadata.forEach { trackId, metadata in
                     let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
 
                     self.trackContexts[trackId] = context
@@ -458,21 +429,19 @@ extension MembraneRTC: EventTransportDelegate {
             remotePeers.removeValue(forKey: peer.id)
 
             // for a leaving peer clear his track contexts
-            if let trackIdToMetadata = peer.trackIdToMetadata {
-                let trackIds = Array(trackIdToMetadata.keys)
+            let trackIds = Array(peer.trackIdToMetadata.keys)
 
-                let contexts = trackIds.compactMap { id in
-                    self.trackContexts[id]
-                }
+            let contexts = trackIds.compactMap { id in
+                self.trackContexts[id]
+            }
 
-                trackIds.forEach { id in
-                    self.trackContexts.removeValue(forKey: id)
-                }
+            trackIds.forEach { id in
+                self.trackContexts.removeValue(forKey: id)
+            }
 
-                contexts.forEach { context in
-                    self.notify {
-                        $0.onTrackRemoved(ctx: context)
-                    }
+            contexts.forEach { context in
+                self.notify {
+                    $0.onTrackRemoved(ctx: context)
                 }
             }
 
@@ -488,7 +457,8 @@ extension MembraneRTC: EventTransportDelegate {
             }
 
             // update peer's metadata
-            peer.metadata = peerUpdated.data.metadata
+            peer = peer.with(metadata: peerUpdated.data.metadata)
+            
             remotePeers.updateValue(peer, forKey: peer.id)
 
             notify {
@@ -529,11 +499,11 @@ extension MembraneRTC: EventTransportDelegate {
             }
 
             // update tracks of the remote peer
-            peer.trackIdToMetadata = tracksAdded.data.trackIdToMetadata
+            peer = peer.with(trackIdToMetadata: tracksAdded.data.trackIdToMetadata)
             remotePeers[peer.id] = peer
 
             // for each track create a corresponding track context
-            peer.trackIdToMetadata?.forEach { trackId, metadata in
+            peer.trackIdToMetadata.forEach { trackId, metadata in
                 let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
 
                 self.trackContexts[trackId] = context
@@ -608,7 +578,7 @@ extension MembraneRTC {
 
             pc.setLocalDescription(offer, completionHandler: { error in
                 guard let err = error else {
-                    self.transport.send(event: SdpOfferEvent(sdp: offer.sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata ?? [:], midToTrackId: self.getMidToTrackId()))
+                    self.transport.send(event: SdpOfferEvent(sdp: offer.sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata, midToTrackId: self.getMidToTrackId()))
                     return
                 }
 
@@ -694,11 +664,11 @@ extension MembraneRTC {
 
     /// Returns a mapping from `mid` of transceivers to their corresponding remote tracks' ids.
     private func getMidToTrackId() -> [String: String] {
-        guard let pc = connection,
-              let localTracksKeys = localPeer.trackIdToMetadata?.keys
-        else {
+        guard let pc = connection else {
             return [:]
         }
+        
+        let localTracksKeys = localPeer.trackIdToMetadata.keys
 
         let localTracks: [String] = Array(localTracksKeys)
 

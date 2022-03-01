@@ -46,3 +46,13 @@ extension ConnectionManager {
         }
     }
 }
+
+extension RTCPeerConnection {
+    func enforceSendOnlyDirection() {
+        self.transceivers.forEach { transceiver in
+            if transceiver.direction == .sendRecv {
+                transceiver.setDirection(.sendOnly, error: nil)
+            }
+        }
+    }
+}

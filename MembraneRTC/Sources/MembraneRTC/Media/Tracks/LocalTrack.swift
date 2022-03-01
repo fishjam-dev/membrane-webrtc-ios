@@ -1,4 +1,4 @@
-public protocol LocalTrack {
+internal protocol LocalTrack: MediaTrackProvider {
     func start()
     func stop()
     func toggle()
