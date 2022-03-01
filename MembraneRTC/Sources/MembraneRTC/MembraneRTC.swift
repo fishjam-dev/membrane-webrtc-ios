@@ -132,6 +132,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         localPeer = localPeer.withTrack(trackId: videoTrack.rtcTrack().trackId, metadata: metadata)
         
+        if state == .connected {
+            transport.send(event: RenegotiateTracksEvent())
+        }
+        
         return videoTrack
     }
     
@@ -142,6 +146,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         localTracks.append(audioTrack)
         
         localPeer = localPeer.withTrack(trackId: audioTrack.rtcTrack().trackId, metadata: metadata)
+        
+        if state == .connected {
+            transport.send(event: RenegotiateTracksEvent())
+        }
         
         return audioTrack
     }
