@@ -1,6 +1,6 @@
 import WebRTC
 
-/// Utility wrapper around a remote `RTCAudioTrack`
+/// Utility wrapper around a remote `RTCAudioTrack`.
 public class RemoteAudioTrack: AudioTrack, RemoteTrack {
     public let track: RTCAudioTrack
 
@@ -9,13 +9,13 @@ public class RemoteAudioTrack: AudioTrack, RemoteTrack {
 
         super.init()
     }
-
-    public func toggle() {
-        track.isEnabled = !track.isEnabled
-    }
-
+    
     public func enabled() -> Bool {
         return track.isEnabled
+    }
+    
+    public func setEnabled(_ enabled: Bool) {
+        track.isEnabled = enabled
     }
 
     /// Sets a volume for given remote track, should be in range [0, 1]

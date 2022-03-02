@@ -5,17 +5,34 @@ internal var sdkLogger = Logger(label: "org.membrane.ios")
 internal let pcLogPrefix = "[PeerConnection]"
 
 
-/// MembraneRTC client.
-///
-/// The client is responsible for relaying MembraneRTC Engine specific messages through given reliable transport layer.
-/// Based on the messaging it is responsible for managing a `RTCPeerConnection`, handling the new audio/video tracks
-/// and necessary metadata that is associated with given tracks and belonging to the session's participants.
-/// Any important notification are passed to registered delegates following tthe `MembraneRTCDelegate` protocol.
+/**
+ MembraneRTC client.
+
+ The client is responsible for relaying MembraneRTC Engine specific messages through given reliable transport layer.
+ Once initialized, the client is responsbile for exchaning necessary messages via provided `EventTransport` and managing underlying
+ `RTCPeerConnection`. The goal of the client is to be as lean as possible, meaning that all activies regarding the session such as moderating
+ should be implemented by the user himself on top of the `MembraneRTC`.
+
+ The user's ability of interacting with the client is greatly liimited to the essential actions such as joining/leaving the session,
+ adding/removing local tracks and receiving information about remote peers and their tracks that can be played by the user.
+
+ User can request 3 different types of local tracks that will get forwareded to the server by the client:
+ - `LocalAudioTrack` - an audio track utilizing device's microphone
+ - `LocalVideoTrack` - a video track that can utilize device's camera or if necessay use video playback from a file (useful for testing with a simulator)
+ - `LocalBroadcastScreenTrack` - a screencast track taking advantage of `Broadcast Upload Extension` to record device's screen even if the app is minimized
+
+ It is recommended to request necessary audio and video tracks before joining the room but it does not mean it can't be done afterwards (in case of screencast)
+
+ Once the user received `onConnected` notification they can call the `join` method to initialize joining the session.
+ After receiving `onJoinSuccess` a user will receive notification about various peers joining/leaving the session, new tracks being published and ready for playback
+ or going inactive.
+ */
 public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObject {
     static let version = "0.1.0"
 
     enum State {
         case uninitialized
+        case awaitingJoin
         case connected
         case disconnected
     }
@@ -33,13 +50,13 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     var state: State
     private var transport: EventTransport
 
-    /// `RTCPeerConnection` config
+    // `RTCPeerConnection` config
     private var config: RTCConfiguration
 
-    /// Underyling RTC connection
+    // Underyling RTC connection
     private var connection: RTCPeerConnection?
 
-    /// List of ice (may be turn) servers that are used for initializing the `RTCPeerConnection`
+    // List of ice (may be turn) servers that are used for initializing the `RTCPeerConnection`
     private var iceServers: [RTCIceServer]
 
     private var localTracks: [LocalTrack] = []
@@ -58,7 +75,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     // receiver used for iOS screen broadcast
     private var broadcastScreenshareReceiver: BroadcastScreenReceiver?
 
-    static let mediaConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue])
+    private static let mediaConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue])
 
     internal init(eventTransport: EventTransport, config: RTCConfiguration, peerMetadata: Metadata) {
         // RTCSetMinDebugLogLevel(.error)
@@ -75,10 +92,18 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         super.init()
     }
 
-    /// Initializes the connection with the `Membrane RTC Engine` transport layer
-    /// and sets up local audio and video track.
-    ///
-    /// Should not be confused with joining the actual room, which is a separate process.
+    /**
+     Initializes the connection with the `Membrane RTC Engine` transport layer
+     and sets up local audio and video track.
+ 
+     Should not be confused with joining the actual room, which is a separate process.
+ 
+     - Parameters:
+        - with: Connection options, consists of an `EventTransport` instance that will be used for relaying media events and arbitrary `config` metadata used by `Membrane RTC Engine` for connection
+        - delegate: The delegate that will receive all notification emitted by `MembraneRTC` client
+ 
+     -  Returns: `MembraneRTC` client instance in connecting state
+     */
     public static func connect(with options: ConnectOptions, delegate: MembraneRTCDelegate) -> MembraneRTC {
         let client = MembraneRTC(eventTransport: options.transport, config: RTCConfiguration(), peerMetadata: options.config)
 
@@ -88,42 +113,51 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         return client
     }
 
-    /// Default ICE server when no turn servers are specified
+    // Default ICE server when no turn servers are specified
     private static func defaultIceServer() -> RTCIceServer {
         let iceUrl = "stun:stun.l.google.com:19302"
 
         return RTCIceServer(urlStrings: [iceUrl])
     }
 
-    /// Starts the join process.
+    /// Initiaites join process once the client has successfully connected.
     ///
     /// Once completed either `onJoinSuccess` or `onJoinError` of client's delegate gets invovked.
     public func join() {
+        guard state == .awaitingJoin else {
+            return
+        }
+        
         transport.send(event: JoinEvent(metadata: localPeer.metadata))
     }
 
-    internal func connect() {
-        // initiate a transport connection
-        transport.connect(delegate: self).then {
-            self.notify {
-                $0.onConnected()
-            }
-        }.catch { error in
-            self.notify {
-                $0.onError(.transport(error.localizedDescription))
-            }
-        }
-    }
 
-    /// Disconnects from the `Membrane RTC Engine` transport and closes the exisitng `RTCPeerConnection`.
+    /// Disconnects from the `Membrane RTC Engine` transport and closes the exisitng `RTCPeerConnection`
+    ///
+    /// Once the `disconnect` gets invoked the client can't be reused and user should create a new client instance instead.
     public func disconnect() {
         transport.disconnect()
 
+        localTracks.forEach { track in
+            track.stop()
+        }
+        
         if let pc = connection {
             pc.close()
         }
     }
     
+    /**
+     Creates a new video track utilizing device's camera.
+ 
+     The client assumes that app user already granted camera access permissions.
+ 
+     - Parameters:
+        - videoParameters: The parameters used for choosing the proper camera resolution and target framerate
+        - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
+ 
+     - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
+     */
     public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata) -> LocalVideoTrack {
         let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters)
         videoTrack.start()
@@ -139,6 +173,17 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         return videoTrack
     }
     
+
+    /**
+     Creates a new audio track utilizing device's microphone.
+ 
+     The client assumes that app user already granted microphone access permissions.
+ 
+     - Parameters:
+        - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
+ 
+     - Returns: `LocalAudioTrack` instance that user then can use for things such as front / back camera switch.
+     */
     public func createAudioTrack(metadata: Metadata) -> LocalAudioTrack {
         let audioTrack = LocalAudioTrack()
         audioTrack.start()
@@ -154,14 +199,21 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         return audioTrack
     }
     
-    /// Creates a screencast track. The track starts listening for a media sent from a custom  `Broadcast Upload Extension`.
-    ///
-    /// NOTE: Screencast track should never get removed on its own. It is being controlled by the Broadcast extension and can't be stopped arbitrarly by the application itself.
-    ///
-    /// The communication can only be performed with a `IPC` mechanism. The `MembraneRTC` works in a server mode
-    /// while the broadcaster should work in a client mode utilizing the `IPCClient` class.
-    ///
-    /// The captured media gets forwarded to a new `RTCVideoTrack` which can be freely sent via `RTCPeerConnection`.
+    /**
+     Creates a screencast track capturing the entire device's screen.
+     
+     The track starts listening for a media sent from a custom  `Broadcast Upload Extension`.  For more information
+     please refer to `LocalBroadcastScreenTrack` for more information.
+     
+     The nature of upload extension is asynchronous due to the way that iOS handle broadcasting the screen. The app user
+     may be hanging on start broadcast screen therefore there is no consistent synchronous way of telling if the broadcast started.
+     
+     - Parameters:
+        - videoParameters: The parameters used for limiting the screen capture resolution and target framerate
+        - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
+        - onStart: The callback that will receive the screencast track called once the track becomes available
+        - onStop: The callback that will be called once the track becomes unavailable
+     */
     public func createScreencastTrack(videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalBroadcastScreenTrack) -> Void, onStop: @escaping () -> Void) {
         let screensharingTrack = LocalBroadcastScreenTrack(videoParameters: videoParameters)
         localTracks.append(screensharingTrack)
@@ -188,6 +240,14 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         screensharingTrack.start()
     }
     
+    /**
+     Removes a local track with given `trackId`.
+     
+     - Parameters:
+        - trackId: The id of the local track that should get stopped and removed from the client
+     
+     - Returns: Bool whether the track has been found and removed or not
+     */
     @discardableResult
     public func removeTrack(trackId: String) -> Bool {
         guard let index = localTracks.firstIndex(where: { $0.rtcTrack().trackId == trackId}) else {
@@ -210,8 +270,24 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         return true
     }
     
+    /// Returns information about the current local peer
     public func currentPeer() -> Peer {
         return localPeer
+    }
+    
+    internal func connect() {
+        // initiate a transport connection
+        transport.connect(delegate: self).then {
+            self.notify {
+                self.state = .awaitingJoin
+                
+                $0.onConnected()
+            }
+        }.catch { error in
+            self.notify {
+                $0.onError(.transport(error.localizedDescription))
+            }
+        }
     }
 
     /// Adds given broadcast track to the peer connection and forces track renegotiation.

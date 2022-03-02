@@ -1,7 +1,7 @@
 import CoreMedia
 import Foundation
 
-// TODO: reference livekit files as this is purely taken from them...
+/// Type refering to video dimensions.
 public typealias Dimensions = CMVideoDimensions
 
 public extension Dimensions {
@@ -17,36 +17,7 @@ extension Dimensions: Equatable {
 }
 
 extension Dimensions {
-    func computeSuggestedPresets() -> [VideoParameters] {
-        let aspect = Double(width) / Double(height)
-        if abs(aspect - Dimensions.aspect16By9) < abs(aspect - Dimensions.aspect4By3) {
-            return VideoParameters.presets169
-        }
-        return VideoParameters.presets43
-    }
-
-    func computeSuggestedPreset(in presets: [VideoParameters]) -> VideoParameters {
-        assert(!presets.isEmpty)
-        var result = presets[0]
-        for preset in presets {
-            if width >= preset.dimensions.width, height >= preset.dimensions.height {
-                result = preset
-            }
-        }
-        return result
-    }
-
-    func computeSuggestedPresetIndex(in presets: [VideoParameters]) -> Int {
-        assert(!presets.isEmpty)
-        var result = 0
-        for preset in presets {
-            if width >= preset.dimensions.width, height >= preset.dimensions.height {
-                result += 1
-            }
-        }
-        return result
-    }
-    
+    /// Swaps height with width.
     public func flip() -> Dimensions {
         return Dimensions(width: height, height: width)
     }

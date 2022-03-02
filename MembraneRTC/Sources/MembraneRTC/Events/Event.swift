@@ -7,6 +7,7 @@ public protocol SendableEvent {
     func serialize() -> Payload
 }
 
+/// Available types of incoming media events.
 public enum ReceivableEventType: String, Codable {
     case PeerAccepted = "peerAccepted"
     case PeerJoined = "peerJoined"
@@ -43,7 +44,7 @@ public enum Events {
     /*
      Deserialization of incoming events is quite specific.
 
-     Each incoming events if of given format:
+     Each incoming event if of given format:
      ```
      {
         "type": "(dedicated event name)",
@@ -51,8 +52,8 @@ public enum Events {
      }
      ```
 
-     It is quite problematic as we have to decode each event twice. Once to get the event's type.
-     Then we have to match on the type and again decode the payload to its related event.
+     It is quite problematic as we have to decode each event twice. Once to get the event's type,
+     and once we know the type we can decode the event's data payload.
 
      A subset of events are a part of one specific event of type "custom".
      In this case the "data" payload contains a whole embedded event:

@@ -5,12 +5,16 @@ public protocol VideoViewDelegate: AnyObject {
     func didChange(dimensions: Dimensions)
 }
 
-/// `VideoView` is responsible for receiving the `RTCVideoTrack` and accordingly
-/// making sure that it gets properly rendered.
-///
-/// It supports two types of fitting, `fit` and `fill` where the prior tries to keep the original dimensions
-/// and the later one tries to fil lthe available space. Additionaly one can set mirror mode to flip the video horizontally,
-/// usually expected when displaying the local user's view.
+
+
+/**
+ `VideoView` is an instance of `UIVIew` that is  responsible for receiving a `RTCVideoTrack` that will
+ be then rendered inside the view.
+ 
+ It supports two types of fitting, `fit` and `fill` where the prior tries to keep the original dimensions
+ and the later one tries to fill the available space. Additionaly one can set mirror mode to flip the video horizontally,
+ usually expected when displaying the local user's view.
+ */
 public class VideoView: UIView {
     public enum Layout {
         case fit

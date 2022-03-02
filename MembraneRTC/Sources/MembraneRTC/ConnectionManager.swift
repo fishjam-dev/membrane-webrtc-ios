@@ -48,6 +48,8 @@ extension ConnectionManager {
 }
 
 extension RTCPeerConnection {
+    // currently `Membrane RTC Engine` can't handle track of diretion `sendRecv` therefore
+    // we need to change all `sendRecv` to `sendOnly`.
     func enforceSendOnlyDirection() {
         self.transceivers.forEach { transceiver in
             if transceiver.direction == .sendRecv {

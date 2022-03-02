@@ -58,14 +58,17 @@ internal protocol BroadcastScreenCapturerDelegate: AnyObject {
     func resumed()
 }
 
-/// `VideoCapturer` that is responsible for capturing media from a remote `Broadcast Extension` that sends samples
-/// via `IPC` mechanism.
-///
-/// The capturer works in a `Server` mode, receiving appropriate notifications/samples from the extension that is working in a `Client` mode.
-/// The expected behaviour is to start the capturer prior to starting the extension as the server is responsible for opening the `IPC` port first.
-/// If the client starts before the server it will automatically close as the port will be closed.
-///
-/// The communication is performed by using `Proto Buffers` to gracefully handle serialization and deserialization of raw bytes sent via IPC port.
+/**
+ `VideoCapturer` that is responsible for capturing media from a remote `Broadcast Extension` that sends samples
+ via `IPC` mechanism.
+ 
+ The capturer works in a `Server` mode, receiving appropriate notifications/samples from the extension that is working in a `Client` mode.
+ The expected behaviour is to start the capturer prior to starting the extension as the server is responsible for opening the `IPC` port first.
+ If the client starts before the server it will automatically close as the port will be closed.
+ 
+ The communication is performed by using `Proto Buffers` to gracefully handle serialization and deserialization of raw bytes sent via IPC port.
+ For types of messages please refer to `broadcast_ipc.proto` included with the package.
+ */
 class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
     public weak var capturerDelegate: BroadcastScreenCapturerDelegate?
 
