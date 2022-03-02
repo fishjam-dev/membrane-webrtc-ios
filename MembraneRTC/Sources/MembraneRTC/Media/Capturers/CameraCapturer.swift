@@ -2,11 +2,13 @@ import WebRTC
 
 /// `VideoCapturer` responsible for capturing device's camera.
 class CameraCapturer: VideoCapturer {
+    private let videoParameters: VideoParameters
     private let capturer: RTCCameraVideoCapturer
     private var isFront: Bool = true
 
-    init(_ delegate: RTCVideoCapturerDelegate) {
-        capturer = RTCCameraVideoCapturer(delegate: delegate)
+    init(videoParameters: VideoParameters, delegate: RTCVideoCapturerDelegate) {
+        self.videoParameters = videoParameters
+        self.capturer = RTCCameraVideoCapturer(delegate: delegate)
     }
 
     public func startCapture() {
@@ -38,9 +40,8 @@ class CameraCapturer: VideoCapturer {
 
         let formats: [AVCaptureDevice.Format] = RTCCameraVideoCapturer.supportedFormats(for: frontCamera)
 
-        let parameters = VideoParameters.presetHD169
-        let (targetWidth, targetHeight) = (parameters.dimensions.width,
-                                           parameters.dimensions.height)
+        let (targetWidth, targetHeight) = (videoParameters.dimensions.width,
+                                           videoParameters.dimensions.height)
 
         var currentDiff = Int32.max
         var selectedFormat: AVCaptureDevice.Format = formats[0]
@@ -62,7 +63,7 @@ class CameraCapturer: VideoCapturer {
 
         sdkLogger.info("CameraCapturer selected dimensions of \(dimension)")
 
-        let fps = parameters.encoding.maxFps
+        let fps = videoParameters.encoding.maxFps
 
         // discover FPS limits
         var minFps = 60

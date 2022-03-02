@@ -21,10 +21,10 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
         capturer = createCapturer(videoSource: source)
     }
 
-    public static func create(for capturer: Capturer) -> LocalVideoTrack {
+    public static func create(for capturer: Capturer, videoParameters: VideoParameters) -> LocalVideoTrack {
         switch capturer {
         case .camera:
-            return LocalCameraVideoTrack()
+            return LocalCameraVideoTrack(parameters: videoParameters)
         case .file:
             return LocalFileVideoTrack()
         }
@@ -56,8 +56,14 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
 }
 
 public class LocalCameraVideoTrack: LocalVideoTrack {
+    private let videoParameters: VideoParameters
+    
+    init(parameters: VideoParameters) {
+        self.videoParameters = parameters
+    }
+    
     override internal func createCapturer(videoSource: RTCVideoSource) -> VideoCapturer {
-        return CameraCapturer(videoSource)
+        return CameraCapturer(videoParameters: videoParameters, delegate: videoSource)
     }
 
     public func switchCamera() {
