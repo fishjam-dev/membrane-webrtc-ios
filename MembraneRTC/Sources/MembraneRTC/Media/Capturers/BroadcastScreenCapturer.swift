@@ -2,28 +2,24 @@ import Foundation
 
 import WebRTC
 
-/// Scales the screensharing resolution to avoid potential RTC encoding errors which
-/// ocasionally happened with higher resolutions
-internal func scaleScreensharingResolution(_ dimensions: Dimensions) -> Dimensions {
-    let maxSize: Float = 960.0
-
-    // dimensions are smaller than the max size so return it
-    if max(dimensions.height, dimensions.width) < Int32(maxSize) {
-        return dimensions
+internal func downscaleResolution(from: Dimensions, to: Dimensions) -> Dimensions {
+    if from.height > to.height {
+        let ratio = Float(from.height) / Float(from.width)
+        
+        let newHeight = to.height
+        let newWidth = Int32((Float(newHeight) / ratio).rounded(.down))
+        
+        return Dimensions(width: newWidth, height: newHeight)
+    } else if from.width > to.width {
+        let ratio = Float(from.height) / Float(from.width)
+        
+        let newWidth = to.width
+        let newHeight = Int32((Float(newWidth) * ratio).rounded(.down))
+        
+        return Dimensions(width: newWidth, height: newHeight)
     }
-
-    var ratio: Float32 = 0.0
-
-    if dimensions.height > dimensions.width {
-        ratio = maxSize / Float(dimensions.height)
-    } else {
-        ratio = maxSize / Float(dimensions.width)
-    }
-
-    let height = Int32(ratio * Float(dimensions.height))
-    let width = Int32(ratio * Float(dimensions.width))
-
-    return Dimensions(width: width, height: height)
+    
+    return from
 }
 
 /// Utility for creating a `CVPixelBuffer` from raw bytes.
@@ -73,6 +69,7 @@ internal protocol BroadcastScreenCapturerDelegate: AnyObject {
 class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
     public weak var capturerDelegate: BroadcastScreenCapturerDelegate?
 
+    private let videoParameters: VideoParameters
     private let ipcServer: IPCServer
     private let source: RTCVideoSource
     private var started = false
@@ -82,8 +79,10 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
 
     internal let supportedPixelFormats = DispatchQueue.webRTC.sync { RTCCVPixelBuffer.supportedPixelFormats() }
 
-    init(_ source: RTCVideoSource, delegate: BroadcastScreenCapturerDelegate? = nil) {
+    init(_ source: RTCVideoSource, videoParameters: VideoParameters, delegate: BroadcastScreenCapturerDelegate? = nil) {
         self.source = source
+        self.videoParameters = videoParameters
+        
         capturerDelegate = delegate
         ipcServer = IPCServer()
 
@@ -149,8 +148,9 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
 
                 self.isReceivingSamples = true
 
-                let dimensions = scaleScreensharingResolution(Dimensions(width: Int32(video.width), height: Int32(video.height)))
-                self.source.adaptOutputFormat(toWidth: dimensions.width, height: dimensions.height, fps: 15)
+                let dimensions = downscaleResolution(from: Dimensions(width: Int32(video.width), height: Int32(video.height)), to: videoParameters.dimensions)
+                
+                self.source.adaptOutputFormat(toWidth: dimensions.width, height: dimensions.height, fps: Int32(videoParameters.encoding.maxFps))
 
                 let pixelBuffer = CVPixelBuffer.from(sample.buffer, width: Int(video.width), height: Int(video.height), pixelFormat: video.format)
                 let height = Int32(CVPixelBufferGetHeight(pixelBuffer))
