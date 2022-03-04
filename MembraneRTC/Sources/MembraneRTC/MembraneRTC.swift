@@ -125,7 +125,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
     
     public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata) -> LocalVideoTrack {
-        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters)
+        let videoTrack = LocalVideoTrack.create(for: .file, videoParameters: videoParameters)
         videoTrack.start()
         
         localTracks.append(videoTrack)
@@ -391,7 +391,7 @@ extension MembraneRTC: EventTransportDelegate {
                 self.remotePeers[peer.id] = peer
 
                 // initialize peer's track contexts
-                peer.trackIdToMetadata.forEach { trackId, metadata in
+                peer.trackIdToMetadata?.forEach { trackId, metadata in
                     let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
 
                     self.trackContexts[trackId] = context
@@ -413,7 +413,8 @@ extension MembraneRTC: EventTransportDelegate {
                 return
             }
 
-            remotePeers[peerJoined.data.peer.id] = peerJoined.data.peer
+            let peer = peerJoined.data.peer
+            remotePeers[peerJoined.data.peer.id] = peer
 
             notify {
                 $0.onPeerJoined(peer: peerJoined.data.peer)
@@ -429,19 +430,19 @@ extension MembraneRTC: EventTransportDelegate {
             remotePeers.removeValue(forKey: peer.id)
 
             // for a leaving peer clear his track contexts
-            let trackIds = Array(peer.trackIdToMetadata.keys)
+            if let trackIds = peer.trackIdToMetadata?.keys {
+                let contexts = trackIds.compactMap { id in
+                    self.trackContexts[id]
+                }
 
-            let contexts = trackIds.compactMap { id in
-                self.trackContexts[id]
-            }
+                trackIds.forEach { id in
+                    self.trackContexts.removeValue(forKey: id)
+                }
 
-            trackIds.forEach { id in
-                self.trackContexts.removeValue(forKey: id)
-            }
-
-            contexts.forEach { context in
-                self.notify {
-                    $0.onTrackRemoved(ctx: context)
+                contexts.forEach { context in
+                    self.notify {
+                        $0.onTrackRemoved(ctx: context)
+                    }
                 }
             }
 
@@ -503,7 +504,7 @@ extension MembraneRTC: EventTransportDelegate {
             remotePeers[peer.id] = peer
 
             // for each track create a corresponding track context
-            peer.trackIdToMetadata.forEach { trackId, metadata in
+            peer.trackIdToMetadata?.forEach { trackId, metadata in
                 let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
 
                 self.trackContexts[trackId] = context
@@ -578,7 +579,7 @@ extension MembraneRTC {
 
             pc.setLocalDescription(offer, completionHandler: { error in
                 guard let err = error else {
-                    self.transport.send(event: SdpOfferEvent(sdp: offer.sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata, midToTrackId: self.getMidToTrackId()))
+                    self.transport.send(event: SdpOfferEvent(sdp: offer.sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata ?? [:], midToTrackId: self.getMidToTrackId()))
                     return
                 }
 
@@ -668,19 +669,18 @@ extension MembraneRTC {
             return [:]
         }
         
-        let localTracksKeys = localPeer.trackIdToMetadata.keys
-
-        let localTracks: [String] = Array(localTracksKeys)
-
         var mapping: [String: String] = [:]
+        if let localTracksKeys = localPeer.trackIdToMetadata?.keys {
+            let localTracks: [String] = Array(localTracksKeys)
 
-        pc.transceivers.forEach { transceiver in
-            guard let trackId: String = transceiver.sender.track?.trackId,
-                  localTracks.contains(trackId)
-            else {
-                return
+            pc.transceivers.forEach { transceiver in
+                guard let trackId: String = transceiver.sender.track?.trackId,
+                      localTracks.contains(trackId)
+                else {
+                    return
+                }
+                mapping[transceiver.mid] = trackId
             }
-            mapping[transceiver.mid] = trackId
         }
 
         return mapping
