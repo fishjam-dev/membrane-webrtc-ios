@@ -125,7 +125,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
     
     public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata) -> LocalVideoTrack {
-        let videoTrack = LocalVideoTrack.create(for: .file, videoParameters: videoParameters)
+        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters)
         videoTrack.start()
         
         localTracks.append(videoTrack)
