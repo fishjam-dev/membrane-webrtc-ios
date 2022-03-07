@@ -142,7 +142,7 @@ class RoomController: ObservableObject {
             let preset = VideoParameters.presetScreenShareHD15
             let videoParameters = VideoParameters(dimensions: preset.dimensions.flip(), encoding: preset.encoding)
             
-            room.createScreencastTrack(videoParameters: videoParameters, metadata: ["user_id": displayName, "type": "screensharing"], onStart: { [weak self] screencastTrack in
+            room.createScreencastTrack(appGroup: Constants.appGroup, videoParameters: videoParameters, metadata: ["user_id": displayName, "type": "screensharing"], onStart: { [weak self] screencastTrack in
                 guard let self = self else {
                     return
                 }

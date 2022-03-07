@@ -91,7 +91,7 @@ struct RoomView: View {
         Button(action: {
             self.room.toggleLocalTrack(.screensharing)
 
-            RPSystemBroadcastPickerView.show(for: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt")
+            RPSystemBroadcastPickerView.show(for: Constants.screencastExtensionBundleId)
         }) {
             Image(systemName: label)
                 .font(.system(size: 32, weight: .bold))

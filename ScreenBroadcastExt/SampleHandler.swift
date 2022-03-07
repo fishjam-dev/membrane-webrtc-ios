@@ -4,6 +4,10 @@ import os.log
 import ReplayKit
 import WebRTC
 
+
+/// App Group used by the extension to exchange buffers with the target application
+let appGroup = "group.com.swmansion.membrane"
+
 let logger = OSLog(subsystem: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt", category: "Broadcaster")
 
 /// A `Broadcast Extension` responsbile for capturing the device's screen
@@ -21,7 +25,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     override func broadcastStarted(withSetupInfo _: [String: NSObject]?) {
         ipcClient = IPCCLient()
 
-        guard let connected = ipcClient?.connect(with: "group.membrane.broadcast.ipc"), connected else {
+        guard let connected = ipcClient?.connect(with: appGroup), connected else {
             os_log("failed to connect with ipc server", log: logger, type: .debug)
             super.finishBroadcastWithError(NSError(domain: "", code: 0, userInfo: nil))
             return
