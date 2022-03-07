@@ -2,13 +2,13 @@ import Foundation
 import Promises
 
 public enum EventTransportError: Error {
-    // Throw when user is not authorized
+    /// Thrown when user is not authorized to join the session
     case unauthorized
 
-    // Throw when transport fails to connect
+    /// Thrown when transport fails to connect
     case connectionError
 
-    // Throw when you have no idea what happened...
+    /// Thrown when  the transport encountered unknown/unspecified error
     case unexpected(reason: String)
 }
 
@@ -27,12 +27,16 @@ extension EventTransportError: CustomStringConvertible {
 
 /// Protocol defining a behaviour of an events' transport used for exchaning messages
 /// between client and the server.
+///
+///  An implementation of such transport should take an `EventTransportDelegate` as its argument
+///  and pass received and parsed messages directly to the delegate.
 public protocol EventTransport {
     func connect(delegate: EventTransportDelegate) -> Promise<Void>
     func disconnect()
     func send(event: SendableEvent)
 }
 
+/// Protocol for a delegate listening for messages received by the `EventTransport`
 public protocol EventTransportDelegate: AnyObject {
     func didReceive(event: ReceivableEvent)
     func didReceive(error: EventTransportError)

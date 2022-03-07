@@ -78,13 +78,13 @@ class RoomController: ObservableObject {
         switch type {
         case .video:
             if let track = localVideoTrack, track.enabled() != enabled {
-                track.toggle()
+                track.setEnabled(enabled)
             }
 
             isCameraEnabled = enabled
         case .audio:
             if let track = localAudioTrack, track.enabled() != enabled {
-                track.toggle()
+                track.setEnabled(enabled)
             }
 
             isMicEnabled = enabled
@@ -123,12 +123,12 @@ class RoomController: ObservableObject {
 
         switch type {
         case .audio:
-            localAudioTrack?.toggle()
             isMicEnabled = !isMicEnabled
+            localAudioTrack?.setEnabled(isMicEnabled)
 
         case .video:
-            localVideoTrack?.toggle()
             isCameraEnabled = !isCameraEnabled
+            localVideoTrack?.setEnabled(isCameraEnabled)
 
         case .screensharing:
             // if screensharing is enabled it must be closed by the Broadcast Extension, not by our application

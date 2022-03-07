@@ -1,4 +1,5 @@
+/// Protocol representing an available shared functionality of remote tracks.
 public protocol RemoteTrack {
-    func toggle()
     func enabled() -> Bool
+    func setEnabled(_ enabled: Bool)
 }

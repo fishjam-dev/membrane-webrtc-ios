@@ -15,7 +15,7 @@ internal class SwiftUIVideViewReceiver: VideoViewDelegate {
     }
 }
 
-/// A SwiftUI component wrapping underneath a `NativeVideoView`.
+/// A SwiftUI component wrapping underneath a `VideoView`.
 public struct SwiftUIVideoView: UIViewRepresentable {
     let track: VideoTrack
     let layout: VideoView.Layout

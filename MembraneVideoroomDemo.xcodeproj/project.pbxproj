@@ -25,6 +25,7 @@
 		3B601C0127ABF88A00668122 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 3B601C0027ABF88A00668122 /* SwiftProtobuf */; };
 		3B84661B27A3E9A6009BF97D /* AdaptiveStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B84661A27A3E9A6009BF97D /* AdaptiveStack.swift */; };
 		3B84661D27A3FB10009BF97D /* DeviceRotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B84661C27A3FB10009BF97D /* DeviceRotation.swift */; };
+		3B89DD0627CFC40700D38D88 /* LocalTrackType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B89DD0527CFC40600D38D88 /* LocalTrackType.swift */; };
 		3BA235D727AC10C10070031E /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235D627AC10C10070031E /* SwiftProtobuf */; };
 		3BA235DB27AC1F600070031E /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235DA27AC1F600070031E /* FBLPromises */; };
 		3BB35DA527D6177D00892A6E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB35DA427D6177D00892A6E /* Constants.swift */; };
@@ -77,6 +78,7 @@
 		3B601BF427ABD2FE00668122 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3B84661A27A3E9A6009BF97D /* AdaptiveStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveStack.swift; sourceTree = "<group>"; };
 		3B84661C27A3FB10009BF97D /* DeviceRotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceRotation.swift; sourceTree = "<group>"; };
+		3B89DD0527CFC40600D38D88 /* LocalTrackType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTrackType.swift; sourceTree = "<group>"; };
 		3BA235D827AC15340070031E /* MembraneVideoroomDemoDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoDebug.entitlements; sourceTree = "<group>"; };
 		3BA235D927AC156E0070031E /* MembraneVideoroomDemoScreensharingDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoScreensharingDebug.entitlements; sourceTree = "<group>"; };
 		3BB35DA427D6177D00892A6E /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 			children = (
 				3B16A1C52796C42B0095941F /* Extensions.swift */,
 				3B84661C27A3FB10009BF97D /* DeviceRotation.swift */,
+				3B89DD0527CFC40600D38D88 /* LocalTrackType.swift */,
 				3BB35DA427D6177D00892A6E /* Constants.swift */,
 			);
 			path = Utilities;
@@ -361,6 +364,7 @@
 				3B84661D27A3FB10009BF97D /* DeviceRotation.swift in Sources */,
 				3B16A1E12796C42B0095941F /* App.swift in Sources */,
 				3B16A1DF2796C42B0095941F /* MembraneVideoroomDemoApp.swift in Sources */,
+				3B89DD0627CFC40700D38D88 /* LocalTrackType.swift in Sources */,
 				3B16A1E02796C42B0095941F /* Extensions.swift in Sources */,
 				3B16A1E22796C42B0095941F /* ConnectView.swift in Sources */,
 				3B84661B27A3E9A6009BF97D /* AdaptiveStack.swift in Sources */,

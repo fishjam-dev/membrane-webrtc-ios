@@ -16,7 +16,7 @@ let logger = OSLog(subsystem: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastE
 /// The `SampleHandler` is working as a `IPC` client therefore the `IPC` port must be opened beforehand
 /// by the proper application.
 ///
-/// All notifications and sample buffers are serialized to `Proto Buffers` and sent via the `IPC` port.
+/// All notifications and sample buffers are serialized to `Proto Buffers` (implementation provided by `BroadcastMesssage`  available in `MembraneRTC` package) and sent via the `IPC` port.
 class SampleHandler: RPBroadcastSampleHandler {
     override public init() {}
 

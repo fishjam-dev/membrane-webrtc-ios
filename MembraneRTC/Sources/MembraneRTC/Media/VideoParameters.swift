@@ -1,5 +1,9 @@
+/// Represents a video encoding.
 public struct VideoEncoding {
+    /// Maximum bitrate
     public var maxBitrate: Int
+    
+    /// Maximum framerate
     public var maxFps: Int
 
     public init(maxBitrate: Int, maxFps: Int) {
@@ -8,6 +12,9 @@ public struct VideoEncoding {
     }
 }
 
+/// A set of parameters representing a video feed.
+///
+///  Contains a set of useful presets.
 public struct VideoParameters {
     // 4:3 aspect ratio
     public static let presetQVGA43 = VideoParameters(

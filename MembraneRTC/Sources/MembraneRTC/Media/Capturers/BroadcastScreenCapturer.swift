@@ -58,14 +58,20 @@ internal protocol BroadcastScreenCapturerDelegate: AnyObject {
     func resumed()
 }
 
-/// `VideoCapturer` that is responsible for capturing media from a remote `Broadcast Extension` that sends samples
-/// via `IPC` mechanism.
-///
-/// The capturer works in a `Server` mode, receiving appropriate notifications/samples from the extension that is working in a `Client` mode.
-/// The expected behaviour is to start the capturer prior to starting the extension as the server is responsible for opening the `IPC` port first.
-/// If the client starts before the server it will automatically close as the port will be closed.
-///
-/// The communication is performed by using `Proto Buffers` to gracefully handle serialization and deserialization of raw bytes sent via IPC port.
+/**
+ `VideoCapturer` that is responsible for capturing media from a remote `Broadcast Extension` that sends samples
+ via `IPC` mechanism.
+ 
+ The capturer works in a `Server` mode, receiving appropriate notifications/samples from the extension that is working in a `Client` mode.
+ The expected behaviour is to start the capturer prior to starting the extension as the server is responsible for opening the `IPC` port first.
+ If the client starts before the server it will automatically close as the port will be closed.
+ 
+ The communication is performed by using `Proto Buffers` to gracefully handle serialization and deserialization of raw bytes sent via IPC port.
+ For types of messages please refer to `broadcast_ipc.proto` included with the package.
+ 
+ It is important that the capturer gets started with a proper `appGroup` that is shared between the application and the `Broadcast Extension` itself
+ (required by `IPC` mechanism).
+ */
 class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
     public weak var capturerDelegate: BroadcastScreenCapturerDelegate?
 
@@ -80,6 +86,15 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
 
     internal let supportedPixelFormats = DispatchQueue.webRTC.sync { RTCCVPixelBuffer.supportedPixelFormats() }
 
+    /**
+     Creates a  broadcast screen capturer.
+     
+     - Parameters:
+        - source: `RTCVideoSource` that will receive incoming video buffers
+        - appGroup: App Group that will be used for starting an `IPCServer` on
+        - videoParameters: The parameters used for limiting the screen capture resolution and target framerate
+        - delegate: A delegate that will receive notifications about the sceeen capture events such as started/stopped or paused
+     */
     init(_ source: RTCVideoSource, appGroup: String, videoParameters: VideoParameters, delegate: BroadcastScreenCapturerDelegate? = nil) {
         self.source = source
         self.appGroup = appGroup

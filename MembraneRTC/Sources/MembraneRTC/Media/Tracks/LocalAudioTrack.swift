@@ -38,12 +38,12 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
         configure(setActive: false)
     }
 
-    public func toggle() {
-        track.isEnabled = !track.isEnabled
-    }
-
     public func enabled() -> Bool {
         return track.isEnabled
+    }
+    
+    public func setEnabled(_ enabled: Bool) {
+        track.isEnabled = enabled
     }
 
     override func rtcTrack() -> RTCMediaStreamTrack {
