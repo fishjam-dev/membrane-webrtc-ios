@@ -14,11 +14,11 @@ public class LocalBroadcastScreenTrack: VideoTrack, LocalTrack, BroadcastScreenC
     private let track: RTCVideoTrack
     public weak var delegate: LocalBroadcastScreenTrackDelegate?
 
-    internal init(videoParameters: VideoParameters, delegate _: LocalBroadcastScreenTrackDelegate? = nil) {
+    internal init(appGroup: String, videoParameters: VideoParameters, delegate _: LocalBroadcastScreenTrackDelegate? = nil) {
         videoSource = ConnectionManager.createVideoSource()
         track = ConnectionManager.createVideoTrack(source: videoSource)
 
-        let capturer = BroadcastScreenCapturer(videoSource, videoParameters: videoParameters)
+        let capturer = BroadcastScreenCapturer(videoSource, appGroup: appGroup, videoParameters: videoParameters)
         self.capturer = capturer
 
         super.init()

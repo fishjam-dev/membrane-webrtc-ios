@@ -162,8 +162,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     /// while the broadcaster should work in a client mode utilizing the `IPCClient` class.
     ///
     /// The captured media gets forwarded to a new `RTCVideoTrack` which can be freely sent via `RTCPeerConnection`.
-    public func createScreencastTrack(videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalBroadcastScreenTrack) -> Void, onStop: @escaping () -> Void) {
-        let screensharingTrack = LocalBroadcastScreenTrack(videoParameters: videoParameters)
+    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalBroadcastScreenTrack) -> Void, onStop: @escaping () -> Void) {
+        let screensharingTrack = LocalBroadcastScreenTrack(appGroup: appGroup, videoParameters: videoParameters)
         localTracks.append(screensharingTrack)
 
         broadcastScreenshareReceiver = BroadcastScreenReceiver(onStart: { [weak self, weak screensharingTrack] in
@@ -692,7 +692,8 @@ extension MembraneRTC {
             return
         }
 
-        midToTrackId = sdpAnswer.data.midToTrackId
+        // FIXEME: trackId returned from backend sometimes happens to be null...
+        midToTrackId = sdpAnswer.data.midToTrackId.filter { $0.value != nil } as! [String: String]
 
         let description = RTCSessionDescription(type: .answer, sdp: sdpAnswer.data.sdp)
 
