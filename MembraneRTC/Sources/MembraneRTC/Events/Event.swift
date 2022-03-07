@@ -44,25 +44,26 @@ public enum Events {
     /*
      Deserialization of incoming events is quite specific.
 
-     Each incoming event if of given format:
+     Each incoming event is of given format:
      ```
      {
         "type": "(dedicated event name)",
-        "data": "arbitrary event's payload"
+        "data": "arbitrary event's payload object"
      }
      ```
 
      It is quite problematic as we have to decode each event twice. Once to get the event's type,
-     and once we know the type we can decode the event's data payload.
+     and when we know the type we can decode the event's data payload (due to static typing
+     we need to explicitly call decode with generic parameter).
 
-     A subset of events are a part of one specific event of type "custom".
-     In this case the "data" payload contains a whole embedded event:
+     A subset of events are embeded inside of one specific event of type "custom".
+     In this case the "data" payload contains a whole new event on its own:
      ```
      {
         "type": "custom",
         "data": {
             "type": "(dedicated event name)",
-            "data": "arbitrary event's payload"
+            "data": "arbitrary event's payload object"
         }
      }
      ```
@@ -70,7 +71,7 @@ public enum Events {
      This time we are basically performing the deserialization 3 times:
      - to recognize "custom" type
      - to recognize the nested event's type
-     - to finally deserialize the payload into the explicit event
+     - to finally deserialize the payload into an explicit event
      */
     public static func deserialize(payload: Payload) -> ReceivableEvent? {
         guard let rawData = payload["data"] as? String else {

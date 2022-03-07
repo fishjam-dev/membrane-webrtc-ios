@@ -29,7 +29,7 @@ extension EventTransportError: CustomStringConvertible {
 /// between client and the server.
 ///
 ///  An implementation of such transport should take an `EventTransportDelegate` as its argument
-///  an pass received and parsed messages directly to the delegate.
+///  and pass received and parsed messages directly to the delegate.
 public protocol EventTransport {
     func connect(delegate: EventTransportDelegate) -> Promise<Void>
     func disconnect()
