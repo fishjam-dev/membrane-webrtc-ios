@@ -17,11 +17,11 @@ final class AppController: ObservableObject {
         state = .awaiting
     }
 
-    let localAddress = "http://192.168.83.56:4000"
-    let remoteAddress = "https://dscout-us.membrane.work"
 
     public func connect(room: String, displayName: String) {
-        let transportUrl = "\(remoteAddress)/socket"
+        let engineUrl = Constants.rtcEngineUrl.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        
+        let transportUrl = "\(engineUrl)/socket"
 
         let client = MembraneRTC.connect(
             with: MembraneRTC.ConnectOptions(

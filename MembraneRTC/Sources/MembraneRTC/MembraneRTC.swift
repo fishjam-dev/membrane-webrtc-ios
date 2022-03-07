@@ -209,13 +209,14 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      may be hanging on start broadcast screen therefore there is no consistent synchronous way of telling if the broadcast started.
      
      - Parameters:
+        - appGroup: The App Group identifier shared by the application  with a target `Broadcast Upload Extension`
         - videoParameters: The parameters used for limiting the screen capture resolution and target framerate
         - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
         - onStart: The callback that will receive the screencast track called once the track becomes available
         - onStop: The callback that will be called once the track becomes unavailable
      */
-    public func createScreencastTrack(videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalBroadcastScreenTrack) -> Void, onStop: @escaping () -> Void) {
-        let screensharingTrack = LocalBroadcastScreenTrack(videoParameters: videoParameters)
+    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalBroadcastScreenTrack) -> Void, onStop: @escaping () -> Void) {
+        let screensharingTrack = LocalBroadcastScreenTrack(appGroup: appGroup, videoParameters: videoParameters)
         localTracks.append(screensharingTrack)
 
         broadcastScreenshareReceiver = BroadcastScreenReceiver(onStart: { [weak self, weak screensharingTrack] in
@@ -467,7 +468,7 @@ extension MembraneRTC: EventTransportDelegate {
                 self.remotePeers[peer.id] = peer
 
                 // initialize peer's track contexts
-                peer.trackIdToMetadata.forEach { trackId, metadata in
+                peer.trackIdToMetadata?.forEach { trackId, metadata in
                     let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
 
                     self.trackContexts[trackId] = context
@@ -489,7 +490,8 @@ extension MembraneRTC: EventTransportDelegate {
                 return
             }
 
-            remotePeers[peerJoined.data.peer.id] = peerJoined.data.peer
+            let peer = peerJoined.data.peer
+            remotePeers[peerJoined.data.peer.id] = peer
 
             notify {
                 $0.onPeerJoined(peer: peerJoined.data.peer)
@@ -505,19 +507,19 @@ extension MembraneRTC: EventTransportDelegate {
             remotePeers.removeValue(forKey: peer.id)
 
             // for a leaving peer clear his track contexts
-            let trackIds = Array(peer.trackIdToMetadata.keys)
+            if let trackIds = peer.trackIdToMetadata?.keys {
+                let contexts = trackIds.compactMap { id in
+                    self.trackContexts[id]
+                }
 
-            let contexts = trackIds.compactMap { id in
-                self.trackContexts[id]
-            }
+                trackIds.forEach { id in
+                    self.trackContexts.removeValue(forKey: id)
+                }
 
-            trackIds.forEach { id in
-                self.trackContexts.removeValue(forKey: id)
-            }
-
-            contexts.forEach { context in
-                self.notify {
-                    $0.onTrackRemoved(ctx: context)
+                contexts.forEach { context in
+                    self.notify {
+                        $0.onTrackRemoved(ctx: context)
+                    }
                 }
             }
 
@@ -579,7 +581,7 @@ extension MembraneRTC: EventTransportDelegate {
             remotePeers[peer.id] = peer
 
             // for each track create a corresponding track context
-            peer.trackIdToMetadata.forEach { trackId, metadata in
+            peer.trackIdToMetadata?.forEach { trackId, metadata in
                 let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
 
                 self.trackContexts[trackId] = context
@@ -654,7 +656,7 @@ extension MembraneRTC {
 
             pc.setLocalDescription(offer, completionHandler: { error in
                 guard let err = error else {
-                    self.transport.send(event: SdpOfferEvent(sdp: offer.sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata, midToTrackId: self.getMidToTrackId()))
+                    self.transport.send(event: SdpOfferEvent(sdp: offer.sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata ?? [:], midToTrackId: self.getMidToTrackId()))
                     return
                 }
 
@@ -744,19 +746,18 @@ extension MembraneRTC {
             return [:]
         }
         
-        let localTracksKeys = localPeer.trackIdToMetadata.keys
-
-        let localTracks: [String] = Array(localTracksKeys)
-
         var mapping: [String: String] = [:]
+        if let localTracksKeys = localPeer.trackIdToMetadata?.keys {
+            let localTracks: [String] = Array(localTracksKeys)
 
-        pc.transceivers.forEach { transceiver in
-            guard let trackId: String = transceiver.sender.track?.trackId,
-                  localTracks.contains(trackId)
-            else {
-                return
+            pc.transceivers.forEach { transceiver in
+                guard let trackId: String = transceiver.sender.track?.trackId,
+                      localTracks.contains(trackId)
+                else {
+                    return
+                }
+                mapping[transceiver.mid] = trackId
             }
-            mapping[transceiver.mid] = trackId
         }
 
         return mapping
@@ -768,7 +769,8 @@ extension MembraneRTC {
             return
         }
 
-        midToTrackId = sdpAnswer.data.midToTrackId
+        // FIXEME: trackId returned from backend sometimes happens to be null...
+        midToTrackId = sdpAnswer.data.midToTrackId.filter { $0.value != nil } as! [String: String]
 
         let description = RTCSessionDescription(type: .answer, sdp: sdpAnswer.data.sdp)
 

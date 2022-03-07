@@ -73,6 +73,7 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
     public weak var capturerDelegate: BroadcastScreenCapturerDelegate?
 
     private let videoParameters: VideoParameters
+    private let appGroup: String
     private let ipcServer: IPCServer
     private let source: RTCVideoSource
     private var started = false
@@ -82,8 +83,9 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
 
     internal let supportedPixelFormats = DispatchQueue.webRTC.sync { RTCCVPixelBuffer.supportedPixelFormats() }
 
-    init(_ source: RTCVideoSource, videoParameters: VideoParameters, delegate: BroadcastScreenCapturerDelegate? = nil) {
+    init(_ source: RTCVideoSource, appGroup: String, videoParameters: VideoParameters, delegate: BroadcastScreenCapturerDelegate? = nil) {
         self.source = source
+        self.appGroup = appGroup
         self.videoParameters = videoParameters
         
         capturerDelegate = delegate
@@ -196,8 +198,8 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
     }
 
     public func startCapture() {
-        guard ipcServer.listen(for: "group.membrane.broadcast.ipc") else {
-            fatalError("Failed to open IPC for screen broadcast")
+        guard ipcServer.listen(for: appGroup) else {
+            fatalError("Failed to open IPC for screen broadcast, make sure that both app and extension are using same App Group")
         }
     }
 

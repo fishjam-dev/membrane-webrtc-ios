@@ -28,6 +28,8 @@
 		3B89DD0627CFC40700D38D88 /* LocalTrackType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B89DD0527CFC40600D38D88 /* LocalTrackType.swift */; };
 		3BA235D727AC10C10070031E /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235D627AC10C10070031E /* SwiftProtobuf */; };
 		3BA235DB27AC1F600070031E /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235DA27AC1F600070031E /* FBLPromises */; };
+		3BB35DA527D6177D00892A6E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB35DA427D6177D00892A6E /* Constants.swift */; };
+		3BB35DA727D61A7200892A6E /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3BB35DA627D61A7100892A6E /* README.md */; };
 		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; settings = {ATTRIBUTES = (Required, ); }; };
 		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
@@ -79,6 +81,8 @@
 		3B89DD0527CFC40600D38D88 /* LocalTrackType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTrackType.swift; sourceTree = "<group>"; };
 		3BA235D827AC15340070031E /* MembraneVideoroomDemoDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoDebug.entitlements; sourceTree = "<group>"; };
 		3BA235D927AC156E0070031E /* MembraneVideoroomDemoScreensharingDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MembraneVideoroomDemoScreensharingDebug.entitlements; sourceTree = "<group>"; };
+		3BB35DA427D6177D00892A6E /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		3BB35DA627D61A7100892A6E /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		3BCA53B927A0248900E3CABF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BD7249227AAD3DE00AFE9D9 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
@@ -150,6 +154,7 @@
 				3B16A1C52796C42B0095941F /* Extensions.swift */,
 				3B84661C27A3FB10009BF97D /* DeviceRotation.swift */,
 				3B89DD0527CFC40600D38D88 /* LocalTrackType.swift */,
+				3BB35DA427D6177D00892A6E /* Constants.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -203,6 +208,7 @@
 		3BCCBEB22795619500A0AD4C = {
 			isa = PBXGroup;
 			children = (
+				3BB35DA627D61A7100892A6E /* README.md */,
 				3B0148B327BA47C800907A8B /* Packages */,
 				3B01482C27BA415D00907A8B /* MembraneRTC */,
 				3BA235D927AC156E0070031E /* MembraneVideoroomDemoScreensharingDebug.entitlements */,
@@ -332,6 +338,7 @@
 			files = (
 				3BD7249327AAD3DE00AFE9D9 /* logo.png in Resources */,
 				3B16A1DE2796C42B0095941F /* Preview Assets.xcassets in Resources */,
+				3BB35DA727D61A7200892A6E /* README.md in Resources */,
 				3B16A1DD2796C42B0095941F /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -352,6 +359,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */,
+				3BB35DA527D6177D00892A6E /* Constants.swift in Sources */,
 				3BDAC1E027A2FCE200A2BB0D /* ParticipantVideoView.swift in Sources */,
 				3B84661D27A3FB10009BF97D /* DeviceRotation.swift in Sources */,
 				3B16A1E12796C42B0095941F /* App.swift in Sources */,
@@ -382,7 +390,7 @@
 				CODE_SIGN_ENTITLEMENTS = MembraneVideoroomDemoScreensharingDebug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YGRG6VYGY2;
+				DEVELOPMENT_TEAM = J5FM626PE2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScreenBroadcastExt/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ScreenBroadcastExt;
@@ -394,7 +402,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swmansion.MembraneVideoroomDemo.ScreenBroadcastExt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -557,7 +565,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MembraneVideoroomDemo/Preview Content\"";
-				DEVELOPMENT_TEAM = YGRG6VYGY2;
+				DEVELOPMENT_TEAM = J5FM626PE2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MembraneVideoroomDemo/Info.plist;
@@ -574,7 +582,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dscout.MembraneVideoroomDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swmansion.MembraneVideoroomDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

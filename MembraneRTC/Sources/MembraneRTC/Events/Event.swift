@@ -338,7 +338,7 @@ struct SdpAnswerEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let type: String
         let sdp: String
-        let midToTrackId: [String: String]
+        let midToTrackId: [String: String?]
     }
 
     let type: ReceivableEventType
