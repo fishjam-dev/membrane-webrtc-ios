@@ -10,148 +10,43 @@ let appGroup = "group.com.swmansion.membrane"
 
 let logger = OSLog(subsystem: "com.dscout.MembraneVideoroomDemo.ScreenBroadcastExt", category: "Broadcaster")
 
-/// A `Broadcast Extension` responsbile for capturing the device's screen
-/// and sending through a `IPC` port.
-///
-/// The `SampleHandler` is working as a `IPC` client therefore the `IPC` port must be opened beforehand
-/// by the proper application.
-///
-/// All notifications and sample buffers are serialized to `Proto Buffers` (implementation provided by `BroadcastMesssage`  available in `MembraneRTC` package) and sent via the `IPC` port.
+/// An example `SampleHandler` utilizing `BroadcastSampleSource` from `MembraneRTC` sending broadcast samples and necessary notification enabling device's screencast.
 class SampleHandler: RPBroadcastSampleHandler {
-    override public init() {}
+    let broadcastSource = BroadcastSampleSource(appGroup: appGroup)
+    var started: Bool = false
 
-    var ipcClient: IPCCLient?
-
+    
     override func broadcastStarted(withSetupInfo _: [String: NSObject]?) {
-        ipcClient = IPCCLient()
-
-        guard let connected = ipcClient?.connect(with: appGroup), connected else {
+        started = broadcastSource.connect()
+        
+        guard started else {
             os_log("failed to connect with ipc server", log: logger, type: .debug)
+            
             super.finishBroadcastWithError(NSError(domain: "", code: 0, userInfo: nil))
+            
             return
         }
-
-        let message = BroadcastMessage.with {
-            $0.notification = .started
-        }
-
-        guard let protoData = try? message.serializedData() else { return }
-
-        ipcClient?.send(protoData, messageId: 1)
+        
+        broadcastSource.started()
     }
 
     override func broadcastPaused() {
-        let message = BroadcastMessage.with {
-            $0.notification = .paused
-        }
-
-        guard let protoData = try? message.serializedData() else { return }
-
-        ipcClient?.send(protoData, messageId: 1)
+        broadcastSource.paused()
     }
 
     override func broadcastResumed() {
-        let message = BroadcastMessage.with {
-            $0.notification = .resumed
-        }
-
-        guard let protoData = try? message.serializedData() else { return }
-
-        ipcClient?.send(protoData, messageId: 1)
+        broadcastSource.resumed()
     }
 
     override func broadcastFinished() {
-        let message = BroadcastMessage.with {
-            $0.notification = .finished
-        }
-
-        guard let protoData = try? message.serializedData() else { return }
-
-        ipcClient?.send(protoData, messageId: 1)
+        broadcastSource.finished()
     }
 
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
-        switch sampleBufferType {
-        case .video:
-            guard let buffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-                return
-            }
-
-            var rotation: RTCVideoRotation?
-            if #available(macOS 11.0, *) {
-                // Check rotation tags. Extensions see these tags, but `RPScreenRecorder` does not appear to set them.
-                // On iOS 12.0 and 13.0 rotation tags (other than up) are set by extensions.
-                if let sampleOrientation = CMGetAttachment(sampleBuffer, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil),
-                   let coreSampleOrientation = sampleOrientation.uint32Value
-                {
-                    rotation = CGImagePropertyOrientation(rawValue: coreSampleOrientation)?.toRTCRotation()
-                }
-            }
-
-            let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-            let timestampNs: Int64 = llround(CMTimeGetSeconds(timestamp) * Float64(NSEC_PER_SEC))
-
-            let pixelFormat = CVPixelBufferGetPixelFormatType(buffer)
-
-            let message = BroadcastMessage.with {
-                $0.buffer = Data(pixelBuffer: buffer)
-                $0.timestamp = timestampNs
-                $0.video = .with {
-                    $0.format = pixelFormat
-                    $0.rotation = UInt32(rotation?.rawValue ?? 0)
-                    $0.width = UInt32(CVPixelBufferGetWidth(buffer))
-                    $0.height = UInt32(CVPixelBufferGetHeight(buffer))
-                }
-            }
-
-            guard let protoData = try? message.serializedData() else { return }
-            ipcClient?.send(protoData, messageId: 1)
-
-        default:
-            // skip audio pakcets
-            break
+        guard started else {
+            return
         }
-    }
-}
-
-public extension Data {
-    init(pixelBuffer: CVPixelBuffer) {
-        CVPixelBufferLockBaseAddress(pixelBuffer, [.readOnly])
-        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, [.readOnly]) }
-
-        // Calculate sum of planes' size
-        var totalSize = 0
-        for plane in 0 ..< CVPixelBufferGetPlaneCount(pixelBuffer) {
-            let height = CVPixelBufferGetHeightOfPlane(pixelBuffer, plane)
-            let bytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, plane)
-            let planeSize = height * bytesPerRow
-            totalSize += planeSize
-        }
-
-        guard let rawFrame = malloc(totalSize) else { fatalError() }
-        var dest = rawFrame
-
-        for plane in 0 ..< CVPixelBufferGetPlaneCount(pixelBuffer) {
-            let source = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, plane)
-            let height = CVPixelBufferGetHeightOfPlane(pixelBuffer, plane)
-            let bytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, plane)
-            let planeSize = height * bytesPerRow
-
-            memcpy(dest, source, planeSize)
-            dest += planeSize
-        }
-
-        self.init(bytesNoCopy: rawFrame, count: totalSize, deallocator: .free)
-    }
-}
-
-public extension CGImagePropertyOrientation {
-    func toRTCRotation() -> RTCVideoRotation {
-        switch self {
-        case .up, .upMirrored, .down, .downMirrored: return ._0
-        case .left, .leftMirrored: return ._90
-        case .right, .rightMirrored: return ._270
-        default: return ._0
-        }
+        
+        broadcastSource.processFrame(sampleBuffer: sampleBuffer, ofType: sampleBufferType)
     }
 }

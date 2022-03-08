@@ -73,7 +73,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     private var midToTrackId: [String: String] = [:]
 
     // receiver used for iOS screen broadcast
-    private var broadcastScreenshareReceiver: BroadcastScreenReceiver?
+    private var broadcastScreenshareReceiver: ScreenBroadcastNotificationReceiver?
 
     private static let mediaConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue])
 
@@ -215,11 +215,11 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         - onStart: The callback that will receive the screencast track called once the track becomes available
         - onStop: The callback that will be called once the track becomes unavailable
      */
-    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalBroadcastScreenTrack) -> Void, onStop: @escaping () -> Void) {
-        let screensharingTrack = LocalBroadcastScreenTrack(appGroup: appGroup, videoParameters: videoParameters)
+    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) {
+        let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters)
         localTracks.append(screensharingTrack)
 
-        broadcastScreenshareReceiver = BroadcastScreenReceiver(onStart: { [weak self, weak screensharingTrack] in
+        broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(onStart: { [weak self, weak screensharingTrack] in
             guard let track = screensharingTrack else {
                 return
             }
@@ -292,7 +292,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
 
     /// Adds given broadcast track to the peer connection and forces track renegotiation.
-    private func setupScreencastTrack(track: LocalBroadcastScreenTrack, metadata: Metadata) {
+    private func setupScreencastTrack(track: LocalScreenBroadcastTrack, metadata: Metadata) {
         guard let pc = connection else {
             return
         }
