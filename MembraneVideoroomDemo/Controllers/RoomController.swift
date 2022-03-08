@@ -33,7 +33,7 @@ class RoomController: ObservableObject {
     
     var localVideoTrack: LocalVideoTrack?
     var localAudioTrack: LocalAudioTrack?
-    var localScreencastTrack: LocalBroadcastScreenTrack?
+    var localScreencastTrack: LocalScreenBroadcastTrack?
 
     @Published var errorMessage: String?
     @Published var isMicEnabled: Bool

@@ -51,7 +51,7 @@ public extension CVPixelBuffer {
     }
 }
 
-internal protocol BroadcastScreenCapturerDelegate: AnyObject {
+internal protocol ScreenBroadcastCapturerDelegate: AnyObject {
     func started()
     func stopped()
     func paused()
@@ -72,8 +72,8 @@ internal protocol BroadcastScreenCapturerDelegate: AnyObject {
  It is important that the capturer gets started with a proper `appGroup` that is shared between the application and the `Broadcast Extension` itself
  (required by `IPC` mechanism).
  */
-class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
-    public weak var capturerDelegate: BroadcastScreenCapturerDelegate?
+class ScreenBroadcastCapturer: RTCVideoCapturer, VideoCapturer {
+    public weak var capturerDelegate: ScreenBroadcastCapturerDelegate?
 
     private let videoParameters: VideoParameters
     private let appGroup: String
@@ -95,7 +95,7 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
         - videoParameters: The parameters used for limiting the screen capture resolution and target framerate
         - delegate: A delegate that will receive notifications about the sceeen capture events such as started/stopped or paused
      */
-    init(_ source: RTCVideoSource, appGroup: String, videoParameters: VideoParameters, delegate: BroadcastScreenCapturerDelegate? = nil) {
+    init(_ source: RTCVideoSource, appGroup: String, videoParameters: VideoParameters, delegate: ScreenBroadcastCapturerDelegate? = nil) {
         self.source = source
         self.appGroup = appGroup
         self.videoParameters = videoParameters
@@ -142,17 +142,17 @@ class BroadcastScreenCapturer: RTCVideoCapturer, VideoCapturer {
             case let .notification(notification):
                 switch notification {
                 case .started:
-                    sdkLogger.info("BroadcastScreenCapturer has been started")
+                    sdkLogger.info("ScreenBroadcastCapturer has been started")
                     self.capturerDelegate?.started()
                     self.started = true
                 case .finished:
-                    sdkLogger.info("BroadcastScreenCapturer has been stopped")
+                    sdkLogger.info("ScreenBroadcastCapturer has been stopped")
                     self.capturerDelegate?.stopped()
                 case .paused:
-                    sdkLogger.info("BroadcastScreenCapturer has been paused")
+                    sdkLogger.info("ScreenBroadcastCapturer has been paused")
                     self.capturerDelegate?.paused()
                 case .resumed:
-                    sdkLogger.info("BroadcastScreenCapturer has been resumed")
+                    sdkLogger.info("ScreenBroadcastCapturer has been resumed")
                     self.capturerDelegate?.resumed()
                 default:
                     break

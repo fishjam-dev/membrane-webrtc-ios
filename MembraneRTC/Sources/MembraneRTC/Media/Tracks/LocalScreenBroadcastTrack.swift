@@ -1,6 +1,6 @@
 import WebRTC
 
-public protocol LocalBroadcastScreenTrackDelegate: AnyObject {
+public protocol LocalScreenBroadcastTrackDelegate: AnyObject {
     func started()
     func stopped()
     func paused()
@@ -8,17 +8,17 @@ public protocol LocalBroadcastScreenTrackDelegate: AnyObject {
 }
 
 /// Utility wrapper around a local `RTCVideoTrack` also managing a `BroadcastScreenCapturer`.
-public class LocalBroadcastScreenTrack: VideoTrack, LocalTrack, BroadcastScreenCapturerDelegate {
+public class LocalScreenBroadcastTrack: VideoTrack, LocalTrack, ScreenBroadcastCapturerDelegate {
     private let videoSource: RTCVideoSource
     private let capturer: VideoCapturer
     private let track: RTCVideoTrack
-    public weak var delegate: LocalBroadcastScreenTrackDelegate?
+    public weak var delegate: LocalScreenBroadcastTrackDelegate?
 
-    internal init(appGroup: String, videoParameters: VideoParameters, delegate _: LocalBroadcastScreenTrackDelegate? = nil) {
+    internal init(appGroup: String, videoParameters: VideoParameters, delegate _: LocalScreenBroadcastTrackDelegate? = nil) {
         videoSource = ConnectionManager.createVideoSource()
         track = ConnectionManager.createVideoTrack(source: videoSource)
 
-        let capturer = BroadcastScreenCapturer(videoSource, appGroup: appGroup, videoParameters: videoParameters)
+        let capturer = ScreenBroadcastCapturer(videoSource, appGroup: appGroup, videoParameters: videoParameters)
         self.capturer = capturer
 
         super.init()
