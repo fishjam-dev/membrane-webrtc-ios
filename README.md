@@ -1,7 +1,3 @@
-# membrane-at-dscout-poc-ios
-
-iOS Proof-Of-Concept for Membarne SFU
-
 ## Components
 The repository consists of 3 separapable components:
 - `MembraneRTC` -  Membrane WebRTC client fully compatible with `Membrane RTC Engine`, responsible for exchaning media events and receiving media streams which then are presented to the user
@@ -67,7 +63,8 @@ Two of variables are related with screenast functionality:
 
 *NOTE* `appGroup` used in `Constants.swift` must be replicated inside `ScreenBroadcastExt/SampleHandler.swift` file.
 
+## Credits
+This project has been built and is maintained thanks to the support from [dscout](https://dscout.com/) and [Software Mansion](https://swmansion.com).
 
-
-
- 
+<img alt="dscout" height="100" src="./.github/dscout_logo.png"/>
+<img alt="Software Mansion" src="https://logo.swmansion.com/logo?color=white&variant=desktop&width=150&tag=react-native-reanimated-github"/>
