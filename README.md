@@ -63,7 +63,24 @@ Two of variables are related with screenast functionality:
 
 *NOTE* `appGroup` used in `Constants.swift` must be replicated inside `ScreenBroadcastExt/SampleHandler.swift` file.
 
+## Installation
+
+### Cocoapods
+Add in your app's Podfile:
+```
+pod 'MembraneRTC'
+```
+
+In your ScreenBroadcast extension target:
+```
+target 'ScreenBroadcast' do
+  pod 'MembraneRTC/Broadcast'
+end
+```
+
 ## Credits
+This project is highly inspired by the [LiveKit](https://livekit.io/) project and their implementation of the [iOS SDK](https://github.com/livekit/client-sdk-swift) and reuses a lot of their implemented solutions (mainly dealing with WebRTC SDK while the signalling got completely replaced with an internal solution).
+
 This project has been built and is maintained thanks to the support from [dscout](https://dscout.com/) and [Software Mansion](https://swmansion.com).
 
 <img alt="dscout" height="100" src="./.github/dscout_logo.png"/>
