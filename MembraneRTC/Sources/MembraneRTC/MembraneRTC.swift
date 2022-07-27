@@ -381,6 +381,15 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         peerConnection.enforceSendOnlyDirection()
     }
     
+    
+    /**
+      Selects track encoding that server should send to the client library.
+     
+         - Parameters:
+            - peerId:an id of a peer that owns the track
+            - trackId: an id of a remote track
+            - encoding: an encoding to receive
+     */
     public func selectTrackEncoding(peerId: String, trackId: String, encoding: TrackEncoding) {
         transport.send(event: SelectEncodingEvent(peerId: peerId, trackId: trackId, encoding: encoding.description))
     }
@@ -402,11 +411,24 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         encoding.isActive = enabled
         sender.parameters = params
     }
-    
+    /**
+     * Enables track encoding so that it will be sent to the server.
+     
+        - Parameters:
+           - trackId: an id of a local track
+           - encoding: an encoding that will be enabled
+     */
     public func enableTrackEncoding(trackId: String, encoding: TrackEncoding) {
         setTrackEncoding(trackId: trackId, encoding: encoding, enabled: true)
     }
     
+    /**
+     * Disables track encoding so that it will be no longer sent to the server.
+     
+         - Parameters:
+            - trackId: an id of a local track
+            - encoding: an encoding that will be disabled
+     */
     public func disableTrackEncoding(trackId: String, encoding: TrackEncoding) {
         setTrackEncoding(trackId: trackId, encoding: encoding, enabled: false)
     }
