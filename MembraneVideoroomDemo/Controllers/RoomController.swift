@@ -48,6 +48,9 @@ class RoomController: ObservableObject {
     var localScreensharingVideoId: String?
     var isFrontCamera: Bool = true
     
+    @Published var videoSimulcastConfig: SimulcastConfig = SimulcastConfig(enabled: true, activeEncodings: [TrackEncoding.l])
+    @Published var screencastSimulcastConfig: SimulcastConfig = SimulcastConfig(enabled: true, activeEncodings: [TrackEncoding.l, TrackEncoding.m, TrackEncoding.h])
+    
 
     init(_ room: MembraneRTC) {
         self.room = room
@@ -61,15 +64,13 @@ class RoomController: ObservableObject {
         let localPeer = room.currentPeer()
         let trackMetadata = ["user_id": localPeer.metadata["displayName"] ?? "UNKNOWN"]
         
-        let preset = VideoParameters.presetVGA169
+        let preset = VideoParameters.presetHD43
         let videoParameters = VideoParameters(dimensions: preset.dimensions.flip(), encoding: preset.encoding)
         
-        localVideoTrack = room.createVideoTrack(videoParameters: videoParameters, metadata: trackMetadata)
+        localVideoTrack = room.createVideoTrack(videoParameters: videoParameters, metadata: trackMetadata, simulcastConfig: videoSimulcastConfig)
         localAudioTrack = room.createAudioTrack(metadata: trackMetadata)
 
         room.add(delegate: self)
-        
-        
 
         self.room?.join()
     }
@@ -139,39 +140,44 @@ class RoomController: ObservableObject {
             
             let displayName = room.currentPeer().metadata["displayName"] ?? "UNKNOWN"
             
-            let preset = VideoParameters.presetScreenShareHD15
+            let preset = VideoParameters.presetScreenShareFHD30
             let videoParameters = VideoParameters(dimensions: preset.dimensions.flip(), encoding: preset.encoding)
             
-            room.createScreencastTrack(appGroup: Constants.appGroup, videoParameters: videoParameters, metadata: ["user_id": displayName, "type": "screensharing"], onStart: { [weak self] screencastTrack in
-                guard let self = self else {
-                    return
-                }
+            localScreencastTrack = room.createScreencastTrack(
+                appGroup: Constants.appGroup,
+                videoParameters: videoParameters,
+                metadata: ["user_id": displayName, "type": "screensharing"],
+                simulcastConfig: screencastSimulcastConfig,
+                onStart: { [weak self] screencastTrack in
+                    guard let self = self else {
+                        return
+                    }
 
-                self.localScreensharingVideoId = UUID().uuidString
+                    self.localScreensharingVideoId = UUID().uuidString
 
-                let localParticipantScreensharing = ParticipantVideo(
-                    id: self.localScreensharingVideoId!,
-                    participant: localParticipant,
-                    videoTrack: screencastTrack,
-                    isScreensharing: true
-                )
+                    let localParticipantScreensharing = ParticipantVideo(
+                        id: self.localScreensharingVideoId!,
+                        participant: localParticipant,
+                        videoTrack: screencastTrack,
+                        isScreensharing: true
+                    )
 
-                self.add(video: localParticipantScreensharing)
+                    self.add(video: localParticipantScreensharing)
 
-                // once the screensharing has started we want to focus it
-                self.focus(video: localParticipantScreensharing)
-                self.isScreensharingEnabled = true
-            }, onStop: { [weak self] in
-                guard let self = self,
-                      let localScreensharingId = self.localScreensharingVideoId,
-                      let video = self.findParticipantVideo(id: localScreensharingId)
-                else {
-                    return
-                }
+                    // once the screensharing has started we want to focus it
+                    self.focus(video: localParticipantScreensharing)
+                    self.isScreensharingEnabled = true
+                }, onStop: { [weak self] in
+                    guard let self = self,
+                          let localScreensharingId = self.localScreensharingVideoId,
+                          let video = self.findParticipantVideo(id: localScreensharingId)
+                    else {
+                        return
+                    }
 
-                self.remove(video: video)
-                self.isScreensharingEnabled = false
-            })
+                    self.remove(video: video)
+                    self.isScreensharingEnabled = false
+                })
         }
     }
 
@@ -192,10 +198,19 @@ class RoomController: ObservableObject {
                     let index = self.participantVideos.count > 0 ? 1 : 0
                     self.participantVideos.insert(primary, at: index)
                 }
+                if(primary.participant.id != self.localParticipantId) {
+                    self.room?.selectTrackEncoding(peerId: primary.participant.id, trackId: primary.id, encoding: TrackEncoding.l)
+                }
             }
 
             // set the current primary video
             self.primaryVideo = video
+            
+            
+            if video.participant.id != self.localParticipantId {
+                self.room?.selectTrackEncoding(peerId: video.participant.id, trackId: video.id, encoding: TrackEncoding.h)
+            }
+            
 
             self.objectWillChange.send()
         }
@@ -364,5 +379,29 @@ extension RoomController: MembraneRTCDelegate {
                 self.errorMessage = message
             }
         }
+    }
+    
+    private func toggleTrackEncoding(simulcastConfig: SimulcastConfig, trackId: String, encoding: TrackEncoding) -> SimulcastConfig {
+        if(simulcastConfig.activeEncodings.contains(encoding)) {
+            room?.disableTrackEncoding(trackId: trackId, encoding: encoding)
+            return SimulcastConfig(enabled: true, activeEncodings: simulcastConfig.activeEncodings.filter({$0 != encoding}))
+        } else {
+            room?.enableTrackEncoding(trackId: trackId, encoding: encoding)
+            return SimulcastConfig(enabled: true, activeEncodings: simulcastConfig.activeEncodings + [encoding])
+        }
+    }
+    
+    func toggleVideoTrackEncoding(encoding: TrackEncoding) {
+        guard let trackId = localVideoTrack?.trackId() else {
+            return
+        }
+        videoSimulcastConfig = toggleTrackEncoding(simulcastConfig: videoSimulcastConfig, trackId: trackId,  encoding: encoding)
+    }
+    
+    func toggleScreencastTrackEncoding(encoding: TrackEncoding) {
+        guard let trackId = localScreencastTrack?.trackId() else {
+            return
+        }
+        screencastSimulcastConfig = toggleTrackEncoding(simulcastConfig: screencastSimulcastConfig, trackId: trackId, encoding: encoding)
     }
 }

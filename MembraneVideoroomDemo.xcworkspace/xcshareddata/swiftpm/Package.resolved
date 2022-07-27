@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/google/promises.git",
         "state": {
           "branch": null,
-          "revision": "611337c330350c9c1823ad6d671e7f936af5ee13",
-          "version": "2.0.0"
+          "revision": "3e4e743631e86c8c70dbc6efdc7beaa6e90fd3bb",
+          "version": "2.1.1"
         }
       },
       {
@@ -17,15 +17,6 @@
           "branch": null,
           "revision": "b4307ba0b6425c0ba4178e138799946c3da594f8",
           "version": "6.5.0"
-        }
-      },
-      {
-        "package": "WebRTC",
-        "repositoryURL": "https://github.com/webrtc-sdk/Specs.git",
-        "state": {
-          "branch": null,
-          "revision": "80c9eebccf89fb877e44b5f942cb9d2024fa7b86",
-          "version": "93.4577.1"
         }
       },
       {
@@ -69,8 +60,8 @@
         "repositoryURL": "https://github.com/apple/swift-protobuf.git",
         "state": {
           "branch": null,
-          "revision": "7e2c5f3cbbeea68e004915e3a8961e20bd11d824",
-          "version": "1.18.0"
+          "revision": "e1499bc69b9040b29184f7f2996f7bab467c1639",
+          "version": "1.19.0"
         }
       },
       {
@@ -80,6 +71,15 @@
           "branch": null,
           "revision": "882231977f6381827ad564ccaff622de2d550477",
           "version": "4.0.0"
+        }
+      },
+      {
+        "package": "WebRTC",
+        "repositoryURL": "https://github.com/stasel/WebRTC.git",
+        "state": {
+          "branch": null,
+          "revision": "2a965c02e8c29952dec946123d6e645e91e3d668",
+          "version": "103.0.0"
         }
       }
     ]

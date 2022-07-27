@@ -158,8 +158,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
  
      - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
      */
-    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata) -> LocalVideoTrack {
-        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters)
+    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig) -> LocalVideoTrack {
+        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters, simulcastConfig: simulcastConfig)
         videoTrack.start()
         
         localTracks.append(videoTrack)
@@ -215,8 +215,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         - onStart: The callback that will receive the screencast track called once the track becomes available
         - onStop: The callback that will be called once the track becomes unavailable
      */
-    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) {
-        let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters)
+    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig, onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) -> LocalScreenBroadcastTrack {
+        let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters, simulcastConfig: simulcastConfig)
         localTracks.append(screensharingTrack)
 
         broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(onStart: { [weak self, weak screensharingTrack] in
@@ -239,6 +239,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
         screensharingTrack.delegate = broadcastScreenshareReceiver
         screensharingTrack.start()
+        return screensharingTrack
     }
     
     /**
@@ -298,8 +299,26 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
 
         let localStreamId = UUID().uuidString
-        pc.add(track.rtcTrack(), streamIds: [localStreamId])
+        
+        let simulcastConfig = track.simulcastConfig
+        
+        let sendEncodings = [
+            RTCRtpEncodingParameters.create(rid: "l", active: false, scaleResolutionDownBy:4.0),
+            RTCRtpEncodingParameters.create(rid: "m", active: false, scaleResolutionDownBy:2.0),
+            RTCRtpEncodingParameters.create(rid: "h", active: false, scaleResolutionDownBy:1.0),
+        ]
+        
+        simulcastConfig.activeEncodings.forEach { enconding in
+            sendEncodings[enconding.rawValue].isActive = true;
+        }
 
+        let transceiverInit = RTCRtpTransceiverInit()
+        transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
+        transceiverInit.sendEncodings = sendEncodings
+        transceiverInit.streamIds = [localStreamId]
+
+        pc.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
+    
         pc.enforceSendOnlyDirection()
 
         localPeer = localPeer.withTrack(trackId: track.rtcTrack().trackId, metadata: metadata)
@@ -334,11 +353,62 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         let localStreamId = UUID().uuidString
         
         localTracks.forEach { track in
-            peerConnection.add(track.rtcTrack(), streamIds: [localStreamId])
+            if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.simulcastConfig.enabled == true) {
+                let simulcastConfig = (track as? LocalVideoTrack)?.simulcastConfig
+                
+                let sendEncodings = [
+                    RTCRtpEncodingParameters.create(rid: "l", active: false, scaleResolutionDownBy:4.0),
+                    RTCRtpEncodingParameters.create(rid: "m", active: false, scaleResolutionDownBy:2.0),
+                    RTCRtpEncodingParameters.create(rid: "h", active: false, scaleResolutionDownBy:1.0),
+                ]
+                
+                simulcastConfig?.activeEncodings.forEach { enconding in
+                    sendEncodings[enconding.rawValue].isActive = true;
+                }
+
+                let transceiverInit = RTCRtpTransceiverInit()
+                transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
+                transceiverInit.sendEncodings = sendEncodings
+                transceiverInit.streamIds = [localStreamId]
+
+                peerConnection.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
+            } else {
+                peerConnection.add(track.rtcTrack(), streamIds: [localStreamId])
+            }
             
         }
         
         peerConnection.enforceSendOnlyDirection()
+    }
+    
+    public func selectTrackEncoding(peerId: String, trackId: String, encoding: TrackEncoding) {
+        transport.send(event: SelectEncodingEvent(peerId: peerId, trackId: trackId, encoding: encoding.description))
+    }
+    
+    private func setTrackEncoding(trackId: String, encoding: TrackEncoding, enabled: Bool) {
+        guard let pc = connection else {
+            return
+        }
+        
+        guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
+            return
+        }
+        
+        
+        let params = sender.parameters
+        guard let encoding = params.encodings.first(where: { $0.rid == encoding.description }) else {
+            return
+        }
+        encoding.isActive = enabled
+        sender.parameters = params
+    }
+    
+    public func enableTrackEncoding(trackId: String, encoding: TrackEncoding) {
+        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: true)
+    }
+    
+    public func disableTrackEncoding(trackId: String, encoding: TrackEncoding) {
+        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: false)
     }
 }
 
@@ -628,7 +698,7 @@ extension MembraneRTC: EventTransportDelegate {
 extension MembraneRTC {
     /// Handles the `OfferDataEvent`, creates a local description and sends `SdpAnswerEvent`
     func onOfferData(_ offerData: OfferDataEvent) {
-        setTurnServers(offerData.data.integratedTurnServers, offerData.data.iceTransportPolicy)
+        setTurnServers(offerData.data.integratedTurnServers)
 
         if connection == nil {
             setupPeerConnection()
@@ -669,15 +739,8 @@ extension MembraneRTC {
     }
 
     /// Parses a list of turn servers and sets them up as `iceServers` that can be used for `RTCPeerConnection` ceration.
-    private func setTurnServers(_ turnServers: [OfferDataEvent.TurnServer], _ iceTransportPolicy: String) {
-        switch iceTransportPolicy {
-        case "all":
-            config.iceTransportPolicy = .all
-        case "relay":
-            config.iceTransportPolicy = .relay
-        default:
-            break
-        }
+    private func setTurnServers(_ turnServers: [OfferDataEvent.TurnServer]) {
+        config.iceTransportPolicy = .relay
 
         let servers: [RTCIceServer] = turnServers.map { server in
             let url = ["turn", ":", server.serverAddr, ":", String(server.serverPort), "?transport=", server.transport].joined()
@@ -776,9 +839,15 @@ extension MembraneRTC {
 
         pc.setRemoteDescription(description, completionHandler: { error in
             guard let err = error else {
+                [TrackEncoding.h, TrackEncoding.m, TrackEncoding.l].forEach({ encoding in
+                    self.localTracks.forEach({track in
+                        if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.simulcastConfig.activeEncodings.contains(encoding) != true) {
+                            self.disableTrackEncoding(trackId: track.rtcTrack().trackId, encoding: encoding)
+                        }
+                    })
+                })
                 return
             }
-
             sdkLogger.error("error occured while trying to set a remote description \(err)")
         })
     }

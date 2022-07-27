@@ -243,6 +243,23 @@ struct RenegotiateTracksEvent: SendableEvent {
     }
 }
 
+struct SelectEncodingEvent: SendableEvent {
+    let peerId: String
+    let trackId: String
+    let encoding: String
+    
+    func serialize() -> Payload {
+        return [
+            "type": "selectEncoding",
+            "data": [
+                "peerId": peerId,
+                "trackId": trackId,
+                "encoding": encoding,
+            ]
+        ]
+    }
+}
+
 /*
  Receivable events
  */
@@ -295,7 +312,6 @@ struct OfferDataEvent: ReceivableEvent, Codable {
     }
 
     struct Data: Codable {
-        let iceTransportPolicy: String
         let integratedTurnServers: [TurnServer]
         let tracksTypes: [String: Int]
     }
