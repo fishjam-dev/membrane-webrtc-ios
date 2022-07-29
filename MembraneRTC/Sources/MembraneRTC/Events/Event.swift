@@ -243,6 +243,38 @@ struct RenegotiateTracksEvent: SendableEvent {
     }
 }
 
+struct UpdatePeerMetadata: SendableEvent {
+    let metadata: Metadata
+    
+    init(metadata: Metadata) {
+        self.metadata = metadata
+    }
+    
+    func serialize() -> Payload {
+        return [
+            "type": "updatePeerMetadata",
+            "data": ["metadata": metadata]
+        ]
+    }
+}
+
+struct UpdateTrackMetadata: SendableEvent {
+    let trackId: String
+    let trackMetadata: Metadata
+    
+    init(trackId: String, trackMetadata: Metadata) {
+        self.trackId = trackId
+        self.trackMetadata = trackMetadata
+    }
+    
+    func serialize() -> Payload {
+        return [
+            "type": "updateTrackMetadata",
+            "data": ["trackId": trackId, "trackMetadata": trackMetadata]
+        ]
+    }
+}
+
 /*
  Receivable events
  */

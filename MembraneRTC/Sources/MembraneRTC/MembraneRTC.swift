@@ -340,6 +340,35 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         peerConnection.enforceSendOnlyDirection()
     }
+    
+    /**
+     Updates the metadata for the current peer.
+     
+        - Parameters:
+         - peerMetadata: Data about this peer that other peers will receive upon joining.
+     
+     If the metadata is different from what is already tracked in the room, the optional
+     callback `onPeerUpdated` will be triggered for other peers in the room.
+     */
+    public func updatePeerMetadata(peerMetadata: Metadata) {
+        transport.send(event: UpdatePeerMetadata(metadata: peerMetadata))
+        localPeer = localPeer.with(metadata: peerMetadata)
+    }
+    
+    /**
+     Updates the metadata for a specific track.
+     
+        - Parameters:
+         - trackId: local track id of audio or video track
+         - trackMetadata: Data about this track that other peers will receive upon joining.
+     
+     If the metadata is different from what is already tracked in the room, the optional
+     callback `onTrackUpdated` will be triggered for other peers in the room.
+     */
+    public func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
+        transport.send(event: UpdateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata))
+        localPeer = localPeer.withTrack(trackId: trackId, metadata: trackMetadata)
+    }
 }
 
 extension MembraneRTC: RTCPeerConnectionDelegate {
