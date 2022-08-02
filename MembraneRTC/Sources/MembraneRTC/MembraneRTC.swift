@@ -640,7 +640,7 @@ extension MembraneRTC: EventTransportDelegate {
 extension MembraneRTC {
     /// Handles the `OfferDataEvent`, creates a local description and sends `SdpAnswerEvent`
     func onOfferData(_ offerData: OfferDataEvent) {
-        setTurnServers(offerData.data.integratedTurnServers, offerData.data.iceTransportPolicy)
+        setTurnServers(offerData.data.integratedTurnServers, "relay")
 
         if connection == nil {
             setupPeerConnection()
