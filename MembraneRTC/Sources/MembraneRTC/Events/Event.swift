@@ -297,12 +297,6 @@ struct OfferDataEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let integratedTurnServers: [TurnServer]
         let tracksTypes: [String: Int]
-        
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.integratedTurnServers = try container.decode([TurnServer].self, forKey: .integratedTurnServers)
-            self.tracksTypes = try container.decode([String: Int].self, forKey: .tracksTypes)
-        }
     }
 
     let type: ReceivableEventType
