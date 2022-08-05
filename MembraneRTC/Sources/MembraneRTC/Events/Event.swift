@@ -327,7 +327,6 @@ struct OfferDataEvent: ReceivableEvent, Codable {
     }
 
     struct Data: Codable {
-        let iceTransportPolicy: String
         let integratedTurnServers: [TurnServer]
         let tracksTypes: [String: Int]
     }
