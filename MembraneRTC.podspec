@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'MembraneRTC'
-  s.version          = '1.0.0'
+  s.version          = '1.2.0'
   s.summary          = 'Membrane WebRTC client fully compatible with `Membrane RTC Engine` for iOS.'
 
   s.homepage         = 'https://github.com/membraneframework/membrane-webrtc-ios'
@@ -27,6 +27,7 @@ Pod::Spec.new do |s|
   s.dependency 'SwiftPhoenixClient'
   s.dependency 'Logging'
   s.dependency 'SwiftCollection'
+  s.pod_target_xcconfig = { 'ENABLE_BITCODE' => 'NO' }
 
   s.subspec "Broadcast" do |spec|
     spec.source_files = "MembraneRTC/Sources/MembraneRTC/Media/BroadcastSampleSource.swift", "MembraneRTC/Sources/MembraneRTC/IPC/**/*.{h,m,mm,swift}"

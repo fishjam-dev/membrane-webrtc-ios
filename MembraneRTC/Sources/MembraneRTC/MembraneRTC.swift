@@ -51,6 +51,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     var state: State
     private var transport: EventTransport
+    
+    // a common stream ID used for all non-screenshare and audio tracks
+    private let localStreamId = UUID().uuidString
 
     // `RTCPeerConnection` config
     private var config: RTCConfiguration
@@ -164,8 +167,15 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
  
      - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
      */
-    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig) -> LocalVideoTrack {
+
+    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata) -> LocalVideoTrack {
         let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
+        
+        if state == .connected {
+            connection?.add(videoTrack.rtcTrack(), streamIds: [localStreamId])
+            connection?.enforceSendOnlyDirection()
+        }
+
         videoTrack.start()
         
         localTracks.append(videoTrack)
@@ -192,6 +202,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      */
     public func createAudioTrack(metadata: Metadata) -> LocalAudioTrack {
         let audioTrack = LocalAudioTrack(connectionManager: connectionManager)
+        
+        if state == .connected {
+            connection?.add(audioTrack.rtcTrack(), streamIds: [localStreamId])
+            connection?.enforceSendOnlyDirection()
+        }
+        
         audioTrack.start()
         
         localTracks.append(audioTrack)
@@ -304,7 +320,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             return
         }
 
-        let localStreamId = UUID().uuidString
+        let screencastStreamId = UUID().uuidString
         
         let simulcastConfig = track.simulcastConfig
         
@@ -321,7 +337,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         let transceiverInit = RTCRtpTransceiverInit()
         transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
         transceiverInit.sendEncodings = sendEncodings
-        transceiverInit.streamIds = [localStreamId]
+        transceiverInit.streamIds = [screencastStreamId]
 
         pc.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
     
@@ -354,9 +370,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         connection = peerConnection
 
         peerConnection.delegate = self
-
-        // common stream id for the local video and audio tracks
-        let localStreamId = UUID().uuidString
         
         localTracks.forEach { track in
             if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.simulcastConfig.enabled == true) {
@@ -437,6 +450,35 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      */
     public func disableTrackEncoding(trackId: String, encoding: TrackEncoding) {
         setTrackEncoding(trackId: trackId, encoding: encoding, enabled: false)
+    }
+    
+    /**
+     Updates the metadata for the current peer.
+     
+        - Parameters:
+         - peerMetadata: Data about this peer that other peers will receive upon joining.
+     
+     If the metadata is different from what is already tracked in the room, the optional
+     callback `onPeerUpdated` will be triggered for other peers in the room.
+     */
+    public func updatePeerMetadata(peerMetadata: Metadata) {
+        transport.send(event: UpdatePeerMetadata(metadata: peerMetadata))
+        localPeer = localPeer.with(metadata: peerMetadata)
+    }
+    
+    /**
+     Updates the metadata for a specific track.
+     
+        - Parameters:
+         - trackId: local track id of audio or video track
+         - trackMetadata: Data about this track that other peers will receive upon joining.
+     
+     If the metadata is different from what is already tracked in the room, the optional
+     callback `onTrackUpdated` will be triggered for other peers in the room.
+     */
+    public func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
+        transport.send(event: UpdateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata))
+        localPeer = localPeer.withTrack(trackId: trackId, metadata: trackMetadata)
     }
 }
 
@@ -726,7 +768,7 @@ extension MembraneRTC: EventTransportDelegate {
 extension MembraneRTC {
     /// Handles the `OfferDataEvent`, creates a local description and sends `SdpAnswerEvent`
     func onOfferData(_ offerData: OfferDataEvent) {
-        setTurnServers(offerData.data.integratedTurnServers)
+        setTurnServers(offerData.data.integratedTurnServers, "relay")
 
         if connection == nil {
             setupPeerConnection()
