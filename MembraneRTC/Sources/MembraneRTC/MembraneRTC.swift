@@ -40,10 +40,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     public struct ConnectOptions {
         let transport: EventTransport
         let config: Metadata
+        let encoder: Encoder
 
-        public init(transport: EventTransport, config: Metadata) {
+        public init(transport: EventTransport, config: Metadata, encoder: Encoder = Encoder.DEFAULT) {
             self.transport = transport
             self.config = config
+            self.encoder = encoder
         }
     }
 
@@ -52,6 +54,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     // `RTCPeerConnection` config
     private var config: RTCConfiguration
+    
+    private var connectionManager: ConnectionManager
 
     // Underyling RTC connection
     private var connection: RTCPeerConnection?
@@ -77,7 +81,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     private static let mediaConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue])
 
-    internal init(eventTransport: EventTransport, config: RTCConfiguration, peerMetadata: Metadata) {
+    internal init(eventTransport: EventTransport, config: RTCConfiguration, peerMetadata: Metadata, encoder: Encoder) {
         // RTCSetMinDebugLogLevel(.error)
         sdkLogger.logLevel = .info
 
@@ -88,6 +92,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
         // setup local peer
         localPeer = localPeer.with(metadata: peerMetadata)
+        
+        connectionManager = ConnectionManager(encoder: encoder)
 
         super.init()
     }
@@ -105,7 +111,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      -  Returns: `MembraneRTC` client instance in connecting state
      */
     public static func connect(with options: ConnectOptions, delegate: MembraneRTCDelegate) -> MembraneRTC {
-        let client = MembraneRTC(eventTransport: options.transport, config: RTCConfiguration(), peerMetadata: options.config)
+        let client = MembraneRTC(eventTransport: options.transport, config: RTCConfiguration(), peerMetadata: options.config, encoder: options.encoder)
 
         client.add(delegate: delegate)
         client.connect()
@@ -159,7 +165,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
      */
     public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig) -> LocalVideoTrack {
-        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters, simulcastConfig: simulcastConfig)
+        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         videoTrack.start()
         
         localTracks.append(videoTrack)
@@ -185,7 +191,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Returns: `LocalAudioTrack` instance that user then can use for things such as front / back camera switch.
      */
     public func createAudioTrack(metadata: Metadata) -> LocalAudioTrack {
-        let audioTrack = LocalAudioTrack()
+        let audioTrack = LocalAudioTrack(connectionManager: connectionManager)
         audioTrack.start()
         
         localTracks.append(audioTrack)
@@ -216,7 +222,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         - onStop: The callback that will be called once the track becomes unavailable
      */
     public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig, onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) -> LocalScreenBroadcastTrack {
-        let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters, simulcastConfig: simulcastConfig)
+        let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         localTracks.append(screensharingTrack)
 
         broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(onStart: { [weak self, weak screensharingTrack] in
@@ -342,7 +348,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             self.config.iceServers = [Self.defaultIceServer()]
         }
 
-        guard let peerConnection = ConnectionManager.createPeerConnection(config, constraints: Self.mediaConstraints) else {
+        guard let peerConnection = connectionManager.createPeerConnection(config, constraints: Self.mediaConstraints) else {
             fatalError("Failed to initialize new PeerConnection")
         }
         connection = peerConnection
@@ -380,7 +386,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         peerConnection.enforceSendOnlyDirection()
     }
-    
+
     
     /**
       Selects track encoding that server should send to the client library.

@@ -48,7 +48,7 @@ class RoomController: ObservableObject {
     var localScreensharingVideoId: String?
     var isFrontCamera: Bool = true
     
-    @Published var videoSimulcastConfig: SimulcastConfig = SimulcastConfig(enabled: true, activeEncodings: [TrackEncoding.l])
+    @Published var videoSimulcastConfig: SimulcastConfig = SimulcastConfig(enabled: true, activeEncodings: [TrackEncoding.l, TrackEncoding.m, TrackEncoding.h])
     @Published var screencastSimulcastConfig: SimulcastConfig = SimulcastConfig(enabled: true, activeEncodings: [TrackEncoding.l, TrackEncoding.m, TrackEncoding.h])
     
 

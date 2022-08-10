@@ -12,11 +12,11 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
         case camera, file
     }
 
-    internal init(simulcastConfig: SimulcastConfig) {
-        let source = ConnectionManager.createVideoSource()
+    internal init(simulcastConfig: SimulcastConfig, connectionManager: ConnectionManager) {
+        let source = connectionManager.createVideoSource()
 
         videoSource = source
-        track = ConnectionManager.createVideoTrack(source: source)
+        track = connectionManager.createVideoTrack(source: source)
         
         self.simulcastConfig = simulcastConfig
 
@@ -25,12 +25,12 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
         capturer = createCapturer(videoSource: source)
     }
 
-    public static func create(for capturer: Capturer, videoParameters: VideoParameters, simulcastConfig: SimulcastConfig) -> LocalVideoTrack {
+    static func create(for capturer: Capturer, videoParameters: VideoParameters, simulcastConfig: SimulcastConfig, connectionManager: ConnectionManager) -> LocalVideoTrack {
         switch capturer {
         case .camera:
-            return LocalCameraVideoTrack(parameters: videoParameters, simulcastConfig: simulcastConfig)
+            return LocalCameraVideoTrack(parameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         case .file:
-            return LocalFileVideoTrack(simulcastConfig: simulcastConfig)
+            return LocalFileVideoTrack(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         }
     }
 
@@ -66,9 +66,9 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
 public class LocalCameraVideoTrack: LocalVideoTrack {
     private let videoParameters: VideoParameters
     
-    init(parameters: VideoParameters, simulcastConfig: SimulcastConfig) {
+    init(parameters: VideoParameters, simulcastConfig: SimulcastConfig, connectionManager: ConnectionManager) {
         self.videoParameters = parameters
-        super.init(simulcastConfig: simulcastConfig)
+        super.init(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
     }
     
     override internal func createCapturer(videoSource: RTCVideoSource) -> VideoCapturer {

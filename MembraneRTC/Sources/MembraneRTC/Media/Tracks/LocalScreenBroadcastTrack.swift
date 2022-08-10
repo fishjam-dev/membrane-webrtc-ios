@@ -13,10 +13,10 @@ public class LocalScreenBroadcastTrack: LocalVideoTrack, ScreenBroadcastCapturer
     private let videoParameters: VideoParameters
     public weak var delegate: LocalScreenBroadcastTrackDelegate?
 
-    internal init(appGroup: String, videoParameters: VideoParameters, simulcastConfig: SimulcastConfig, delegate _: LocalScreenBroadcastTrackDelegate? = nil) {
+    internal init(appGroup: String, videoParameters: VideoParameters, simulcastConfig: SimulcastConfig, delegate _: LocalScreenBroadcastTrackDelegate? = nil, connectionManager: ConnectionManager) {
         self.appGroup = appGroup
         self.videoParameters = videoParameters
-        super.init(simulcastConfig: simulcastConfig)
+        super.init(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
     }
 
     internal func started() {

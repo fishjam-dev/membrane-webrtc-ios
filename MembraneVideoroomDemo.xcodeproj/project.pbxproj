@@ -30,7 +30,6 @@
 		3BA235DB27AC1F600070031E /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BA235DA27AC1F600070031E /* FBLPromises */; };
 		3BB35DA527D6177D00892A6E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB35DA427D6177D00892A6E /* Constants.swift */; };
 		3BB35DA727D61A7200892A6E /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3BB35DA627D61A7100892A6E /* README.md */; };
-		3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF227956DF600A0AD4C /* WebRTC */; settings = {ATTRIBUTES = (Required, ); }; };
 		3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF527956E1500A0AD4C /* Logging */; };
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
 		3BD7249327AAD3DE00AFE9D9 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BD7249227AAD3DE00AFE9D9 /* logo.png */; };
@@ -108,7 +107,6 @@
 				3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */,
 				3B0148BB27BA4F7300907A8B /* MembraneRTC in Frameworks */,
 				3B04D3942798190F00E2B755 /* SwiftPhoenixClient in Frameworks */,
-				3BCCBEF327956DF600A0AD4C /* WebRTC in Frameworks */,
 				3B601C0127ABF88A00668122 /* SwiftProtobuf in Frameworks */,
 				3BCCBEF92795701600A0AD4C /* Promises in Frameworks */,
 			);
@@ -269,7 +267,6 @@
 			);
 			name = MembraneVideoroomDemo;
 			packageProductDependencies = (
-				3BCCBEF227956DF600A0AD4C /* WebRTC */,
 				3BCCBEF527956E1500A0AD4C /* Logging */,
 				3BCCBEF82795701600A0AD4C /* Promises */,
 				3B04D3932798190F00E2B755 /* SwiftPhoenixClient */,
@@ -308,7 +305,6 @@
 			);
 			mainGroup = 3BCCBEB22795619500A0AD4C;
 			packageReferences = (
-				3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */,
 				3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */,
 				3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */,
 				3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */,
@@ -673,14 +669,6 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/webrtc-sdk/Specs.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 93.0.0;
-			};
-		};
 		3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-log.git";
@@ -727,11 +715,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */;
 			productName = FBLPromises;
-		};
-		3BCCBEF227956DF600A0AD4C /* WebRTC */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3BCCBEF127956DF600A0AD4C /* XCRemoteSwiftPackageReference "Specs" */;
-			productName = WebRTC;
 		};
 		3BCCBEF527956E1500A0AD4C /* Logging */ = {
 			isa = XCSwiftPackageProductDependency;
