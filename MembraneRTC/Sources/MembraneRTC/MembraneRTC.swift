@@ -168,7 +168,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
      */
 
-    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata) -> LocalVideoTrack {
+    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig) -> LocalVideoTrack {
         let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         
         if state == .connected {
@@ -768,7 +768,7 @@ extension MembraneRTC: EventTransportDelegate {
 extension MembraneRTC {
     /// Handles the `OfferDataEvent`, creates a local description and sends `SdpAnswerEvent`
     func onOfferData(_ offerData: OfferDataEvent) {
-        setTurnServers(offerData.data.integratedTurnServers, "relay")
+        setTurnServers(offerData.data.integratedTurnServers)
 
         if connection == nil {
             setupPeerConnection()
