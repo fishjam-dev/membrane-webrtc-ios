@@ -5,7 +5,7 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
     internal let videoSource: RTCVideoSource
     internal var capturer: VideoCapturer?
     private let track: RTCVideoTrack
-    var simulcastConfig: SimulcastConfig
+    internal var simulcastConfig: SimulcastConfig
     
 
     public enum Capturer {

@@ -108,7 +108,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      Should not be confused with joining the actual room, which is a separate process.
  
      - Parameters:
-        - with: Connection options, consists of an `EventTransport` instance that will be used for relaying media events and arbitrary `config` metadata used by `Membrane RTC Engine` for connection
+        - with: Connection options, consists of an `EventTransport` instance that will be used for relaying media events and arbitrary `config` metadata used by `Membrane RTC Engine` for connection and `encoder` type
         - delegate: The delegate that will receive all notification emitted by `MembraneRTC` client
  
      -  Returns: `MembraneRTC` client instance in connecting state
@@ -164,10 +164,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Parameters:
         - videoParameters: The parameters used for choosing the proper camera resolution and target framerate
         - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
+        - simulcastConfig: Simulcast configuration used for this track
  
      - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
      */
-
     public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig) -> LocalVideoTrack {
         let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         
@@ -234,6 +234,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         - appGroup: The App Group identifier shared by the application  with a target `Broadcast Upload Extension`
         - videoParameters: The parameters used for limiting the screen capture resolution and target framerate
         - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
+        - simulcastConfig: Simulcast configuration used for screencast track
         - onStart: The callback that will receive the screencast track called once the track becomes available
         - onStop: The callback that will be called once the track becomes unavailable
      */
@@ -299,6 +300,57 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         return localPeer
     }
     
+    /**
+     * Enables track encoding so that it will be sent to the server.
+     
+        - Parameters:
+           - trackId: an id of a local track
+           - encoding: an encoding that will be enabled
+     */
+    public func enableTrackEncoding(trackId: String, encoding: TrackEncoding) {
+        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: true)
+    }
+    
+    /**
+     * Disables track encoding so that it will be no longer sent to the server.
+     
+         - Parameters:
+            - trackId: an id of a local track
+            - encoding: an encoding that will be disabled
+     */
+    public func disableTrackEncoding(trackId: String, encoding: TrackEncoding) {
+        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: false)
+    }
+    
+    /**
+     Updates the metadata for the current peer.
+     
+        - Parameters:
+         - peerMetadata: Data about this peer that other peers will receive upon joining.
+     
+     If the metadata is different from what is already tracked in the room, the optional
+     callback `onPeerUpdated` will be triggered for other peers in the room.
+     */
+    public func updatePeerMetadata(peerMetadata: Metadata) {
+        transport.send(event: UpdatePeerMetadata(metadata: peerMetadata))
+        localPeer = localPeer.with(metadata: peerMetadata)
+    }
+    
+    /**
+     Updates the metadata for a specific track.
+     
+        - Parameters:
+         - trackId: local track id of audio or video track
+         - trackMetadata: Data about this track that other peers will receive upon joining.
+     
+     If the metadata is different from what is already tracked in the room, the optional
+     callback `onTrackUpdated` will be triggered for other peers in the room.
+     */
+    public func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
+        transport.send(event: UpdateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata))
+        localPeer = localPeer.withTrack(trackId: trackId, metadata: trackMetadata)
+    }
+    
     internal func connect() {
         // initiate a transport connection
         transport.connect(delegate: self).then {
@@ -324,11 +376,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         let simulcastConfig = track.simulcastConfig
         
-        let sendEncodings = [
-            RTCRtpEncodingParameters.create(rid: "l", active: false, scaleResolutionDownBy:4.0),
-            RTCRtpEncodingParameters.create(rid: "m", active: false, scaleResolutionDownBy:2.0),
-            RTCRtpEncodingParameters.create(rid: "h", active: false, scaleResolutionDownBy:1.0),
-        ]
+        let sendEncodings = Constants.simulcastEncodings
+        sendEncodings.forEach { e in e.isActive = false }
         
         simulcastConfig.activeEncodings.forEach { enconding in
             sendEncodings[enconding.rawValue].isActive = true;
@@ -429,56 +478,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
         encoding.isActive = enabled
         sender.parameters = params
-    }
-    /**
-     * Enables track encoding so that it will be sent to the server.
-     
-        - Parameters:
-           - trackId: an id of a local track
-           - encoding: an encoding that will be enabled
-     */
-    public func enableTrackEncoding(trackId: String, encoding: TrackEncoding) {
-        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: true)
-    }
-    
-    /**
-     * Disables track encoding so that it will be no longer sent to the server.
-     
-         - Parameters:
-            - trackId: an id of a local track
-            - encoding: an encoding that will be disabled
-     */
-    public func disableTrackEncoding(trackId: String, encoding: TrackEncoding) {
-        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: false)
-    }
-    
-    /**
-     Updates the metadata for the current peer.
-     
-        - Parameters:
-         - peerMetadata: Data about this peer that other peers will receive upon joining.
-     
-     If the metadata is different from what is already tracked in the room, the optional
-     callback `onPeerUpdated` will be triggered for other peers in the room.
-     */
-    public func updatePeerMetadata(peerMetadata: Metadata) {
-        transport.send(event: UpdatePeerMetadata(metadata: peerMetadata))
-        localPeer = localPeer.with(metadata: peerMetadata)
-    }
-    
-    /**
-     Updates the metadata for a specific track.
-     
-        - Parameters:
-         - trackId: local track id of audio or video track
-         - trackMetadata: Data about this track that other peers will receive upon joining.
-     
-     If the metadata is different from what is already tracked in the room, the optional
-     callback `onTrackUpdated` will be triggered for other peers in the room.
-     */
-    public func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
-        transport.send(event: UpdateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata))
-        localPeer = localPeer.withTrack(trackId: trackId, metadata: trackMetadata)
     }
 }
 
@@ -907,6 +906,9 @@ extension MembraneRTC {
 
         let description = RTCSessionDescription(type: .answer, sdp: sdpAnswer.data.sdp)
 
+        // this is workaround of a backend issue with ~ in sdp answer
+        // client sends sdp offer with disabled tracks marked with ~, backend doesn't send ~ in sdp answer so all tracks are enabled
+        // and we need to disable them manually
         pc.setRemoteDescription(description, completionHandler: { error in
             guard let err = error else {
                 [TrackEncoding.h, TrackEncoding.m, TrackEncoding.l].forEach({ encoding in
