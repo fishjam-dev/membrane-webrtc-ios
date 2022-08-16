@@ -376,8 +376,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         let simulcastConfig = track.simulcastConfig
         
-        let sendEncodings = Constants.simulcastEncodings
-        sendEncodings.forEach { e in e.isActive = false }
+        let sendEncodings = Constants.simulcastEncodings()
         
         simulcastConfig.activeEncodings.forEach { enconding in
             sendEncodings[enconding.rawValue].isActive = true;
@@ -424,11 +423,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.simulcastConfig.enabled == true) {
                 let simulcastConfig = (track as? LocalVideoTrack)?.simulcastConfig
                 
-                let sendEncodings = [
-                    RTCRtpEncodingParameters.create(rid: "l", active: false, scaleResolutionDownBy:4.0),
-                    RTCRtpEncodingParameters.create(rid: "m", active: false, scaleResolutionDownBy:2.0),
-                    RTCRtpEncodingParameters.create(rid: "h", active: false, scaleResolutionDownBy:1.0),
-                ]
+                let sendEncodings = Constants.simulcastEncodings()
                 
                 simulcastConfig?.activeEncodings.forEach { enconding in
                     sendEncodings[enconding.rawValue].isActive = true;
