@@ -108,7 +108,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      Should not be confused with joining the actual room, which is a separate process.
  
      - Parameters:
-        - with: Connection options, consists of an `EventTransport` instance that will be used for relaying media events and arbitrary `config` metadata used by `Membrane RTC Engine` for connection and `encoder` type
+        - with: Connection options, consists of an `EventTransport` instance that will be used for relaying media events, arbitrary `config` metadata used by `Membrane RTC Engine` for connection and `encoder` type
         - delegate: The delegate that will receive all notification emitted by `MembraneRTC` client
  
      -  Returns: `MembraneRTC` client instance in connecting state
