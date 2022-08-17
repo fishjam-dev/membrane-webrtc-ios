@@ -40,10 +40,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     public struct ConnectOptions {
         let transport: EventTransport
         let config: Metadata
+        let encoder: Encoder
 
-        public init(transport: EventTransport, config: Metadata) {
+        public init(transport: EventTransport, config: Metadata, encoder: Encoder = Encoder.DEFAULT) {
             self.transport = transport
             self.config = config
+            self.encoder = encoder
         }
     }
 
@@ -55,6 +57,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     // `RTCPeerConnection` config
     private var config: RTCConfiguration
+    
+    private var connectionManager: ConnectionManager
 
     // Underyling RTC connection
     private var connection: RTCPeerConnection?
@@ -80,7 +84,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     private static let mediaConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue])
 
-    internal init(eventTransport: EventTransport, config: RTCConfiguration, peerMetadata: Metadata) {
+    internal init(eventTransport: EventTransport, config: RTCConfiguration, peerMetadata: Metadata, encoder: Encoder) {
         // RTCSetMinDebugLogLevel(.error)
         sdkLogger.logLevel = .info
 
@@ -91,6 +95,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
         // setup local peer
         localPeer = localPeer.with(metadata: peerMetadata)
+        
+        connectionManager = ConnectionManager(encoder: encoder)
 
         super.init()
     }
@@ -102,13 +108,13 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      Should not be confused with joining the actual room, which is a separate process.
  
      - Parameters:
-        - with: Connection options, consists of an `EventTransport` instance that will be used for relaying media events and arbitrary `config` metadata used by `Membrane RTC Engine` for connection
+        - with: Connection options, consists of an `EventTransport` instance that will be used for relaying media events, arbitrary `config` metadata used by `Membrane RTC Engine` for connection and `encoder` type
         - delegate: The delegate that will receive all notification emitted by `MembraneRTC` client
  
      -  Returns: `MembraneRTC` client instance in connecting state
      */
     public static func connect(with options: ConnectOptions, delegate: MembraneRTCDelegate) -> MembraneRTC {
-        let client = MembraneRTC(eventTransport: options.transport, config: RTCConfiguration(), peerMetadata: options.config)
+        let client = MembraneRTC(eventTransport: options.transport, config: RTCConfiguration(), peerMetadata: options.config, encoder: options.encoder)
 
         client.add(delegate: delegate)
         client.connect()
@@ -158,17 +164,18 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Parameters:
         - videoParameters: The parameters used for choosing the proper camera resolution and target framerate
         - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
+        - simulcastConfig: Simulcast configuration used for this track
  
      - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
      */
-    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata) -> LocalVideoTrack {
-        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters)
+    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig) -> LocalVideoTrack {
+        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         
         if state == .connected {
             connection?.add(videoTrack.rtcTrack(), streamIds: [localStreamId])
             connection?.enforceSendOnlyDirection()
         }
-        
+
         videoTrack.start()
         
         localTracks.append(videoTrack)
@@ -194,7 +201,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Returns: `LocalAudioTrack` instance that user then can use for things such as front / back camera switch.
      */
     public func createAudioTrack(metadata: Metadata) -> LocalAudioTrack {
-        let audioTrack = LocalAudioTrack()
+        let audioTrack = LocalAudioTrack(connectionManager: connectionManager)
         
         if state == .connected {
             connection?.add(audioTrack.rtcTrack(), streamIds: [localStreamId])
@@ -227,11 +234,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         - appGroup: The App Group identifier shared by the application  with a target `Broadcast Upload Extension`
         - videoParameters: The parameters used for limiting the screen capture resolution and target framerate
         - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
+        - simulcastConfig: Simulcast configuration used for screencast track
         - onStart: The callback that will receive the screencast track called once the track becomes available
         - onStop: The callback that will be called once the track becomes unavailable
      */
-    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) {
-        let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters)
+    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig, onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) -> LocalScreenBroadcastTrack {
+        let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         localTracks.append(screensharingTrack)
 
         broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(onStart: { [weak self, weak screensharingTrack] in
@@ -254,6 +262,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
         screensharingTrack.delegate = broadcastScreenshareReceiver
         screensharingTrack.start()
+        return screensharingTrack
     }
     
     /**
@@ -291,66 +300,26 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         return localPeer
     }
     
-    internal func connect() {
-        // initiate a transport connection
-        transport.connect(delegate: self).then {
-            self.notify {
-                self.state = .awaitingJoin
-                
-                $0.onConnected()
-            }
-        }.catch { error in
-            self.notify {
-                $0.onError(.transport(error.localizedDescription))
-            }
-        }
+    /**
+     * Enables track encoding so that it will be sent to the server.
+     
+        - Parameters:
+           - trackId: an id of a local track
+           - encoding: an encoding that will be enabled
+     */
+    public func enableTrackEncoding(trackId: String, encoding: TrackEncoding) {
+        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: true)
     }
-
-    /// Adds given broadcast track to the peer connection and forces track renegotiation.
-    private func setupScreencastTrack(track: LocalScreenBroadcastTrack, metadata: Metadata) {
-        guard let pc = connection else {
-            return
-        }
-
-        let screencastStreamId = UUID().uuidString
-        pc.add(track.rtcTrack(), streamIds: [screencastStreamId])
-
-        pc.enforceSendOnlyDirection()
-
-        localPeer = localPeer.withTrack(trackId: track.rtcTrack().trackId, metadata: metadata)
-        
-        transport.send(event: RenegotiateTracksEvent())
-    }
-
-    /// Sets up the local peer connection with previously prepared config and local media tracks.
-    private func setupPeerConnection() {
-        let config = self.config
-        config.sdpSemantics = .unifiedPlan
-        config.continualGatheringPolicy = .gatherContinually
-        config.candidateNetworkPolicy = .all
-        config.disableIPV6 = true
-        config.tcpCandidatePolicy = .disabled
-
-        // if ice servers are not empty that probably means we are using turn servers
-        if iceServers.count > 0 {
-            self.config.iceServers = iceServers
-        } else {
-            self.config.iceServers = [Self.defaultIceServer()]
-        }
-
-        guard let peerConnection = ConnectionManager.createPeerConnection(config, constraints: Self.mediaConstraints) else {
-            fatalError("Failed to initialize new PeerConnection")
-        }
-        connection = peerConnection
-
-        peerConnection.delegate = self
-        
-        localTracks.forEach { track in
-            peerConnection.add(track.rtcTrack(), streamIds: [localStreamId])
-            
-        }
-        
-        peerConnection.enforceSendOnlyDirection()
+    
+    /**
+     * Disables track encoding so that it will be no longer sent to the server.
+     
+         - Parameters:
+            - trackId: an id of a local track
+            - encoding: an encoding that will be disabled
+     */
+    public func disableTrackEncoding(trackId: String, encoding: TrackEncoding) {
+        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: false)
     }
     
     /**
@@ -380,6 +349,130 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     public func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
         transport.send(event: UpdateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata))
         localPeer = localPeer.withTrack(trackId: trackId, metadata: trackMetadata)
+    }
+    
+    internal func connect() {
+        // initiate a transport connection
+        transport.connect(delegate: self).then {
+            self.notify {
+                self.state = .awaitingJoin
+                
+                $0.onConnected()
+            }
+        }.catch { error in
+            self.notify {
+                $0.onError(.transport(error.localizedDescription))
+            }
+        }
+    }
+
+    /// Adds given broadcast track to the peer connection and forces track renegotiation.
+    private func setupScreencastTrack(track: LocalScreenBroadcastTrack, metadata: Metadata) {
+        guard let pc = connection else {
+            return
+        }
+
+        let screencastStreamId = UUID().uuidString
+        
+        let simulcastConfig = track.simulcastConfig
+        
+        let sendEncodings = Constants.simulcastEncodings()
+        
+        simulcastConfig.activeEncodings.forEach { enconding in
+            sendEncodings[enconding.rawValue].isActive = true;
+        }
+
+        let transceiverInit = RTCRtpTransceiverInit()
+        transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
+        transceiverInit.sendEncodings = sendEncodings
+        transceiverInit.streamIds = [screencastStreamId]
+
+        pc.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
+    
+        pc.enforceSendOnlyDirection()
+
+        localPeer = localPeer.withTrack(trackId: track.rtcTrack().trackId, metadata: metadata)
+        
+        transport.send(event: RenegotiateTracksEvent())
+    }
+
+    /// Sets up the local peer connection with previously prepared config and local media tracks.
+    private func setupPeerConnection() {
+        let config = self.config
+        config.sdpSemantics = .unifiedPlan
+        config.continualGatheringPolicy = .gatherContinually
+        config.candidateNetworkPolicy = .all
+        config.disableIPV6 = true
+        config.tcpCandidatePolicy = .disabled
+
+        // if ice servers are not empty that probably means we are using turn servers
+        if iceServers.count > 0 {
+            self.config.iceServers = iceServers
+        } else {
+            self.config.iceServers = [Self.defaultIceServer()]
+        }
+
+        guard let peerConnection = connectionManager.createPeerConnection(config, constraints: Self.mediaConstraints) else {
+            fatalError("Failed to initialize new PeerConnection")
+        }
+        connection = peerConnection
+
+        peerConnection.delegate = self
+        
+        localTracks.forEach { track in
+            if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.simulcastConfig.enabled == true) {
+                let simulcastConfig = (track as? LocalVideoTrack)?.simulcastConfig
+                
+                let sendEncodings = Constants.simulcastEncodings()
+                
+                simulcastConfig?.activeEncodings.forEach { enconding in
+                    sendEncodings[enconding.rawValue].isActive = true;
+                }
+
+                let transceiverInit = RTCRtpTransceiverInit()
+                transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
+                transceiverInit.sendEncodings = sendEncodings
+                transceiverInit.streamIds = [localStreamId]
+
+                peerConnection.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
+            } else {
+                peerConnection.add(track.rtcTrack(), streamIds: [localStreamId])
+            }
+            
+        }
+        
+        peerConnection.enforceSendOnlyDirection()
+    }
+
+    
+    /**
+      Selects track encoding that server should send to the client library.
+     
+         - Parameters:
+            - peerId:an id of a peer that owns the track
+            - trackId: an id of a remote track
+            - encoding: an encoding to receive
+     */
+    public func selectTrackEncoding(peerId: String, trackId: String, encoding: TrackEncoding) {
+        transport.send(event: SelectEncodingEvent(peerId: peerId, trackId: trackId, encoding: encoding.description))
+    }
+    
+    private func setTrackEncoding(trackId: String, encoding: TrackEncoding, enabled: Bool) {
+        guard let pc = connection else {
+            return
+        }
+        
+        guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
+            return
+        }
+        
+        
+        let params = sender.parameters
+        guard let encoding = params.encodings.first(where: { $0.rid == encoding.description }) else {
+            return
+        }
+        encoding.isActive = enabled
+        sender.parameters = params
     }
 }
 
@@ -669,7 +762,7 @@ extension MembraneRTC: EventTransportDelegate {
 extension MembraneRTC {
     /// Handles the `OfferDataEvent`, creates a local description and sends `SdpAnswerEvent`
     func onOfferData(_ offerData: OfferDataEvent) {
-        setTurnServers(offerData.data.integratedTurnServers, "relay")
+        setTurnServers(offerData.data.integratedTurnServers)
 
         if connection == nil {
             setupPeerConnection()
@@ -710,15 +803,8 @@ extension MembraneRTC {
     }
 
     /// Parses a list of turn servers and sets them up as `iceServers` that can be used for `RTCPeerConnection` ceration.
-    private func setTurnServers(_ turnServers: [OfferDataEvent.TurnServer], _ iceTransportPolicy: String) {
-        switch iceTransportPolicy {
-        case "all":
-            config.iceTransportPolicy = .all
-        case "relay":
-            config.iceTransportPolicy = .relay
-        default:
-            break
-        }
+    private func setTurnServers(_ turnServers: [OfferDataEvent.TurnServer]) {
+        config.iceTransportPolicy = .relay
 
         let servers: [RTCIceServer] = turnServers.map { server in
             let url = ["turn", ":", server.serverAddr, ":", String(server.serverPort), "?transport=", server.transport].joined()
@@ -815,11 +901,20 @@ extension MembraneRTC {
 
         let description = RTCSessionDescription(type: .answer, sdp: sdpAnswer.data.sdp)
 
+        // this is workaround of a backend issue with ~ in sdp answer
+        // client sends sdp offer with disabled tracks marked with ~, backend doesn't send ~ in sdp answer so all tracks are enabled
+        // and we need to disable them manually
         pc.setRemoteDescription(description, completionHandler: { error in
             guard let err = error else {
+                [TrackEncoding.h, TrackEncoding.m, TrackEncoding.l].forEach({ encoding in
+                    self.localTracks.forEach({track in
+                        if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.simulcastConfig.activeEncodings.contains(encoding) != true) {
+                            self.disableTrackEncoding(trackId: track.rtcTrack().trackId, encoding: encoding)
+                        }
+                    })
+                })
                 return
             }
-
             sdkLogger.error("error occured while trying to set a remote description \(err)")
         })
     }

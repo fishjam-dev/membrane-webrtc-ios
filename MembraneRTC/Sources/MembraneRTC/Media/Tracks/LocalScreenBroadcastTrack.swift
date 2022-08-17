@@ -8,22 +8,15 @@ public protocol LocalScreenBroadcastTrackDelegate: AnyObject {
 }
 
 /// Utility wrapper around a local `RTCVideoTrack` also managing a `BroadcastScreenCapturer`.
-public class LocalScreenBroadcastTrack: VideoTrack, LocalTrack, ScreenBroadcastCapturerDelegate {
-    private let videoSource: RTCVideoSource
-    private let capturer: VideoCapturer
-    private let track: RTCVideoTrack
+public class LocalScreenBroadcastTrack: LocalVideoTrack, ScreenBroadcastCapturerDelegate {
+    private let appGroup: String
+    private let videoParameters: VideoParameters
     public weak var delegate: LocalScreenBroadcastTrackDelegate?
 
-    internal init(appGroup: String, videoParameters: VideoParameters, delegate _: LocalScreenBroadcastTrackDelegate? = nil) {
-        videoSource = ConnectionManager.createVideoSource()
-        track = ConnectionManager.createVideoTrack(source: videoSource)
-
-        let capturer = ScreenBroadcastCapturer(videoSource, appGroup: appGroup, videoParameters: videoParameters)
-        self.capturer = capturer
-
-        super.init()
-
-        capturer.capturerDelegate = self
+    internal init(appGroup: String, videoParameters: VideoParameters, simulcastConfig: SimulcastConfig, delegate _: LocalScreenBroadcastTrackDelegate? = nil, connectionManager: ConnectionManager) {
+        self.appGroup = appGroup
+        self.videoParameters = videoParameters
+        super.init(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
     }
 
     internal func started() {
@@ -34,14 +27,6 @@ public class LocalScreenBroadcastTrack: VideoTrack, LocalTrack, ScreenBroadcastC
         delegate?.stopped()
     }
 
-    public func start() {
-        capturer.startCapture()
-    }
-
-    public func stop() {
-        capturer.stopCapture()
-    }
-
     public func paused() {
         delegate?.paused()
     }
@@ -49,16 +34,10 @@ public class LocalScreenBroadcastTrack: VideoTrack, LocalTrack, ScreenBroadcastC
     public func resumed() {
         delegate?.resumed()
     }
-
-    public func enabled() -> Bool {
-        return track.isEnabled
-    }
     
-    public func setEnabled(_ enabled: Bool) {
-        track.isEnabled = enabled
-    }
-
-    override func rtcTrack() -> RTCMediaStreamTrack {
-        return track
+    override func createCapturer(videoSource _: RTCVideoSource) -> VideoCapturer {
+        let capturer = ScreenBroadcastCapturer(videoSource, appGroup: appGroup, videoParameters: videoParameters)
+        capturer.capturerDelegate = self
+        return capturer
     }
 }

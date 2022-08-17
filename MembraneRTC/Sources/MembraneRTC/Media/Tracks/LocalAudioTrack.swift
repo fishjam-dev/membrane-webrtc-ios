@@ -6,7 +6,7 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
 
     private let config: RTCAudioSessionConfiguration
 
-    override internal init() {
+    internal init(connectionManager: ConnectionManager) {
         let constraints: [String: String] = [
             "googEchoCancellation": "true",
             "googAutoGainControl": "true",
@@ -22,9 +22,9 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
         config.mode = AVAudioSession.Mode.videoChat.rawValue
         config.categoryOptions = AVAudioSession.CategoryOptions.duckOthers
 
-        let audioSource = ConnectionManager.createAudioSource(audioConstraints)
+        let audioSource = connectionManager.createAudioSource(audioConstraints)
 
-        let track = ConnectionManager.createAudioTrack(source: audioSource)
+        let track = connectionManager.createAudioTrack(source: audioSource)
         track.isEnabled = true
 
         self.track = track

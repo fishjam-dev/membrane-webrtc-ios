@@ -44,6 +44,49 @@ struct RoomView: View {
         orientationReceiver = OrientationReceiver()
         self.room = RoomController(room)
     }
+    
+    @ViewBuilder
+    func simulcastButtons(simulcastConfig: SimulcastConfig, toggleEncoding: @escaping (_ encoding: TrackEncoding)->Void) -> some View {
+        let encodings = [TrackEncoding.l, TrackEncoding.m, TrackEncoding.h]
+        
+        ForEach(encodings, id: \.self)
+            {e in
+                    Button(
+                        action: {
+                            toggleEncoding(e)
+                        },
+                        label: {
+                            Text(e.description)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 10)
+                        }
+                    )
+                    .background(Color.blue.darker())
+                    .cornerRadius(8)
+                    .opacity(simulcastConfig.activeEncodings.contains(e) ? 1 : 0.5)
+            }
+    }
+    
+    @ViewBuilder
+    func simulcastControls() -> some View {
+        VStack {
+            HStack {
+                Text("Video quality")
+                    .font(.system(size: 12))
+                
+                simulcastButtons(simulcastConfig: room.videoSimulcastConfig, toggleEncoding: room.toggleVideoTrackEncoding(encoding:))
+            }
+            
+            if(room.isScreensharingEnabled) {
+                HStack {
+                    Text("Screencast quality")
+                        .font(.system(size: 12))
+                    
+                    simulcastButtons(simulcastConfig: room.screencastSimulcastConfig, toggleEncoding: room.toggleScreencastTrackEncoding(encoding:))
+                }
+            }
+        }
+    }
 
     @ViewBuilder
     func participantsVideoViews(_ participantVideos: [ParticipantVideo], size: CGFloat) -> some View {
@@ -135,7 +178,7 @@ struct RoomView: View {
         if orientationReceiver.orientation.isLandscape {
             return geometry.size.height * 0.9 - 20
         } else {
-            return geometry.size.height * 0.70 - 20 - geometry.safeAreaInsets.top
+            return geometry.size.height * 0.30 - 20 - geometry.safeAreaInsets.top
         }
     }
 
@@ -143,7 +186,7 @@ struct RoomView: View {
         if orientationReceiver.orientation.isLandscape {
             return geometry.size.width * 0.67 - 20
         } else {
-            return geometry.size.width - 40
+            return geometry.size.width*0.5 - 40
         }
     }
 
@@ -167,6 +210,8 @@ struct RoomView: View {
                     .font(.system(size: 20))
                     .frame(maxWidth: .infinity, alignment: .center)
                     .foregroundColor(.white)
+                
+                simulcastControls()
 
                 if let errorMessage = room.errorMessage {
                     Text(errorMessage).foregroundColor(.red)

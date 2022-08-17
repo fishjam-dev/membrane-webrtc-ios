@@ -2,31 +2,35 @@ import WebRTC
 
 /// Utility wrapper around a local `RTCVideoTrack` also managing an instance of `VideoCapturer`
 public class LocalVideoTrack: VideoTrack, LocalTrack {
-    private let videoSource: RTCVideoSource
+    internal let videoSource: RTCVideoSource
     internal var capturer: VideoCapturer?
     private let track: RTCVideoTrack
+    internal var simulcastConfig: SimulcastConfig
+    
 
     public enum Capturer {
         case camera, file
     }
 
-    override internal init() {
-        let source = ConnectionManager.createVideoSource()
+    internal init(simulcastConfig: SimulcastConfig, connectionManager: ConnectionManager) {
+        let source = connectionManager.createVideoSource()
 
         videoSource = source
-        track = ConnectionManager.createVideoTrack(source: source)
+        track = connectionManager.createVideoTrack(source: source)
+        
+        self.simulcastConfig = simulcastConfig
 
         super.init()
 
         capturer = createCapturer(videoSource: source)
     }
 
-    public static func create(for capturer: Capturer, videoParameters: VideoParameters) -> LocalVideoTrack {
+    static func create(for capturer: Capturer, videoParameters: VideoParameters, simulcastConfig: SimulcastConfig, connectionManager: ConnectionManager) -> LocalVideoTrack {
         switch capturer {
         case .camera:
-            return LocalCameraVideoTrack(parameters: videoParameters)
+            return LocalCameraVideoTrack(parameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         case .file:
-            return LocalFileVideoTrack()
+            return LocalFileVideoTrack(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         }
     }
 
@@ -51,6 +55,10 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
     public func setEnabled(_ enabled: Bool) {
         track.isEnabled = enabled
     }
+    
+    public func trackId() -> String {
+        return track.trackId
+    }
 
     override func rtcTrack() -> RTCMediaStreamTrack {
         return track
@@ -60,8 +68,9 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
 public class LocalCameraVideoTrack: LocalVideoTrack {
     private let videoParameters: VideoParameters
     
-    init(parameters: VideoParameters) {
+    init(parameters: VideoParameters, simulcastConfig: SimulcastConfig, connectionManager: ConnectionManager) {
         self.videoParameters = parameters
+        super.init(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
     }
     
     override internal func createCapturer(videoSource: RTCVideoSource) -> VideoCapturer {
