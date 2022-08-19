@@ -38,7 +38,7 @@ public struct SimulcastConfig {
      */
     public var activeEncodings: [TrackEncoding] = []
     
-    public init(enabled: Bool, activeEncodings: [TrackEncoding] = []) {
+    public init(enabled: Bool = false, activeEncodings: [TrackEncoding] = []) {
         self.enabled = enabled
         self.activeEncodings = activeEncodings
     }
