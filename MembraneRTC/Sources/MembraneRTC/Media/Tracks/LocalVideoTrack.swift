@@ -33,6 +33,17 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
             return LocalFileVideoTrack(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
         }
     }
+    
+    /**
+        Use this to create a local track for preview etc.
+        For local track that is sent to the backend use `createVideoTrack` from MembraneRTC
+     
+         - Parameters:
+            - videoParameters: The parameters used for choosing the proper camera resolution and target framerate
+     */
+    public static func create(videoParameters: VideoParameters) -> LocalVideoTrack {
+        return create(for: .camera, videoParameters: videoParameters, simulcastConfig: SimulcastConfig(), connectionManager: ConnectionManager(encoder: .DEFAULT))
+    }
 
     internal func createCapturer(videoSource _: RTCVideoSource) -> VideoCapturer {
         fatalError("Basic LocalVideoTrack does not provide a default capturer")
