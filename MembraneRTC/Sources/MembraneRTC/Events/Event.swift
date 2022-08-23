@@ -1,6 +1,6 @@
 import Foundation
 
-public typealias Payload = [String: Any?]
+public typealias Payload = AnyJson
 
 /// Protocol for outgoing `MembraneRTC` events
 public protocol SendableEvent {
@@ -171,10 +171,10 @@ struct JoinEvent: SendableEvent {
     }
 
     func serialize() -> Payload {
-        return [
+        return .init([
             "type": "join",
             "data": ["metadata": metadata],
-        ]
+        ])
     }
 }
 
@@ -190,7 +190,7 @@ struct SdpOfferEvent: SendableEvent {
     }
 
     func serialize() -> Payload {
-        return [
+        return .init([
             "type": "custom",
             "data": [
                 "type": "sdpOffer",
@@ -203,7 +203,7 @@ struct SdpOfferEvent: SendableEvent {
                     "midToTrackId": midToTrackId,
                 ],
             ],
-        ]
+        ])
     }
 }
 
@@ -217,7 +217,7 @@ struct LocalCandidateEvent: SendableEvent {
     }
 
     func serialize() -> Payload {
-        return [
+        return .init([
             "type": "custom",
             "data": [
                 "type": "candidate",
@@ -226,7 +226,7 @@ struct LocalCandidateEvent: SendableEvent {
                     "sdpMLineIndex": sdpMLineIndex,
                 ],
             ],
-        ]
+        ])
     }
 }
 
@@ -234,12 +234,12 @@ struct RenegotiateTracksEvent: SendableEvent {
     init() {}
 
     func serialize() -> Payload {
-        return [
+        return .init([
             "type": "custom",
             "data": [
                 "type": "renegotiateTracks",
             ],
-        ]
+        ])
     }
 }
 
@@ -268,10 +268,10 @@ struct UpdatePeerMetadata: SendableEvent {
     }
     
     func serialize() -> Payload {
-        return [
+        return .init([
             "type": "updatePeerMetadata",
             "data": ["metadata": metadata]
-        ]
+        ])
     }
 }
 
@@ -285,10 +285,10 @@ struct UpdateTrackMetadata: SendableEvent {
     }
     
     func serialize() -> Payload {
-        return [
+        return .init([
             "type": "updateTrackMetadata",
             "data": ["trackId": trackId, "trackMetadata": trackMetadata]
-        ]
+        ])
     }
 }
 

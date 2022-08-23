@@ -57,7 +57,7 @@ public class PhoenixTransport: EventTransport {
 
             /// listen for media events
             self.channel!.on("mediaEvent", callback: { message in
-                guard let event: ReceivableEvent = Events.deserialize(payload: message.payload) else {
+                guard let event: ReceivableEvent = Events.deserialize(payload: Payload(message.payload)) else {
                     return
                 }
 
@@ -86,7 +86,7 @@ public class PhoenixTransport: EventTransport {
             return
         }
 
-        let data = try! JSONSerialization.data(withJSONObject: event.serialize(), options: JSONSerialization.WritingOptions())
+        let data = try! JSONEncoder().encode(event.serialize())
 
         guard let dataPayload = String(data: data, encoding: .utf8) else {
             return
