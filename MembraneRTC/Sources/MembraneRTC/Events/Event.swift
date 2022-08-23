@@ -249,14 +249,14 @@ struct SelectEncodingEvent: SendableEvent {
     let encoding: String
     
     func serialize() -> Payload {
-        return [
+        return .init([
             "type": "selectEncoding",
             "data": [
                 "peerId": peerId,
                 "trackId": trackId,
                 "encoding": encoding,
             ]
-        ]
+        ])
     }
 }
 

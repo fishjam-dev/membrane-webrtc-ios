@@ -67,8 +67,8 @@ class RoomController: ObservableObject {
         let preset = VideoParameters.presetHD43
         let videoParameters = VideoParameters(dimensions: preset.dimensions.flip(), encoding: preset.encoding)
         
-        localVideoTrack = room.createVideoTrack(videoParameters: videoParameters, metadata: trackMetadata, simulcastConfig: videoSimulcastConfig)
-        localAudioTrack = room.createAudioTrack(metadata: trackMetadata)
+        localVideoTrack = room.createVideoTrack(videoParameters: videoParameters, metadata: .init(trackMetadata), simulcastConfig: videoSimulcastConfig)
+        localAudioTrack = room.createAudioTrack(metadata: .init(trackMetadata))
 
         room.add(delegate: self)
 
@@ -146,7 +146,7 @@ class RoomController: ObservableObject {
             localScreencastTrack = room.createScreencastTrack(
                 appGroup: Constants.appGroup,
                 videoParameters: videoParameters,
-                metadata: ["user_id": displayName, "type": "screensharing"],
+                metadata: .init(["user_id": displayName, "type": "screensharing"]),
                 simulcastConfig: screencastSimulcastConfig,
                 onStart: { [weak self] screencastTrack in
                     guard let self = self else {
@@ -290,7 +290,7 @@ extension RoomController: MembraneRTCDelegate {
         let localParticipant = Participant(id: peerID, displayName: "Me")
 
         let participants = peersInRoom.map { peer in
-            Participant(id: peer.id, displayName: peer.metadata["displayName"] ?? "")
+            Participant(id: peer.id, displayName: peer.metadata["displayName"] as? String ?? "")
         }
 
         DispatchQueue.main.async {
@@ -328,7 +328,7 @@ extension RoomController: MembraneRTCDelegate {
         }
 
         // track is seen for the first time so initialize the participant's video
-        let isScreensharing = ctx.metadata["type"] == "screensharing"
+        let isScreensharing = ctx.metadata["type"] as? String == "screensharing"
         let video = ParticipantVideo(id: ctx.trackId, participant: participant, videoTrack: videoTrack, isScreensharing: isScreensharing)
 
         add(video: video)
@@ -357,7 +357,7 @@ extension RoomController: MembraneRTCDelegate {
     func onTrackUpdated(ctx _: TrackContext) {}
 
     func onPeerJoined(peer: Peer) {
-        participants[peer.id] = Participant(id: peer.id, displayName: peer.metadata["displayName"] ?? "")
+        participants[peer.id] = Participant(id: peer.id, displayName: peer.metadata["displayName"] as? String ?? "")
     }
 
     func onPeerLeft(peer: Peer) {

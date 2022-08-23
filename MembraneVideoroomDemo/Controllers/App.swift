@@ -26,7 +26,7 @@ final class AppController: ObservableObject {
         let client = MembraneRTC.connect(
             with: MembraneRTC.ConnectOptions(
                 transport: PhoenixTransport(url: transportUrl, topic: "room:\(room)", params: [:]),
-                config: ["displayName": displayName]
+                config: .init(["displayName": displayName])
             ),
             delegate: self
         )
