@@ -376,18 +376,22 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         let simulcastConfig = track.simulcastConfig
         
-        let sendEncodings = Constants.simulcastEncodings()
-        
-        simulcastConfig.activeEncodings.forEach { enconding in
-            sendEncodings[enconding.rawValue].isActive = true;
+        if (simulcastConfig.enabled) {
+            let sendEncodings = Constants.simulcastEncodings()
+            
+            simulcastConfig.activeEncodings.forEach { enconding in
+                sendEncodings[enconding.rawValue].isActive = true;
+            }
+
+            let transceiverInit = RTCRtpTransceiverInit()
+            transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
+            transceiverInit.sendEncodings = sendEncodings
+            transceiverInit.streamIds = [screencastStreamId]
+
+            pc.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
+        } else {
+            pc.add(track.rtcTrack(), streamIds: [screencastStreamId])
         }
-
-        let transceiverInit = RTCRtpTransceiverInit()
-        transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
-        transceiverInit.sendEncodings = sendEncodings
-        transceiverInit.streamIds = [screencastStreamId]
-
-        pc.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
     
         pc.enforceSendOnlyDirection()
 
