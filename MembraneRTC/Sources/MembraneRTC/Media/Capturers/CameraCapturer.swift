@@ -63,7 +63,7 @@ class CameraCapturer: VideoCapturer {
 
         sdkLogger.info("CameraCapturer selected dimensions of \(dimension)")
 
-        let fps = videoParameters.encoding.maxFps
+        let fps = videoParameters.maxFps
 
         // discover FPS limits
         var minFps = 60

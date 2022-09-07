@@ -5,32 +5,32 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
     internal let videoSource: RTCVideoSource
     internal var capturer: VideoCapturer?
     private let track: RTCVideoTrack
-    internal var simulcastConfig: SimulcastConfig
+    internal var videoParameters: VideoParameters
     
 
     public enum Capturer {
         case camera, file
     }
 
-    internal init(simulcastConfig: SimulcastConfig, connectionManager: ConnectionManager) {
+    internal init(parameters: VideoParameters, connectionManager: ConnectionManager) {
         let source = connectionManager.createVideoSource()
 
         videoSource = source
         track = connectionManager.createVideoTrack(source: source)
         
-        self.simulcastConfig = simulcastConfig
+        self.videoParameters = parameters
 
         super.init()
 
         capturer = createCapturer(videoSource: source)
     }
 
-    static func create(for capturer: Capturer, videoParameters: VideoParameters, simulcastConfig: SimulcastConfig, connectionManager: ConnectionManager) -> LocalVideoTrack {
+    static func create(for capturer: Capturer, videoParameters: VideoParameters, connectionManager: ConnectionManager) -> LocalVideoTrack {
         switch capturer {
         case .camera:
-            return LocalCameraVideoTrack(parameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
+            return LocalCameraVideoTrack(parameters: videoParameters, connectionManager: connectionManager)
         case .file:
-            return LocalFileVideoTrack(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
+            return LocalFileVideoTrack(parameters: videoParameters, connectionManager: connectionManager)
         }
     }
     
@@ -42,7 +42,7 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
             - videoParameters: The parameters used for choosing the proper camera resolution and target framerate
      */
     public static func create(videoParameters: VideoParameters) -> LocalVideoTrack {
-        return create(for: .camera, videoParameters: videoParameters, simulcastConfig: SimulcastConfig(), connectionManager: ConnectionManager(encoder: .DEFAULT))
+        return create(for: .camera, videoParameters: videoParameters, connectionManager: ConnectionManager(encoder: .DEFAULT))
     }
 
     internal func createCapturer(videoSource _: RTCVideoSource) -> VideoCapturer {
@@ -77,13 +77,6 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
 }
 
 public class LocalCameraVideoTrack: LocalVideoTrack {
-    private let videoParameters: VideoParameters
-    
-    init(parameters: VideoParameters, simulcastConfig: SimulcastConfig, connectionManager: ConnectionManager) {
-        self.videoParameters = parameters
-        super.init(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
-    }
-    
     override internal func createCapturer(videoSource: RTCVideoSource) -> VideoCapturer {
         return CameraCapturer(videoParameters: videoParameters, delegate: videoSource)
     }

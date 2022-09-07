@@ -8,4 +8,10 @@ extension RTCRtpEncodingParameters {
         encoding.scaleResolutionDownBy = scaleResolutionDownBy;
         return encoding;
     }
+    
+    static func create(active: Bool) -> RTCRtpEncodingParameters {
+        let encoding = RTCRtpEncodingParameters();
+        encoding.isActive = active;
+        return encoding;
+    }
 }

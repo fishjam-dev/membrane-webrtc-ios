@@ -10,13 +10,11 @@ public protocol LocalScreenBroadcastTrackDelegate: AnyObject {
 /// Utility wrapper around a local `RTCVideoTrack` also managing a `BroadcastScreenCapturer`.
 public class LocalScreenBroadcastTrack: LocalVideoTrack, ScreenBroadcastCapturerDelegate {
     private let appGroup: String
-    private let videoParameters: VideoParameters
     public weak var delegate: LocalScreenBroadcastTrackDelegate?
 
-    internal init(appGroup: String, videoParameters: VideoParameters, simulcastConfig: SimulcastConfig, delegate _: LocalScreenBroadcastTrackDelegate? = nil, connectionManager: ConnectionManager) {
+    internal init(appGroup: String, videoParameters: VideoParameters, delegate _: LocalScreenBroadcastTrackDelegate? = nil, connectionManager: ConnectionManager) {
         self.appGroup = appGroup
-        self.videoParameters = videoParameters
-        super.init(simulcastConfig: simulcastConfig, connectionManager: connectionManager)
+        super.init(parameters: videoParameters, connectionManager: connectionManager)
     }
 
     internal func started() {

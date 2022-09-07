@@ -1,5 +1,6 @@
 import Logging
 import WebRTC
+import Foundation
 
 internal var sdkLogger = Logger(label: "org.membrane.ios")
 internal let pcLogPrefix = "[PeerConnection]"
@@ -162,18 +163,19 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      The client assumes that app user already granted camera access permissions.
  
      - Parameters:
-        - videoParameters: The parameters used for choosing the proper camera resolution and target framerate
+        - videoParameters: The parameters used for choosing the proper camera resolution, target framerate, bitrate and simulcast config
         - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
-        - simulcastConfig: Simulcast configuration used for this track
  
      - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
      */
-    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig = SimulcastConfig()) -> LocalVideoTrack {
-        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
+    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata) -> LocalVideoTrack {
+        let videoTrack = LocalVideoTrack.create(for: .camera, videoParameters: videoParameters, connectionManager: connectionManager)
         
         if state == .connected {
-            connection?.add(videoTrack.rtcTrack(), streamIds: [localStreamId])
-            connection?.enforceSendOnlyDirection()
+            if let pc = connection {
+                addTrack(peerConnection: pc, track: videoTrack, localStreamId: localStreamId)
+                pc.enforceSendOnlyDirection()
+            }
         }
 
         videoTrack.start()
@@ -232,14 +234,13 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      
      - Parameters:
         - appGroup: The App Group identifier shared by the application  with a target `Broadcast Upload Extension`
-        - videoParameters: The parameters used for limiting the screen capture resolution and target framerate
+        - videoParameters: The parameters used for limiting the screen capture resolution and target framerate, bitrate and simulcast config
         - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
-        - simulcastConfig: Simulcast configuration used for screencast track
         - onStart: The callback that will receive the screencast track called once the track becomes available
         - onStop: The callback that will be called once the track becomes unavailable
      */
-    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig = SimulcastConfig(), onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) -> LocalScreenBroadcastTrack {
-        let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters, simulcastConfig: simulcastConfig, connectionManager: connectionManager)
+    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig = SimulcastConfig(), maxBandwidth: TrackBandwidthLimit = .BandwidthLimit(0), onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) -> LocalScreenBroadcastTrack {
+        let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters, connectionManager: connectionManager)
         localTracks.append(screensharingTrack)
 
         broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(onStart: { [weak self, weak screensharingTrack] in
@@ -351,6 +352,61 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         localPeer = localPeer.withTrack(trackId: trackId, metadata: trackMetadata)
     }
     
+    /**
+      Updates maximum bandwidth for the track identified by trackId.
+      This value directly translates to quality of the stream and, in case of video, to the amount of RTP packets being sent.
+      In case trackId points at the simulcast track bandwidth is split between all of the variant streams proportionally to their resolution.
+     
+        - Parameters:
+         - trackId: track id of a video track
+         - bandwidth: bandwidth in kbps
+     */
+    public func setTrackBandwidth(trackId: String, bandwidth: TrackBandwidthLimit) {
+        guard let pc = connection else {
+            return
+        }
+        
+        guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
+            return
+        }
+        
+        
+        let params = sender.parameters
+        
+        applyBitrate(encodings: params.encodings, maxBitrate: bandwidth)
+        
+        sender.parameters = params
+    }
+    
+    /**
+        Updates maximum bandwidth for the given simulcast encoding of the given track.
+     
+        - Parameters:
+         - trackId: track id of a video track
+         - layer: rid of the encoding
+         - bandwidth: bandwidth in kbps
+     */
+    public func setLayerBandwidth(trackId: String, layer: String, bandwidth: BandwidthLimit) {
+        guard let pc = connection else {
+            return
+        }
+        
+        guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
+            return
+        }
+        
+        
+        let params = sender.parameters
+        let encoding = params.encodings.first(where: { $0.rid == layer })
+        guard let encoding = encoding else {
+            return
+        }
+
+        encoding.maxBitrateBps = (bandwidth * 1024) as NSNumber
+        
+        sender.parameters = params
+    }
+    
     internal func connect() {
         // initiate a transport connection
         transport.connect(delegate: self).then {
@@ -371,27 +427,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         guard let pc = connection else {
             return
         }
-
+        
         let screencastStreamId = UUID().uuidString
         
-        let simulcastConfig = track.simulcastConfig
-        
-        if (simulcastConfig.enabled) {
-            let sendEncodings = Constants.simulcastEncodings()
-            
-            simulcastConfig.activeEncodings.forEach { enconding in
-                sendEncodings[enconding.rawValue].isActive = true;
-            }
-
-            let transceiverInit = RTCRtpTransceiverInit()
-            transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
-            transceiverInit.sendEncodings = sendEncodings
-            transceiverInit.streamIds = [screencastStreamId]
-
-            pc.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
-        } else {
-            pc.add(track.rtcTrack(), streamIds: [screencastStreamId])
-        }
+        addTrack(peerConnection: pc, track: track, localStreamId: screencastStreamId)
     
         pc.enforceSendOnlyDirection()
 
@@ -424,28 +463,33 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         peerConnection.delegate = self
         
         localTracks.forEach { track in
-            if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.simulcastConfig.enabled == true) {
-                let simulcastConfig = (track as? LocalVideoTrack)?.simulcastConfig
-                
-                let sendEncodings = Constants.simulcastEncodings()
-                
-                simulcastConfig?.activeEncodings.forEach { enconding in
-                    sendEncodings[enconding.rawValue].isActive = true;
-                }
-
-                let transceiverInit = RTCRtpTransceiverInit()
-                transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
-                transceiverInit.sendEncodings = sendEncodings
-                transceiverInit.streamIds = [localStreamId]
-
-                peerConnection.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
-            } else {
-                peerConnection.add(track.rtcTrack(), streamIds: [localStreamId])
-            }
-            
+            addTrack(peerConnection: peerConnection, track: track, localStreamId: localStreamId)
         }
         
         peerConnection.enforceSendOnlyDirection()
+    }
+    
+    private func addTrack(peerConnection: RTCPeerConnection, track: LocalTrack, localStreamId: String) {
+        let transceiverInit = RTCRtpTransceiverInit()
+        transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
+        transceiverInit.streamIds = [localStreamId]
+        var sendEncodings: [RTCRtpEncodingParameters] = []
+        if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.enabled == true) {
+            let simulcastConfig = (track as? LocalVideoTrack)?.videoParameters.simulcastConfig
+            
+            sendEncodings = Constants.simulcastEncodings()
+            
+            simulcastConfig?.activeEncodings.forEach { enconding in
+                sendEncodings[enconding.rawValue].isActive = true;
+            }
+        } else {
+            sendEncodings = [RTCRtpEncodingParameters.create(active: true)]
+        }
+        if let maxBandwidth = (track as? LocalVideoTrack)?.videoParameters.maxBandwidth {
+            applyBitrate(encodings: sendEncodings, maxBitrate: maxBandwidth)
+        }
+        transceiverInit.sendEncodings = sendEncodings
+        peerConnection.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
     }
 
     
@@ -477,6 +521,47 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
         encoding.isActive = enabled
         sender.parameters = params
+    }
+    
+    private func applyBitrate(encodings: [RTCRtpEncodingParameters], maxBitrate: TrackBandwidthLimit) {
+        switch(maxBitrate) {
+        case .BandwidthLimit(let limit):
+            splitBitrate(encodings: encodings, bitrate: limit)
+            break;
+        case .SimulcastBandwidthLimit(let limit):
+            encodings.forEach { encoding in
+                let encodingLimit = limit[encoding.rid ?? ""] ?? 0
+                encoding.maxBitrateBps = encodingLimit == 0 ? nil : (encodingLimit * 1024) as NSNumber
+            }
+            break;
+        }
+    }
+    
+    private func splitBitrate(encodings: [RTCRtpEncodingParameters], bitrate: Int) {
+        if(encodings.isEmpty) {
+            return;
+        }
+        
+        if(bitrate == 0) {
+            encodings.forEach({encoding in
+                encoding.maxBitrateBps = nil
+            })
+            return;
+        }
+        
+        let k0 = Double(truncating: encodings.min(by: {
+            a, b in Double(truncating: a.scaleResolutionDownBy ?? 1) < Double(truncating: b.scaleResolutionDownBy ?? 1)
+        })?.scaleResolutionDownBy ?? 1)
+        
+        let bitrateParts = encodings.reduce(0.0, { acc, encoding in
+            acc + pow((k0/Double(truncating: encoding.scaleResolutionDownBy ?? 1)), 2)
+        })
+        
+        let x = Double(bitrate) / bitrateParts
+        
+        encodings.forEach({encoding in
+            encoding.maxBitrateBps = Int((x * pow(k0/Double(truncating: encoding.scaleResolutionDownBy ?? 1), 2) * 1024)) as NSNumber
+        })
     }
 }
 
@@ -912,7 +997,7 @@ extension MembraneRTC {
             guard let err = error else {
                 [TrackEncoding.h, TrackEncoding.m, TrackEncoding.l].forEach({ encoding in
                     self.localTracks.forEach({track in
-                        if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.simulcastConfig.activeEncodings.contains(encoding) != true) {
+                        if(track.rtcTrack().kind == "video" && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.activeEncodings.contains(encoding) != true) {
                             self.disableTrackEncoding(trackId: track.rtcTrack().trackId, encoding: encoding)
                         }
                     })
