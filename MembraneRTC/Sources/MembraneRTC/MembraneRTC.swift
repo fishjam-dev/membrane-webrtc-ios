@@ -239,7 +239,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         - onStart: The callback that will receive the screencast track called once the track becomes available
         - onStop: The callback that will be called once the track becomes unavailable
      */
-    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, simulcastConfig: SimulcastConfig = SimulcastConfig(), maxBandwidth: TrackBandwidthLimit = .BandwidthLimit(0), onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) -> LocalScreenBroadcastTrack {
+    public func createScreencastTrack(appGroup: String, videoParameters: VideoParameters, metadata: Metadata, onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void) -> LocalScreenBroadcastTrack {
         let screensharingTrack = LocalScreenBroadcastTrack(appGroup: appGroup, videoParameters: videoParameters, connectionManager: connectionManager)
         localTracks.append(screensharingTrack)
 
@@ -361,7 +361,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
          - trackId: track id of a video track
          - bandwidth: bandwidth in kbps
      */
-    public func setTrackBandwidth(trackId: String, bandwidth: TrackBandwidthLimit) {
+    public func setTrackBandwidth(trackId: String, bandwidth: BandwidthLimit) {
         guard let pc = connection else {
             return
         }
@@ -373,7 +373,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         let params = sender.parameters
         
-        applyBitrate(encodings: params.encodings, maxBitrate: bandwidth)
+        applyBitrate(encodings: params.encodings, maxBitrate: .BandwidthLimit(bandwidth))
         
         sender.parameters = params
     }
@@ -383,10 +383,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      
         - Parameters:
          - trackId: track id of a video track
-         - layer: rid of the encoding
+         - encoding: rid of the encoding
          - bandwidth: bandwidth in kbps
      */
-    public func setLayerBandwidth(trackId: String, layer: String, bandwidth: BandwidthLimit) {
+    public func setEncodingBandwidth(trackId: String, encoding: String, bandwidth: BandwidthLimit) {
         guard let pc = connection else {
             return
         }
@@ -397,12 +397,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         
         
         let params = sender.parameters
-        let encoding = params.encodings.first(where: { $0.rid == layer })
-        guard let encoding = encoding else {
+        let encodingParams = params.encodings.first(where: { $0.rid == encoding })
+        guard let encodingParams = encodingParams else {
             return
         }
 
-        encoding.maxBitrateBps = (bandwidth * 1024) as NSNumber
+        encodingParams.maxBitrateBps = (bandwidth * 1024) as NSNumber
         
         sender.parameters = params
     }
