@@ -65,9 +65,9 @@ class RoomController: ObservableObject {
         let trackMetadata = ["user_id": localPeer.metadata["displayName"] ?? "UNKNOWN"]
         
         let preset = VideoParameters.presetHD43
-        let videoParameters = VideoParameters(dimensions: preset.dimensions.flip(), encoding: preset.encoding)
+        let videoParameters = VideoParameters(dimensions: preset.dimensions.flip(), maxBandwidth: preset.maxBandwidth, maxFps: preset.maxFps)
         
-        localVideoTrack = room.createVideoTrack(videoParameters: videoParameters, metadata: .init(trackMetadata), simulcastConfig: videoSimulcastConfig)
+        localVideoTrack = room.createVideoTrack(videoParameters: videoParameters, metadata: .init(trackMetadata))
         localAudioTrack = room.createAudioTrack(metadata: .init(trackMetadata))
 
         room.add(delegate: self)
@@ -141,13 +141,12 @@ class RoomController: ObservableObject {
             let displayName = room.currentPeer().metadata["displayName"] ?? "UNKNOWN"
             
             let preset = VideoParameters.presetScreenShareFHD30
-            let videoParameters = VideoParameters(dimensions: preset.dimensions.flip(), encoding: preset.encoding)
+            let videoParameters = VideoParameters(dimensions: preset.dimensions.flip(), maxBandwidth: preset.maxBandwidth, maxFps: preset.maxFps, simulcastConfig: screencastSimulcastConfig)
             
             localScreencastTrack = room.createScreencastTrack(
                 appGroup: Constants.appGroup,
                 videoParameters: videoParameters,
                 metadata: .init(["user_id": displayName, "type": "screensharing"]),
-                simulcastConfig: screencastSimulcastConfig,
                 onStart: { [weak self] screencastTrack in
                     guard let self = self else {
                         return

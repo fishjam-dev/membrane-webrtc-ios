@@ -167,7 +167,7 @@ class ScreenBroadcastCapturer: RTCVideoCapturer, VideoCapturer {
 
                 let dimensions = downscaleResolution(from: Dimensions(width: Int32(video.width), height: Int32(video.height)), to: videoParameters.dimensions)
                 
-                self.source.adaptOutputFormat(toWidth: dimensions.width, height: dimensions.height, fps: Int32(videoParameters.encoding.maxFps))
+                self.source.adaptOutputFormat(toWidth: dimensions.width, height: dimensions.height, fps: Int32(videoParameters.maxFps))
 
                 let pixelBuffer = CVPixelBuffer.from(sample.buffer, width: Int(video.width), height: Int(video.height), pixelFormat: video.format)
                 let height = Int32(CVPixelBufferGetHeight(pixelBuffer))
