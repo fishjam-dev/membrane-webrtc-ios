@@ -12,7 +12,10 @@ public class LocalScreenBroadcastTrack: LocalVideoTrack, ScreenBroadcastCapturer
     private let appGroup: String
     public weak var delegate: LocalScreenBroadcastTrackDelegate?
 
-    internal init(appGroup: String, videoParameters: VideoParameters, delegate _: LocalScreenBroadcastTrackDelegate? = nil, connectionManager: ConnectionManager) {
+    internal init(
+        appGroup: String, videoParameters: VideoParameters,
+        delegate _: LocalScreenBroadcastTrackDelegate? = nil, connectionManager: ConnectionManager
+    ) {
         self.appGroup = appGroup
         super.init(parameters: videoParameters, connectionManager: connectionManager)
     }
@@ -32,9 +35,10 @@ public class LocalScreenBroadcastTrack: LocalVideoTrack, ScreenBroadcastCapturer
     public func resumed() {
         delegate?.resumed()
     }
-    
+
     override func createCapturer(videoSource _: RTCVideoSource) -> VideoCapturer {
-        let capturer = ScreenBroadcastCapturer(videoSource, appGroup: appGroup, videoParameters: videoParameters)
+        let capturer = ScreenBroadcastCapturer(
+            videoSource, appGroup: appGroup, videoParameters: videoParameters)
         capturer.capturerDelegate = self
         return capturer
     }

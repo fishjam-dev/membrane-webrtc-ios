@@ -109,9 +109,11 @@ public struct VideoParameters {
     public let maxBandwidth: TrackBandwidthLimit
     public let maxFps: Int
     public let simulcastConfig: SimulcastConfig
-    
 
-    public init(dimensions: Dimensions, maxBandwidth: TrackBandwidthLimit = .BandwidthLimit(0), maxFps: Int = 30, simulcastConfig: SimulcastConfig = SimulcastConfig()) {
+    public init(
+        dimensions: Dimensions, maxBandwidth: TrackBandwidthLimit = .BandwidthLimit(0),
+        maxFps: Int = 30, simulcastConfig: SimulcastConfig = SimulcastConfig()
+    ) {
         self.dimensions = dimensions
         self.maxBandwidth = maxBandwidth
         self.maxFps = maxFps

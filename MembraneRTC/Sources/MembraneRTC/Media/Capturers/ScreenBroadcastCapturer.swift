@@ -1,34 +1,36 @@
 import Foundation
-
 import WebRTC
 
 internal func downscaleResolution(from: Dimensions, to: Dimensions) -> Dimensions {
     if from.height > to.height {
         let ratio = Float(from.height) / Float(from.width)
-        
+
         let newHeight = to.height
         let newWidth = Int32((Float(newHeight) / ratio).rounded(.down))
-        
+
         return Dimensions(width: newWidth, height: newHeight)
     } else if from.width > to.width {
         let ratio = Float(from.height) / Float(from.width)
-        
+
         let newWidth = to.width
         let newHeight = Int32((Float(newWidth) * ratio).rounded(.down))
-        
+
         return Dimensions(width: newWidth, height: newHeight)
     }
-    
+
     return from
 }
 
 /// Utility for creating a `CVPixelBuffer` from raw bytes.
-public extension CVPixelBuffer {
-    static func from(_ data: Data, width: Int, height: Int, pixelFormat: OSType) -> CVPixelBuffer {
+extension CVPixelBuffer {
+    public static func from(_ data: Data, width: Int, height: Int, pixelFormat: OSType)
+        -> CVPixelBuffer
+    {
         data.withUnsafeBytes { buffer in
             var pixelBuffer: CVPixelBuffer!
 
-            let result = CVPixelBufferCreate(kCFAllocatorDefault, width, height, pixelFormat, nil, &pixelBuffer)
+            let result = CVPixelBufferCreate(
+                kCFAllocatorDefault, width, height, pixelFormat, nil, &pixelBuffer)
             guard result == kCVReturnSuccess else { fatalError() }
 
             CVPixelBufferLockBaseAddress(pixelBuffer, [])
@@ -36,7 +38,7 @@ public extension CVPixelBuffer {
 
             var source = buffer.baseAddress!
 
-            for plane in 0 ..< CVPixelBufferGetPlaneCount(pixelBuffer) {
+            for plane in 0..<CVPixelBufferGetPlaneCount(pixelBuffer) {
                 let dest = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, plane)
                 let height = CVPixelBufferGetHeightOfPlane(pixelBuffer, plane)
                 let bytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, plane)
@@ -58,20 +60,18 @@ internal protocol ScreenBroadcastCapturerDelegate: AnyObject {
     func resumed()
 }
 
-/**
- `VideoCapturer` that is responsible for capturing media from a remote `Broadcast Extension` that sends samples
- via `IPC` mechanism.
- 
- The capturer works in a `Server` mode, receiving appropriate notifications/samples from the extension that is working in a `Client` mode.
- The expected behaviour is to start the capturer prior to starting the extension as the server is responsible for opening the `IPC` port first.
- If the client starts before the server it will automatically close as the port will be closed.
- 
- The communication is performed by using `Proto Buffers` to gracefully handle serialization and deserialization of raw bytes sent via IPC port.
- For types of messages please refer to `broadcast_ipc.proto` included with the package.
- 
- It is important that the capturer gets started with a proper `appGroup` that is shared between the application and the `Broadcast Extension` itself
- (required by `IPC` mechanism).
- */
+/// `VideoCapturer` that is responsible for capturing media from a remote `Broadcast Extension` that sends samples
+/// via `IPC` mechanism.
+///
+/// The capturer works in a `Server` mode, receiving appropriate notifications/samples from the extension that is working in a `Client` mode.
+/// The expected behaviour is to start the capturer prior to starting the extension as the server is responsible for opening the `IPC` port first.
+/// If the client starts before the server it will automatically close as the port will be closed.
+///
+/// The communication is performed by using `Proto Buffers` to gracefully handle serialization and deserialization of raw bytes sent via IPC port.
+/// For types of messages please refer to `broadcast_ipc.proto` included with the package.
+///
+/// It is important that the capturer gets started with a proper `appGroup` that is shared between the application and the `Broadcast Extension` itself
+/// (required by `IPC` mechanism).
 class ScreenBroadcastCapturer: RTCVideoCapturer, VideoCapturer {
     public weak var capturerDelegate: ScreenBroadcastCapturerDelegate?
 
@@ -84,22 +84,27 @@ class ScreenBroadcastCapturer: RTCVideoCapturer, VideoCapturer {
 
     private var timeoutTimer: Timer?
 
-    internal let supportedPixelFormats = DispatchQueue.webRTC.sync { RTCCVPixelBuffer.supportedPixelFormats() }
+    internal let supportedPixelFormats = DispatchQueue.webRTC.sync {
+        RTCCVPixelBuffer.supportedPixelFormats()
+    }
 
     /**
      Creates a  broadcast screen capturer.
-     
+
      - Parameters:
         - source: `RTCVideoSource` that will receive incoming video buffers
         - appGroup: App Group that will be used for starting an `IPCServer` on
         - videoParameters: The parameters used for limiting the screen capture resolution and target framerate
         - delegate: A delegate that will receive notifications about the sceeen capture events such as started/stopped or paused
      */
-    init(_ source: RTCVideoSource, appGroup: String, videoParameters: VideoParameters, delegate: ScreenBroadcastCapturerDelegate? = nil) {
+    init(
+        _ source: RTCVideoSource, appGroup: String, videoParameters: VideoParameters,
+        delegate: ScreenBroadcastCapturerDelegate? = nil
+    ) {
         self.source = source
         self.appGroup = appGroup
         self.videoParameters = videoParameters
-        
+
         capturerDelegate = delegate
         ipcServer = IPCServer()
 
@@ -139,7 +144,7 @@ class ScreenBroadcastCapturer: RTCVideoCapturer, VideoCapturer {
             }
 
             switch sample.type {
-            case let .notification(notification):
+            case .notification(let notification):
                 switch notification {
                 case .started:
                     sdkLogger.info("ScreenBroadcastCapturer has been started")
@@ -158,28 +163,34 @@ class ScreenBroadcastCapturer: RTCVideoCapturer, VideoCapturer {
                     break
                 }
 
-            case let .video(video):
+            case .video(let video):
                 if !self.started {
-                    fatalError("Started receiving video samples without `started` notificcation...")
+                    fatalError("Started receiving video samples without `started` notification...")
                 }
 
                 self.isReceivingSamples = true
 
-                let dimensions = downscaleResolution(from: Dimensions(width: Int32(video.width), height: Int32(video.height)), to: videoParameters.dimensions)
-                
-                self.source.adaptOutputFormat(toWidth: dimensions.width, height: dimensions.height, fps: Int32(videoParameters.maxFps))
+                let dimensions = downscaleResolution(
+                    from: Dimensions(width: Int32(video.width), height: Int32(video.height)),
+                    to: videoParameters.dimensions)
 
-                let pixelBuffer = CVPixelBuffer.from(sample.buffer, width: Int(video.width), height: Int(video.height), pixelFormat: video.format)
+                self.source.adaptOutputFormat(
+                    toWidth: dimensions.width, height: dimensions.height, fps: Int32(videoParameters.maxFps))
+
+                let pixelBuffer = CVPixelBuffer.from(
+                    sample.buffer, width: Int(video.width), height: Int(video.height),
+                    pixelFormat: video.format)
                 let height = Int32(CVPixelBufferGetHeight(pixelBuffer))
                 let width = Int32(CVPixelBufferGetWidth(pixelBuffer))
 
-                let rtcBuffer = RTCCVPixelBuffer(pixelBuffer: pixelBuffer,
-                                                 adaptedWidth: width,
-                                                 adaptedHeight: height,
-                                                 cropWidth: width,
-                                                 cropHeight: height,
-                                                 cropX: 0,
-                                                 cropY: 0)
+                let rtcBuffer = RTCCVPixelBuffer(
+                    pixelBuffer: pixelBuffer,
+                    adaptedWidth: width,
+                    adaptedHeight: height,
+                    cropWidth: width,
+                    cropHeight: height,
+                    cropX: 0,
+                    cropY: 0)
 
                 var rotation: RTCVideoRotation = ._0
 
@@ -197,7 +208,8 @@ class ScreenBroadcastCapturer: RTCVideoCapturer, VideoCapturer {
                 // NOTEe: somehow local Metal renderer for RTCVPixelBuffer does not render the video
                 // the I420 somehow does so keep it in that format as long as it works
                 let buffer = rtcBuffer.toI420()
-                let videoFrame = RTCVideoFrame(buffer: buffer, rotation: rotation, timeStampNs: sample.timestamp)
+                let videoFrame = RTCVideoFrame(
+                    buffer: buffer, rotation: rotation, timeStampNs: sample.timestamp)
 
                 let delegate = source as RTCVideoCapturerDelegate
 
@@ -211,7 +223,9 @@ class ScreenBroadcastCapturer: RTCVideoCapturer, VideoCapturer {
 
     public func startCapture() {
         guard ipcServer.listen(for: appGroup) else {
-            fatalError("Failed to open IPC for screen broadcast, make sure that both app and extension are using same App Group")
+            fatalError(
+                "Failed to open IPC for screen broadcast, make sure that both app and extension are using same App Group"
+            )
         }
     }
 

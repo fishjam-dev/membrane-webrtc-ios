@@ -255,6 +255,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3BCCBEC92795619600A0AD4C /* Build configuration list for PBXNativeTarget "MembraneVideoroomDemo" */;
 			buildPhases = (
+				44C1634328F4B940009D11A6 /* ShellScript */,
 				3BCCBEB72795619500A0AD4C /* Sources */,
 				3BCCBEB82795619500A0AD4C /* Frameworks */,
 				3BCCBEB92795619500A0AD4C /* Resources */,
@@ -340,6 +341,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		44C1634328F4B940009D11A6 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\nif which swift-format >/dev/null; then\n    swift-format format -i -r ${PROJECT_DIR} --configuration swift-format-config.json\n    swift-format lint -r ${PROJECT_DIR} --configuration swift-format-config.json\nelse\n    echo \"warning: swift-format not installed\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		3B601BE927ABD2FE00668122 /* Sources */ = {

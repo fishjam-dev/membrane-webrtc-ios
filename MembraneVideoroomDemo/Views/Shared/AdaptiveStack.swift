@@ -9,7 +9,10 @@ struct AdaptiveStack<Content: View>: View {
     let content: () -> Content
     let naturalAlignment: Bool
 
-    init(orientation: UIDeviceOrientation, naturalAlignment: Bool = true, @ViewBuilder content: @escaping () -> Content) {
+    init(
+        orientation: UIDeviceOrientation, naturalAlignment: Bool = true,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
         self.orientation = orientation
         self.naturalAlignment = naturalAlignment
         self.content = content

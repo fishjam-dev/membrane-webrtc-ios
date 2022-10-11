@@ -166,10 +166,6 @@ public enum Events {
 struct JoinEvent: SendableEvent {
     let metadata: Metadata
 
-    init(metadata: Metadata) {
-        self.metadata = metadata
-    }
-
     func serialize() -> Payload {
         return .init([
             "type": "join",
@@ -182,12 +178,6 @@ struct SdpOfferEvent: SendableEvent {
     let sdp: String
     let trackIdToTrackMetadata: [String: Metadata]
     let midToTrackId: [String: String]
-
-    init(sdp: String, trackIdToTrackMetadata: [String: Metadata], midToTrackId: [String: String]) {
-        self.sdp = sdp
-        self.trackIdToTrackMetadata = trackIdToTrackMetadata
-        self.midToTrackId = midToTrackId
-    }
 
     func serialize() -> Payload {
         return .init([
@@ -211,11 +201,6 @@ struct LocalCandidateEvent: SendableEvent {
     let candidate: String
     let sdpMLineIndex: Int32
 
-    init(candidate: String, sdpMLineIndex: Int32) {
-        self.candidate = candidate
-        self.sdpMLineIndex = sdpMLineIndex
-    }
-
     func serialize() -> Payload {
         return .init([
             "type": "custom",
@@ -231,13 +216,11 @@ struct LocalCandidateEvent: SendableEvent {
 }
 
 struct RenegotiateTracksEvent: SendableEvent {
-    init() {}
-
     func serialize() -> Payload {
         return .init([
             "type": "custom",
             "data": [
-                "type": "renegotiateTracks",
+                "type": "renegotiateTracks"
             ],
         ])
     }
@@ -247,7 +230,7 @@ struct SelectEncodingEvent: SendableEvent {
     let peerId: String
     let trackId: String
     let encoding: String
-    
+
     func serialize() -> Payload {
         return .init([
             "type": "selectEncoding",
@@ -255,22 +238,18 @@ struct SelectEncodingEvent: SendableEvent {
                 "peerId": peerId,
                 "trackId": trackId,
                 "encoding": encoding,
-            ]
+            ],
         ])
     }
 }
 
 struct UpdatePeerMetadata: SendableEvent {
     let metadata: Metadata
-    
-    init(metadata: Metadata) {
-        self.metadata = metadata
-    }
-    
+
     func serialize() -> Payload {
         return .init([
             "type": "updatePeerMetadata",
-            "data": ["metadata": metadata]
+            "data": ["metadata": metadata],
         ])
     }
 }
@@ -278,16 +257,11 @@ struct UpdatePeerMetadata: SendableEvent {
 struct UpdateTrackMetadata: SendableEvent {
     let trackId: String
     let trackMetadata: Metadata
-    
-    init(trackId: String, trackMetadata: Metadata) {
-        self.trackId = trackId
-        self.trackMetadata = trackMetadata
-    }
-    
+
     func serialize() -> Payload {
         return .init([
             "type": "updateTrackMetadata",
-            "data": ["trackId": trackId, "trackMetadata": trackMetadata]
+            "data": ["trackId": trackId, "trackMetadata": trackMetadata],
         ])
     }
 }

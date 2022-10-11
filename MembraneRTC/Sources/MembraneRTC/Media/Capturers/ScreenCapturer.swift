@@ -20,20 +20,24 @@ class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
     }
 
     func startCapture() {
-        screenRecorder.startCapture(handler: { sampleBuffer, bufferType, _ in
-            // capture video only
-            if bufferType == RPSampleBufferType.video {
-                self.handleSourceBuffer(buffer: sampleBuffer, type: bufferType)
-            }
+        screenRecorder.startCapture(
+            handler: { sampleBuffer, bufferType, _ in
+                // capture video only
+                if bufferType == RPSampleBufferType.video {
+                    self.handleSourceBuffer(buffer: sampleBuffer, type: bufferType)
+                }
 
-        }, completionHandler: {
-            error in sdkLogger.error("Encountered error while capturing screen: \(error?.localizedDescription ?? "")")
-        })
+            },
+            completionHandler: {
+                error in
+                sdkLogger.error(
+                    "Encountered error while capturing screen: \(error?.localizedDescription ?? "")")
+            })
     }
 
     private func handleSourceBuffer(buffer: CMSampleBuffer, type _: RPSampleBufferType) {
-        if CMSampleBufferGetNumSamples(buffer) != 1 || !CMSampleBufferIsValid(buffer) ||
-            !CMSampleBufferDataIsReady(buffer)
+        if CMSampleBufferGetNumSamples(buffer) != 1 || !CMSampleBufferIsValid(buffer)
+            || !CMSampleBufferDataIsReady(buffer)
         {
             return
         }
@@ -49,9 +53,11 @@ class ScreenCapturer: RTCVideoCapturer, VideoCapturer {
 
         let rtcPixelBuffer = RTCCVPixelBuffer(pixelBuffer: pixelBuffer)
 
-        let timeStampNs = Int64(CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(buffer))) * Int64(NSEC_PER_SEC)
+        let timeStampNs =
+            Int64(CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(buffer))) * Int64(NSEC_PER_SEC)
 
-        let videoFrame = RTCVideoFrame(buffer: rtcPixelBuffer, rotation: RTCVideoRotation._0, timeStampNs: timeStampNs)
+        let videoFrame = RTCVideoFrame(
+            buffer: rtcPixelBuffer, rotation: RTCVideoRotation._0, timeStampNs: timeStampNs)
 
         let delegate = source as RTCVideoCapturerDelegate
 

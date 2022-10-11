@@ -5,8 +5,10 @@ import SwiftUI
 
 #if os(iOS)
     @available(iOS 12, *)
-    public extension RPSystemBroadcastPickerView {
-        static func show(for preferredExtension: String? = nil, showsMicrophoneButton: Bool = false) {
+    extension RPSystemBroadcastPickerView {
+        public static func show(
+            for preferredExtension: String? = nil, showsMicrophoneButton: Bool = false
+        ) {
             let view = RPSystemBroadcastPickerView()
             view.preferredExtension = preferredExtension
             view.showsMicrophoneButton = showsMicrophoneButton
@@ -44,45 +46,50 @@ struct RoomView: View {
         orientationReceiver = OrientationReceiver()
         self.room = RoomController(room)
     }
-    
+
     @ViewBuilder
-    func simulcastButtons(simulcastConfig: SimulcastConfig, toggleEncoding: @escaping (_ encoding: TrackEncoding)->Void) -> some View {
+    func simulcastButtons(
+        simulcastConfig: SimulcastConfig, toggleEncoding: @escaping (_ encoding: TrackEncoding) -> Void
+    ) -> some View {
         let encodings = [TrackEncoding.l, TrackEncoding.m, TrackEncoding.h]
-        
-        ForEach(encodings, id: \.self)
-            {e in
-                    Button(
-                        action: {
-                            toggleEncoding(e)
-                        },
-                        label: {
-                            Text(e.description)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 10)
-                        }
-                    )
-                    .background(Color.blue.darker())
-                    .cornerRadius(8)
-                    .opacity(simulcastConfig.activeEncodings.contains(e) ? 1 : 0.5)
-            }
+
+        ForEach(encodings, id: \.self) { e in
+            Button(
+                action: {
+                    toggleEncoding(e)
+                },
+                label: {
+                    Text(e.description)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                }
+            )
+            .background(Color.blue.darker())
+            .cornerRadius(8)
+            .opacity(simulcastConfig.activeEncodings.contains(e) ? 1 : 0.5)
+        }
     }
-    
+
     @ViewBuilder
     func simulcastControls() -> some View {
         VStack {
             HStack {
                 Text("Video quality")
                     .font(.system(size: 12))
-                
-                simulcastButtons(simulcastConfig: room.videoSimulcastConfig, toggleEncoding: room.toggleVideoTrackEncoding(encoding:))
+
+                simulcastButtons(
+                    simulcastConfig: room.videoSimulcastConfig,
+                    toggleEncoding: room.toggleVideoTrackEncoding(encoding:))
             }
-            
-            if(room.isScreensharingEnabled) {
+
+            if room.isScreensharingEnabled {
                 HStack {
                     Text("Screencast quality")
                         .font(.system(size: 12))
-                    
-                    simulcastButtons(simulcastConfig: room.screencastSimulcastConfig, toggleEncoding: room.toggleScreencastTrackEncoding(encoding:))
+
+                    simulcastButtons(
+                        simulcastConfig: room.screencastSimulcastConfig,
+                        toggleEncoding: room.toggleScreencastTrackEncoding(encoding:))
                 }
             }
         }
@@ -118,18 +125,21 @@ struct RoomView: View {
 
     @ViewBuilder
     func cameraSwitchButton() -> some View {
-        Button(action: {
-            self.room.switchCameraPosition()
-        }, label: {
-            Image(systemName: "arrow.triangle.2.circlepath.camera.fill")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundColor(Color.white)
-        })
+        Button(
+            action: {
+                self.room.switchCameraPosition()
+            },
+            label: {
+                Image(systemName: "arrow.triangle.2.circlepath.camera.fill")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(Color.white)
+            })
     }
 
     @ViewBuilder
     func screensharingControlButton() -> some View {
-        let label = room.isScreensharingEnabled ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle"
+        let label =
+            room.isScreensharingEnabled ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle"
 
         Button(action: {
             self.room.toggleLocalTrack(.screensharing)
@@ -147,13 +157,12 @@ struct RoomView: View {
         HStack {
             Spacer()
 
-
             mediaControlButton(.audio, enabled: self.room.isMicEnabled)
                 .padding(.trailing)
 
             mediaControlButton(.video, enabled: self.room.isCameraEnabled)
                 .padding(.trailing)
-            
+
             Button(action: {
                 self.appCtrl.disconnect()
             }) {
@@ -186,7 +195,7 @@ struct RoomView: View {
         if orientationReceiver.orientation.isLandscape {
             return geometry.size.width * 0.67 - 20
         } else {
-            return geometry.size.width*0.5 - 40
+            return geometry.size.width * 0.5 - 40
         }
     }
 
@@ -210,7 +219,7 @@ struct RoomView: View {
                     .font(.system(size: 20))
                     .frame(maxWidth: .infinity, alignment: .center)
                     .foregroundColor(.white)
-                
+
                 simulcastControls()
 
                 if let errorMessage = room.errorMessage {

@@ -38,10 +38,13 @@ class CameraCapturer: VideoCapturer {
             return
         }
 
-        let formats: [AVCaptureDevice.Format] = RTCCameraVideoCapturer.supportedFormats(for: frontCamera)
+        let formats: [AVCaptureDevice.Format] = RTCCameraVideoCapturer.supportedFormats(
+            for: frontCamera)
 
-        let (targetWidth, targetHeight) = (videoParameters.dimensions.width,
-                                           videoParameters.dimensions.height)
+        let (targetWidth, targetHeight) = (
+            videoParameters.dimensions.width,
+            videoParameters.dimensions.height
+        )
 
         var currentDiff = Int32.max
         var selectedFormat: AVCaptureDevice.Format = formats[0]
@@ -76,8 +79,9 @@ class CameraCapturer: VideoCapturer {
             fatalError("unsported requested frame rate of (\(minFps) - \(maxFps)")
         }
 
-        capturer.startCapture(with: frontCamera,
-                              format: selectedFormat,
-                              fps: fps)
+        capturer.startCapture(
+            with: frontCamera,
+            format: selectedFormat,
+            fps: fps)
     }
 }

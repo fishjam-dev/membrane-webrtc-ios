@@ -1,30 +1,26 @@
-/**
- * Enum describing possible track encodings.
- * `"h"` - original encoding
- * `"m"` - original encoding scaled down by 2
- * `"l"` - original encoding scaled down by 4
- */
-public enum TrackEncoding : Int, CustomStringConvertible {
+/// Enum describing possible track encodings.
+/// `"h"` - original encoding
+/// `"m"` - original encoding scaled down by 2
+/// `"l"` - original encoding scaled down by 4
+public enum TrackEncoding: Int, CustomStringConvertible {
     case l = 0
     case m
     case h
-    
-    public var description : String {
+
+    public var description: String {
         switch self {
-            case .l: return "l"
-            case .m: return "m"
-            case .h: return "h"
+        case .l: return "l"
+        case .m: return "m"
+        case .h: return "h"
         }
-      }
+    }
 }
 
-/**
- * Simulcast configuration.
- *
- * At the moment, simulcast track is initialized in three versions - low, medium and high.
- * High resolution is the original track resolution, while medium and low resolutions
- * are the original track resolution scaled down by 2 and 4 respectively.
- */
+/// Simulcast configuration.
+///
+/// At the moment, simulcast track is initialized in three versions - low, medium and high.
+/// High resolution is the original track resolution, while medium and low resolutions
+/// are the original track resolution scaled down by 2 and 4 respectively.
 public struct SimulcastConfig {
     /**
      * Whether to simulcast track or not.
@@ -37,7 +33,7 @@ public struct SimulcastConfig {
      * enabled using {@link enableTrackEncoding}.
      */
     public var activeEncodings: [TrackEncoding] = []
-    
+
     public init(enabled: Bool = false, activeEncodings: [TrackEncoding] = []) {
         self.enabled = enabled
         self.activeEncodings = activeEncodings

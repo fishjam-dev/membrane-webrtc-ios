@@ -17,10 +17,9 @@ final class AppController: ObservableObject {
         state = .awaiting
     }
 
-
     public func connect(room: String, displayName: String) {
         let engineUrl = Constants.rtcEngineUrl.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        
+
         let transportUrl = "\(engineUrl)/socket"
 
         let client = MembraneRTC.connect(
