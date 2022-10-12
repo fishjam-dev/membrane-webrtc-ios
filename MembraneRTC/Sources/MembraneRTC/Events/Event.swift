@@ -254,7 +254,7 @@ struct SelectEncodingEvent: SendableEvent {
               "type": "setTargetTrackVariant",
               "data": [
                 "trackId": trackId,
-                "encoding": encoding,
+                "variant": encoding,
               ]
             ]
         ])
