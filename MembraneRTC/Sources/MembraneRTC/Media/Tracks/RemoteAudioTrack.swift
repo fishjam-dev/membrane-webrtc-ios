@@ -9,11 +9,11 @@ public class RemoteAudioTrack: AudioTrack, RemoteTrack {
 
         super.init()
     }
-    
+
     public func enabled() -> Bool {
         return track.isEnabled
     }
-    
+
     public func setEnabled(_ enabled: Bool) {
         track.isEnabled = enabled
     }

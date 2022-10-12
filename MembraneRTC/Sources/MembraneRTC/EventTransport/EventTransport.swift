@@ -19,7 +19,7 @@ extension EventTransportError: CustomStringConvertible {
             return "User is unauthorized to use the transport"
         case .connectionError:
             return "Failed to connect with the remote side"
-        case let .unexpected(reason: reason):
+        case .unexpected(let reason):
             return "Encountered unexpected error: \(reason)"
         }
     }

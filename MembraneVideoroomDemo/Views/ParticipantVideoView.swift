@@ -37,24 +37,30 @@ struct ParticipantVideoView: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            SwiftUIVideoView(self.participantVideo.videoTrack, layout: self.layout, mirror: self.participantVideo.mirror, dimensions: $localDimensions)
-                .onChange(of: localDimensions) { value in
-                    guard let dimensions = value else { return }
+            SwiftUIVideoView(
+                self.participantVideo.videoTrack, layout: self.layout, mirror: self.participantVideo.mirror,
+                dimensions: $localDimensions
+            )
+            .onChange(of: localDimensions) { value in
+                guard let dimensions = value else { return }
 
-                    selectLayout(width, height, dimensions)
-                }
-                .background(Color.blue.darker(by: 0.6))
-                .frame(width: self.width, height: self.height, alignment: .leading)
-                .clipShape(RoundedRectangle(cornerRadius: 15))
+                selectLayout(width, height, dimensions)
+            }
+            .background(Color.blue.darker(by: 0.6))
+            .frame(width: self.width, height: self.height, alignment: .leading)
+            .clipShape(RoundedRectangle(cornerRadius: 15))
 
-            Text(self.participantVideo.participant.displayName + (self.participantVideo.isScreensharing ? " (presentation)" : ""))
-                .font(.system(size: 20))
-                .bold()
-                .shadow(color: .black, radius: 1)
-                .foregroundColor(Color.white)
-                .padding(10)
-                .frame(maxWidth: self.width - 10)
-                .fixedSize()
+            Text(
+                self.participantVideo.participant.displayName
+                    + (self.participantVideo.isScreensharing ? " (presentation)" : "")
+            )
+            .font(.system(size: 20))
+            .bold()
+            .shadow(color: .black, radius: 1)
+            .foregroundColor(Color.white)
+            .padding(10)
+            .frame(maxWidth: self.width - 10)
+            .fixedSize()
         }
     }
 }

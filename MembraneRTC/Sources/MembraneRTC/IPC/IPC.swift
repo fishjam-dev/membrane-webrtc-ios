@@ -2,7 +2,7 @@ import Foundation
 import simd
 
 // enables to attach the IPC instance to the existing CFMessagePort instance
-internal extension CFMessagePort {
+extension CFMessagePort {
     private static var selfObjectHandle: UInt8 = 1
 
     func associatedSelf() -> IPC? {
@@ -10,10 +10,11 @@ internal extension CFMessagePort {
     }
 
     func associateSelf(_ obj: IPC) {
-        objc_setAssociatedObject(self as Any,
-                                 &CFMessagePort.selfObjectHandle,
-                                 obj,
-                                 objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        objc_setAssociatedObject(
+            self as Any,
+            &CFMessagePort.selfObjectHandle,
+            obj,
+            objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
 }
 
@@ -66,16 +67,19 @@ public class IPCServer: IPC {
             return false
         }
 
-        port = CFMessagePortCreateLocal(nil, name as CFString, { (port: CFMessagePort?, id: Int32, data: CFData?, _: UnsafeMutableRawPointer?) -> Unmanaged<CFData>? in
-            guard let selfObj = port?.associatedSelf() as? IPCServer,
-                  let data = data as Data?
-            else {
-                return nil
-            }
+        port = CFMessagePortCreateLocal(
+            nil, name as CFString,
+            {
+                (port: CFMessagePort?, id: Int32, data: CFData?, _: UnsafeMutableRawPointer?) -> Unmanaged<CFData>? in
+                guard let selfObj = port?.associatedSelf() as? IPCServer,
+                    let data = data as Data?
+                else {
+                    return nil
+                }
 
-            selfObj.onReceive?(selfObj, id, data)
-            return nil
-        }, nil, nil)
+                selfObj.onReceive?(selfObj, id, data)
+                return nil
+            }, nil, nil)
 
         if let port = port {
             port.associateSelf(self)

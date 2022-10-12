@@ -21,8 +21,9 @@ public class PhoenixTransport: EventTransport {
 
     public init(url: String, topic: String, params: [String: Any]) {
         self.topic = topic
-        
-        socket = Socket(endPoint: url, transport: { URLSessionTransport(url: $0) }, paramsClosure: { params })
+
+        socket = Socket(
+            endPoint: url, transport: { URLSessionTransport(url: $0) }, paramsClosure: { params })
     }
 
     public func connect(delegate: EventTransportDelegate) -> Promise<Void> {
@@ -45,24 +46,32 @@ public class PhoenixTransport: EventTransport {
             let channel = self.socket.channel(self.topic)
 
             channel.join(timeout: 3.0)
-                .receive("ok", callback: { _ in
-                    self.connectionState = .connected
-                    resolve(())
-                }).receive("error", callback: { _ in
-                    self.connectionState = .error
-                    fail(EventTransportError.connectionError)
-                })
+                .receive(
+                    "ok",
+                    callback: { _ in
+                        self.connectionState = .connected
+                        resolve(())
+                    }
+                ).receive(
+                    "error",
+                    callback: { _ in
+                        self.connectionState = .error
+                        fail(EventTransportError.connectionError)
+                    })
 
             self.channel = channel
 
             /// listen for media events
-            self.channel!.on("mediaEvent", callback: { message in
-                guard let event: ReceivableEvent = Events.deserialize(payload: Payload(message.payload)) else {
-                    return
-                }
+            self.channel!.on(
+                "mediaEvent",
+                callback: { message in
+                    guard let event: ReceivableEvent = Events.deserialize(payload: Payload(message.payload))
+                    else {
+                        return
+                    }
 
-                self.delegate?.didReceive(event: event)
-            })
+                    self.delegate?.didReceive(event: event)
+                })
         }
     }
 
@@ -80,7 +89,7 @@ public class PhoenixTransport: EventTransport {
 
     public func send(event: SendableEvent) {
         guard connectionState == .connected,
-              let channel = channel
+            let channel = channel
         else {
             sdkLogger.error("PhoenixEventTransport tried sending a message on a closed socket")
             return

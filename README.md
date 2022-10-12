@@ -78,6 +78,10 @@ target 'ScreenBroadcast' do
 end
 ```
 
+## Developing
+1. Run `./scripts/init.sh` in the main directory to install swift-format and release-it and set up git hooks
+2. Run `release-it` to release. Follow the prompts, it should update version in podspec, make a commit and tag and push the new version to Cocoa Pods.
+
 ## Credits
 This project is highly inspired by the [LiveKit](https://livekit.io/) project and their implementation of the [iOS SDK](https://github.com/livekit/client-sdk-swift) and reuses a lot of their implemented solutions (mainly dealing with WebRTC SDK while the signalling got completely replaced with an internal solution).
 

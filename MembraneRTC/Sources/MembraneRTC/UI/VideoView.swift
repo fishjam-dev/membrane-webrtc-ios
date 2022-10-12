@@ -5,16 +5,12 @@ public protocol VideoViewDelegate: AnyObject {
     func didChange(dimensions: Dimensions)
 }
 
-
-
-/**
- `VideoView` is an instance of `UIVIew` that is  responsible for receiving a `RTCVideoTrack` that will
- be then rendered inside the view.
- 
- It supports two types of fitting, `fit` and `fill` where the prior tries to keep the original dimensions
- and the later one tries to fill the available space. Additionaly one can set mirror mode to flip the video horizontally,
- usually expected when displaying the local user's view.
- */
+/// `VideoView` is an instance of `UIVIew` that is  responsible for receiving a `RTCVideoTrack` that will
+/// be then rendered inside the view.
+///
+/// It supports two types of fitting, `fit` and `fill` where the prior tries to keep the original dimensions
+/// and the later one tries to fill the available space. Additionaly one can set mirror mode to flip the video horizontally,
+/// usually expected when displaying the local user's view.
 public class VideoView: UIView {
     public enum Layout {
         case fit
@@ -69,14 +65,14 @@ public class VideoView: UIView {
     public var track: VideoTrack? {
         didSet {
             if let oldValue = oldValue,
-               let rendererView = rendererView,
-               let rtcVideoTrack = oldValue.rtcTrack() as? RTCVideoTrack
+                let rendererView = rendererView,
+                let rtcVideoTrack = oldValue.rtcTrack() as? RTCVideoTrack
             {
                 rtcVideoTrack.remove(rendererView)
             }
 
             if let track = track,
-               let rtcVideoTrack = track.rtcTrack() as? RTCVideoTrack
+                let rtcVideoTrack = track.rtcTrack() as? RTCVideoTrack
             {
                 // create a new renderer view for the new track
                 createAndPrepareRenderView()
@@ -143,10 +139,11 @@ public class VideoView: UIView {
             }
 
             // center layout
-            rendererView.frame = CGRect(x: -((size.width - viewSize.width) / 2),
-                                        y: -((size.height - viewSize.height) / 2),
-                                        width: size.width,
-                                        height: size.height)
+            rendererView.frame = CGRect(
+                x: -((size.width - viewSize.width) / 2),
+                y: -((size.height - viewSize.height) / 2),
+                width: size.width,
+                height: size.height)
         } else {
             rendererView.frame = bounds
         }
@@ -186,7 +183,7 @@ public class VideoView: UIView {
 extension VideoView: RTCVideoViewDelegate {
     public func videoView(_: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         guard let width = Int32(exactly: size.width),
-              let height = Int32(exactly: size.height)
+            let height = Int32(exactly: size.height)
         else {
             // CGSize is used by WebRTC but this should always be an integer
             sdkLogger.error("VideoView: size width/height is not an integer")
@@ -200,8 +197,9 @@ extension VideoView: RTCVideoViewDelegate {
         }
 
         DispatchQueue.main.async {
-            self.dimensions = Dimensions(width: width,
-                                         height: height)
+            self.dimensions = Dimensions(
+                width: width,
+                height: height)
         }
     }
 }

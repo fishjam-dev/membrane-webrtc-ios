@@ -4,19 +4,23 @@ import WebRTC
 // handling various kinds of notifications
 internal class ConnectionManager {
     let factory: RTCPeerConnectionFactory
-    
+
     init(encoder: Encoder) {
         RTCInitializeSSL()
 
         let decoderFactory = RTCDefaultVideoDecoderFactory()
         let encoderFactory = getEncoderFactory(from: encoder)
-        
-        let simulcastFactory = RTCVideoEncoderFactorySimulcast(primary: encoderFactory, fallback: RTCDefaultVideoEncoderFactory())
 
-        self.factory = RTCPeerConnectionFactory(encoderFactory: simulcastFactory, decoderFactory: decoderFactory)
+        let simulcastFactory = RTCVideoEncoderFactorySimulcast(
+            primary: encoderFactory, fallback: RTCDefaultVideoEncoderFactory())
+
+        self.factory = RTCPeerConnectionFactory(
+            encoderFactory: simulcastFactory, decoderFactory: decoderFactory)
     }
 
-    func createPeerConnection(_ configuration: RTCConfiguration, constraints: RTCMediaConstraints) -> RTCPeerConnection? {
+    func createPeerConnection(_ configuration: RTCConfiguration, constraints: RTCMediaConstraints)
+        -> RTCPeerConnection?
+    {
         DispatchQueue.webRTC.sync {
             factory.peerConnection(with: configuration, constraints: constraints, delegate: nil)
         }

@@ -68,8 +68,9 @@ struct ConnectView: View {
                 .background(Color.blue.darker(by: 0.6))
                 .cornerRadius(6)
                 .padding(4)
-                .overlay(RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.blue.darker(by: 0.6), lineWidth: 2.5)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.blue.darker(by: 0.6), lineWidth: 2.5)
                 )
                 .padding(3)
                 .foregroundColor(.white)

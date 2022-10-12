@@ -7,11 +7,11 @@ public class RemoteVideoTrack: VideoTrack, RemoteTrack {
     init(track: RTCVideoTrack) {
         self.track = track
     }
-    
+
     public func enabled() -> Bool {
         return track.isEnabled
     }
-    
+
     public func setEnabled(_ enabled: Bool) {
         track.isEnabled = enabled
     }

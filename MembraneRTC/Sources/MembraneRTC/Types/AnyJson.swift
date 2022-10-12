@@ -1,27 +1,29 @@
 public struct AnyJson: Codable {
     private var store: [String: Any]
-    
+
     public init(_ dict: [String: Any] = [:]) {
         self.store = dict
     }
-    
+
     public subscript(key: String) -> Any? {
         get { store[key] }
         set { store[key] = newValue }
     }
-    
+
     public var keys: Dictionary<String, Any>.Keys {
         store.keys
     }
-    
+
     // MARK: Decoding
-    
+
     public init(from decoder: Decoder) throws {
         var container = try decoder.container(keyedBy: JSONCodingKey.self)
         self.store = try Self.decodeDictionary(from: &container)
     }
-    
-    static func decodeDictionary(from container: inout KeyedDecodingContainer<JSONCodingKey>) throws -> [String: Any] {
+
+    static func decodeDictionary(from container: inout KeyedDecodingContainer<JSONCodingKey>) throws
+        -> [String: Any]
+    {
         var dict = [String: Any]()
         for key in container.allKeys {
             let value = try decode(from: &container, forKey: key)
@@ -29,7 +31,7 @@ public struct AnyJson: Codable {
         }
         return dict
     }
-    
+
     static func decodeArray(from container: inout UnkeyedDecodingContainer) throws -> [Any] {
         var arr: [Any] = []
         while !container.isAtEnd {
@@ -38,8 +40,10 @@ public struct AnyJson: Codable {
         }
         return arr
     }
-    
-    static func decode(from container: inout KeyedDecodingContainer<JSONCodingKey>, forKey key: JSONCodingKey) throws -> Any {
+
+    static func decode(
+        from container: inout KeyedDecodingContainer<JSONCodingKey>, forKey key: JSONCodingKey
+    ) throws -> Any {
         if let value = try? container.decode(Bool.self, forKey: key) {
             return value
         }
@@ -61,10 +65,13 @@ public struct AnyJson: Codable {
         if var container = try? container.nestedContainer(keyedBy: JSONCodingKey.self, forKey: key) {
             return try decodeDictionary(from: &container)
         }
-        throw DecodingError.typeMismatch(AnyJson.self, .init(codingPath: container.codingPath,
-                                                             debugDescription: "Couldn't parse object to Metadata: unknown type!"))
+        throw DecodingError.typeMismatch(
+            AnyJson.self,
+            .init(
+                codingPath: container.codingPath,
+                debugDescription: "Couldn't parse object to Metadata: unknown type!"))
     }
-    
+
     static func decode(from container: inout UnkeyedDecodingContainer) throws -> Any {
         if let value = try? container.decode(Bool.self) {
             return value
@@ -87,18 +94,23 @@ public struct AnyJson: Codable {
         if var container = try? container.nestedContainer(keyedBy: JSONCodingKey.self) {
             return try decodeDictionary(from: &container)
         }
-        throw DecodingError.typeMismatch(AnyJson.self, .init(codingPath: container.codingPath,
-                                                             debugDescription: "Couldn't parse object to Metadata: decoding from container failed"))
+        throw DecodingError.typeMismatch(
+            AnyJson.self,
+            .init(
+                codingPath: container.codingPath,
+                debugDescription: "Couldn't parse object to Metadata: decoding from container failed"))
     }
-    
+
     // MARK: Encoding
-    
+
     public func encode(to encoder: Swift.Encoder) throws {
         var container = encoder.container(keyedBy: JSONCodingKey.self)
         try Self.encode(to: &container, dictionary: store)
     }
-    
-    static func encode(to container: inout KeyedEncodingContainer<JSONCodingKey>, dictionary: [String: Any]) throws {
+
+    static func encode(
+        to container: inout KeyedEncodingContainer<JSONCodingKey>, dictionary: [String: Any]
+    ) throws {
         for (key, value) in dictionary {
             let key = JSONCodingKey(stringValue: key)!
             if let value = value as? Bool {
@@ -128,13 +140,18 @@ public struct AnyJson: Codable {
                 if case Optional<Any>.none = value {
                     try container.encodeNil(forKey: key)
                 } else {
-                    throw DecodingError.typeMismatch(AnyJson.self, .init(codingPath: container.codingPath,
-                                                                         debugDescription: "Couldn't parse object to Metadata: unexpected type to encode: \(String(describing: value))"))
+                    throw DecodingError.typeMismatch(
+                        AnyJson.self,
+                        .init(
+                            codingPath: container.codingPath,
+                            debugDescription:
+                                "Couldn't parse object to Metadata: unexpected type to encode: \(String(describing: value))"
+                        ))
                 }
             }
         }
     }
-    
+
     static func encode(to container: inout UnkeyedEncodingContainer, array: [Any]) throws {
         for value in array {
             if let value = value as? Bool {
@@ -161,13 +178,18 @@ public struct AnyJson: Codable {
                 if case Optional<Any>.none = value {
                     try container.encodeNil()
                 } else {
-                    throw DecodingError.typeMismatch(AnyJson.self, .init(codingPath: container.codingPath,
-                                                                         debugDescription: "Couldn't parse object to Metadata: unexpected type to encode: \(String(describing: value))"))
+                    throw DecodingError.typeMismatch(
+                        AnyJson.self,
+                        .init(
+                            codingPath: container.codingPath,
+                            debugDescription:
+                                "Couldn't parse object to Metadata: unexpected type to encode: \(String(describing: value))"
+                        ))
                 }
             }
         }
     }
-    
+
     static func encode(to container: inout SingleValueEncodingContainer, value: Any) throws {
         if let value = value as? Bool {
             try container.encode(value)
@@ -187,15 +209,20 @@ public struct AnyJson: Codable {
             if case Optional<Any>.none = value {
                 try container.encodeNil()
             } else {
-                throw DecodingError.typeMismatch(AnyJson.self, .init(codingPath: container.codingPath,
-                                                                     debugDescription: "Couldn't parse object to Metadata: unexpected type to encode: \(String(describing: value))"))
+                throw DecodingError.typeMismatch(
+                    AnyJson.self,
+                    .init(
+                        codingPath: container.codingPath,
+                        debugDescription:
+                            "Couldn't parse object to Metadata: unexpected type to encode: \(String(describing: value))"
+                    ))
             }
         }
     }
-    
+
     // MARK: Coding keys
-    
-    class JSONCodingKey : CodingKey {
+
+    class JSONCodingKey: CodingKey {
         let key: String
         required init?(intValue: Int) { return nil }
         required init?(stringValue: String) { key = stringValue }
@@ -203,4 +230,3 @@ public struct AnyJson: Codable {
         var stringValue: String { return key }
     }
 }
-

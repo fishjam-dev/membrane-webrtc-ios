@@ -15,7 +15,8 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
             "googHighpassFilter": "true",
         ]
 
-        let audioConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: constraints)
+        let audioConstraints = RTCMediaConstraints(
+            mandatoryConstraints: nil, optionalConstraints: constraints)
 
         config = RTCAudioSessionConfiguration.webRTC()
         config.category = AVAudioSession.Category.playAndRecord.rawValue
@@ -41,7 +42,7 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
     public func enabled() -> Bool {
         return track.isEnabled
     }
-    
+
     public func setEnabled(_ enabled: Bool) {
         track.isEnabled = enabled
     }
