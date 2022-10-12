@@ -198,7 +198,7 @@ class RoomController: ObservableObject {
                     self.participantVideos.insert(primary, at: index)
                 }
                 if(primary.participant.id != self.localParticipantId) {
-                    self.room?.selectTrackEncoding(peerId: primary.participant.id, trackId: primary.id, encoding: TrackEncoding.l)
+                    self.room?.setTargetTrackEncoding(trackId: primary.id, encoding: TrackEncoding.l)
                 }
             }
 
@@ -207,7 +207,7 @@ class RoomController: ObservableObject {
             
             
             if video.participant.id != self.localParticipantId {
-                self.room?.selectTrackEncoding(peerId: video.participant.id, trackId: video.id, encoding: TrackEncoding.h)
+                self.room?.setTargetTrackEncoding(trackId: video.id, encoding: TrackEncoding.h)
             }
             
 

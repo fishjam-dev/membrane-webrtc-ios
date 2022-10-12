@@ -244,17 +244,18 @@ struct RenegotiateTracksEvent: SendableEvent {
 }
 
 struct SelectEncodingEvent: SendableEvent {
-    let peerId: String
     let trackId: String
     let encoding: String
     
     func serialize() -> Payload {
         return .init([
-            "type": "selectEncoding",
+            "type": "custom",
             "data": [
-                "peerId": peerId,
+              "type": "setTargetTrackVariant",
+              "data": [
                 "trackId": trackId,
-                "encoding": encoding,
+                "variant": encoding,
+              ]
             ]
         ])
     }

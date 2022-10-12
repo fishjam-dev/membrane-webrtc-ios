@@ -494,15 +494,18 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     
     /**
-      Selects track encoding that server should send to the client library.
+     Sets track encoding that server should send to the client library.
+     
+     The encoding will be sent whenever it is available.
+     If choosen encoding is temporarily unavailable, some other encoding
+     will be sent until choosen encoding becomes active again.
      
          - Parameters:
-            - peerId:an id of a peer that owns the track
             - trackId: an id of a remote track
             - encoding: an encoding to receive
      */
-    public func selectTrackEncoding(peerId: String, trackId: String, encoding: TrackEncoding) {
-        transport.send(event: SelectEncodingEvent(peerId: peerId, trackId: trackId, encoding: encoding.description))
+    public func setTargetTrackEncoding(trackId: String, encoding: TrackEncoding) {
+        transport.send(event: SelectEncodingEvent(trackId: trackId, encoding: encoding.description))
     }
     
     private func setTrackEncoding(trackId: String, encoding: TrackEncoding, enabled: Bool) {
