@@ -9,12 +9,12 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v3
 
       - name: Build Docs
-        run: xcodebuild docbuild -scheme MembraneRTC -destination generic/platform=iOS OTHER_DOCC_FLAGS="--transform-for-static-hosting --output-path docs --hosting-base-path membrane-webrtc-ios"
+        run: mkdir MembraneRTC/docs && xcodebuild docbuild -scheme MembraneRTC -destination generic/platform=iOS OTHER_DOCC_FLAGS="--transform-for-static-hosting --output-path docs --hosting-base-path membrane-webrtc-ios"
 
       - name: Deploy
         uses: s0/git-publish-subdir-action@develop
