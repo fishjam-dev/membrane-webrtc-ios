@@ -13,11 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Build Docs
+        run: mkdir MembraneRTC/docs && xcodebuild docbuild -scheme MembraneRTC -destination generic/platform=iOS OTHER_DOCC_FLAGS="--transform-for-static-hosting --output-path docs --hosting-base-path membrane-webrtc-ios"
+
       - name: Install coreutils
         run: brew install coreutils
-
-      - name: Build Docs
-        run: echo "alias cp=gcp" >> ~/.bashrc && mkdir MembraneRTC/docs && xcodebuild docbuild -scheme MembraneRTC -destination generic/platform=iOS OTHER_DOCC_FLAGS="--transform-for-static-hosting --output-path docs --hosting-base-path membrane-webrtc-ios"
+      
+      - name: Change PATH
+        run: echo "/usr/local/opt/coreutils/libexec/gnubin" >> $GITHUB_PATH
 
       - name: Deploy
         uses: s0/git-publish-subdir-action@develop
