@@ -17,7 +17,7 @@ jobs:
         run: brew install coreutils
 
       - name: Build Docs
-        run: alias cp=gcp && mkdir MembraneRTC/docs && xcodebuild docbuild -scheme MembraneRTC -destination generic/platform=iOS OTHER_DOCC_FLAGS="--transform-for-static-hosting --output-path docs --hosting-base-path membrane-webrtc-ios"
+        run: echo "alias cp=gcp" >> ~/.bashrc && mkdir MembraneRTC/docs && xcodebuild docbuild -scheme MembraneRTC -destination generic/platform=iOS OTHER_DOCC_FLAGS="--transform-for-static-hosting --output-path docs --hosting-base-path membrane-webrtc-ios"
 
       - name: Deploy
         uses: s0/git-publish-subdir-action@develop
