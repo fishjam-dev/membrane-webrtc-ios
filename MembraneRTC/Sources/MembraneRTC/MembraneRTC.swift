@@ -874,6 +874,25 @@ extension MembraneRTC: EventTransportDelegate {
                     $0.onTrackRemoved(ctx: context)
                 }
             }
+        case .TrackUpdated:
+            let tracksUpdated = event as! TracksUpdatedEvent
+
+            let id = tracksUpdated.data.trackId
+
+            guard let context = self.trackContexts[id] else {
+                return
+            }
+
+            let newContext = TrackContext(
+                track: context.track,
+                peer: context.peer,
+                trackId: id,
+                metadata: tracksUpdated.data.metadata
+            )
+            self.trackContexts[id] = newContext
+            notify {
+                $0.onTrackUpdated(ctx: newContext)
+            }
 
         default:
             sdkLogger.error("Failed to handle ReceivableEvent of type \(event.type)")

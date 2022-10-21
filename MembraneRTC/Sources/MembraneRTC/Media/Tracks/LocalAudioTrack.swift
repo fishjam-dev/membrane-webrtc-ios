@@ -51,6 +51,10 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
         return track
     }
 
+    public func trackId() -> String {
+        return track.trackId
+    }
+
     private func configure(setActive: Bool) {
         let audioSession = RTCAudioSession.sharedInstance()
         audioSession.lockForConfiguration()

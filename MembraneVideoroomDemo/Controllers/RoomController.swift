@@ -61,7 +61,7 @@ class RoomController: ObservableObject {
         isScreensharingEnabled = false
 
         let localPeer = room.currentPeer()
-        let trackMetadata = ["user_id": localPeer.metadata["displayName"] ?? "UNKNOWN"]
+        let trackMetadata = ["user_id": localPeer.metadata["displayName"] ?? "UNKNOWN", "active": true]
 
         let preset = VideoParameters.presetHD43
         let videoParameters = VideoParameters(
@@ -129,10 +129,16 @@ class RoomController: ObservableObject {
         case .audio:
             isMicEnabled = !isMicEnabled
             localAudioTrack?.setEnabled(isMicEnabled)
+            if let trackId = localAudioTrack?.trackId() {
+                room.updateTrackMetadata(trackId: trackId, trackMetadata: .init(["active": isMicEnabled]))
+            }
 
         case .video:
             isCameraEnabled = !isCameraEnabled
             localVideoTrack?.setEnabled(isCameraEnabled)
+            if let trackId = localVideoTrack?.trackId() {
+                room.updateTrackMetadata(trackId: trackId, trackMetadata: .init(["active": isCameraEnabled]))
+            }
 
         case .screensharing:
             // if screensharing is enabled it must be closed by the Broadcast Extension, not by our application
