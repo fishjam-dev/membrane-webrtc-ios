@@ -8,7 +8,7 @@ public enum Encoder {
     case H264
 }
 
-public func getEncoderFactory(from: Encoder) -> RTCVideoEncoderFactory {
+func getEncoderFactory(from: Encoder) -> RTCVideoEncoderFactory {
     switch from {
     case .DEFAULT:
         return RTCDefaultVideoEncoderFactory()

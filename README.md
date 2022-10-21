@@ -49,6 +49,8 @@ The server then can capture and deserialize the packets which will get forwarded
 *IMPORTANT*
 Both extensnion and application must share the same App Group so that a proper CFMessagePort can get created.
 
+## Documentation
+API documentation is available [here](https://docs.membrane.stream/membrane-webrtc-ios/documentation/membranertc/).
 
 ## Necessary setup
 For the application to work properly one must set necessary constants inside 
