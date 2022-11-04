@@ -41,10 +41,6 @@ let package = Package(
                 .product(name: "Collections", package: "swift-collections"),
             ],
             path: "Sources"
-        ),
-        .testTarget(
-            name: "MembraneRTCTests",
-            dependencies: ["MembraneRTC"]
-        ),
+        )
     ]
 )
