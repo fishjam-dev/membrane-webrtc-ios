@@ -378,12 +378,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      */
     public func setTrackBandwidth(trackId: String, bandwidth: BandwidthLimit) {
         guard let pc = connection else {
-            sdkLogger.error("setTrackBandwidth: Peer connection not yet established")
+            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
         guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
-            sdkLogger.error("setTrackBandwidth: can't find track sender with trackId=\(trackId)")
+            sdkLogger.error("\(#function): can't find track sender with trackId=\(trackId)")
             return
         }
 
@@ -404,19 +404,19 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      */
     public func setEncodingBandwidth(trackId: String, encoding: String, bandwidth: BandwidthLimit) {
         guard let pc = connection else {
-            sdkLogger.error("setEncodingBandwidth: Peer connection not yet established")
+            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
         guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
-            sdkLogger.error("setEncodingBandwidth: can't find track sender with trackId=\(trackId)")
+            sdkLogger.error("\(#function): can't find track sender with trackId=\(trackId)")
             return
         }
 
         let params = sender.parameters
         let encodingParams = params.encodings.first(where: { $0.rid == encoding })
         guard let encodingParams = encodingParams else {
-            sdkLogger.error("setEncodingBandwidth: invalid encoding=\(encoding)")
+            sdkLogger.error("\(#function): invalid encoding=\(encoding)")
             return
         }
 
@@ -443,7 +443,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     /// Adds given broadcast track to the peer connection and forces track renegotiation.
     private func setupScreencastTrack(track: LocalScreenBroadcastTrack, metadata: Metadata) {
         guard let pc = connection else {
-            sdkLogger.error("setupScreencastTrack: Peer connection not yet established")
+            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
@@ -533,18 +533,18 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     private func setTrackEncoding(trackId: String, encoding: TrackEncoding, enabled: Bool) {
         guard let pc = connection else {
-            sdkLogger.error("setTrackEncoding: Peer connection not yet established")
+            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
         guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
-            sdkLogger.error("setTrackEncoding: can't find track sender with trackId=\(trackId)")
+            sdkLogger.error("\(#function): can't find track sender with trackId=\(trackId)")
             return
         }
 
         let params = sender.parameters
         guard let encoding = params.encodings.first(where: { $0.rid == encoding.description }) else {
-            sdkLogger.error("setTrackEncoding: invalid encoding=\(encoding)")
+            sdkLogger.error("\(#function): invalid encoding=\(encoding)")
             return
         }
         encoding.isActive = enabled
@@ -567,7 +567,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     private func splitBitrate(encodings: [RTCRtpEncodingParameters], bitrate: Int) {
         if encodings.isEmpty {
-            sdkLogger.error("splitBitrate: Attempted to limit bandwidth of the track that doesn't have any encodings")
+            sdkLogger.error("\(#function): Attempted to limit bandwidth of the track that doesn't have any encodings")
             return
         }
 
