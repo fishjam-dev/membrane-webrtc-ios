@@ -34,6 +34,7 @@
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
 		3BD7249327AAD3DE00AFE9D9 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BD7249227AAD3DE00AFE9D9 /* logo.png */; };
 		3BDAC1E027A2FCE200A2BB0D /* ParticipantVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */; };
+		44C0FE9A291595C700E61E9A /* MembraneRTCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C0FE99291595C700E61E9A /* MembraneRTCTest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +44,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 3B601BEC27ABD2FE00668122;
 			remoteInfo = MembraneVideoroomDemoScreensharing;
+		};
+		44C0FE9B291595C700E61E9A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3BCCBEB32795619500A0AD4C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3BCCBEBA2795619500A0AD4C;
+			remoteInfo = MembraneVideoroomDemo;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -86,6 +94,8 @@
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BD7249227AAD3DE00AFE9D9 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantVideoView.swift; sourceTree = "<group>"; };
+		44C0FE97291595C700E61E9A /* MembraneRTCTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MembraneRTCTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		44C0FE99291595C700E61E9A /* MembraneRTCTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembraneRTCTest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +119,13 @@
 				3B04D3942798190F00E2B755 /* SwiftPhoenixClient in Frameworks */,
 				3B601C0127ABF88A00668122 /* SwiftProtobuf in Frameworks */,
 				3BCCBEF92795701600A0AD4C /* Promises in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44C0FE94291595C700E61E9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,6 +229,7 @@
 				3BA235D927AC156E0070031E /* MembraneVideoroomDemoScreensharingDebug.entitlements */,
 				3B16A1BE2796C42B0095941F /* MembraneVideoroomDemo */,
 				3B601BF127ABD2FE00668122 /* ScreenBroadcastExt */,
+				44C0FE98291595C700E61E9A /* MembraneRTCTest */,
 				3B601BEE27ABD2FE00668122 /* Frameworks */,
 				3BCCBEBC2795619500A0AD4C /* Products */,
 			);
@@ -222,8 +240,17 @@
 			children = (
 				3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */,
 				3B601BED27ABD2FE00668122 /* ScreenBroadcastExt.appex */,
+				44C0FE97291595C700E61E9A /* MembraneRTCTest.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		44C0FE98291595C700E61E9A /* MembraneRTCTest */ = {
+			isa = PBXGroup;
+			children = (
+				44C0FE99291595C700E61E9A /* MembraneRTCTest.swift */,
+			);
+			path = MembraneRTCTest;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -278,6 +305,24 @@
 			productReference = 3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		44C0FE96291595C700E61E9A /* MembraneRTCTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 44C0FE9F291595C700E61E9A /* Build configuration list for PBXNativeTarget "MembraneRTCTest" */;
+			buildPhases = (
+				44C0FE93291595C700E61E9A /* Sources */,
+				44C0FE94291595C700E61E9A /* Frameworks */,
+				44C0FE95291595C700E61E9A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				44C0FE9C291595C700E61E9A /* PBXTargetDependency */,
+			);
+			name = MembraneRTCTest;
+			productName = MembraneRTCTest;
+			productReference = 44C0FE97291595C700E61E9A /* MembraneRTCTest.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -285,7 +330,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1320;
+				LastSwiftUpdateCheck = 1340;
 				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					3B601BEC27ABD2FE00668122 = {
@@ -293,6 +338,10 @@
 					};
 					3BCCBEBA2795619500A0AD4C = {
 						CreatedOnToolsVersion = 13.2.1;
+					};
+					44C0FE96291595C700E61E9A = {
+						CreatedOnToolsVersion = 13.4;
+						TestTargetID = 3BCCBEBA2795619500A0AD4C;
 					};
 				};
 			};
@@ -317,6 +366,7 @@
 			targets = (
 				3BCCBEBA2795619500A0AD4C /* MembraneVideoroomDemo */,
 				3B601BEC27ABD2FE00668122 /* ScreenBroadcastExt */,
+				44C0FE96291595C700E61E9A /* MembraneRTCTest */,
 			);
 		};
 /* End PBXProject section */
@@ -337,6 +387,13 @@
 				3B16A1DE2796C42B0095941F /* Preview Assets.xcassets in Resources */,
 				3BB35DA727D61A7200892A6E /* README.md in Resources */,
 				3B16A1DD2796C42B0095941F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44C0FE95291595C700E61E9A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -390,6 +447,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		44C0FE93291595C700E61E9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44C0FE9A291595C700E61E9A /* MembraneRTCTest.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -397,6 +462,11 @@
 			isa = PBXTargetDependency;
 			target = 3B601BEC27ABD2FE00668122 /* ScreenBroadcastExt */;
 			targetProxy = 3B601BF527ABD2FE00668122 /* PBXContainerItemProxy */;
+		};
+		44C0FE9C291595C700E61E9A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3BCCBEBA2795619500A0AD4C /* MembraneVideoroomDemo */;
+			targetProxy = 44C0FE9B291595C700E61E9A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -641,6 +711,44 @@
 			};
 			name = Release;
 		};
+		44C0FE9D291595C700E61E9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J5FM626PE2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swmansion.MembraneRTCTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MembraneVideoroomDemo.app/MembraneVideoroomDemo";
+			};
+			name = Debug;
+		};
+		44C0FE9E291595C700E61E9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J5FM626PE2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swmansion.MembraneRTCTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MembraneVideoroomDemo.app/MembraneVideoroomDemo";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -667,6 +775,15 @@
 			buildConfigurations = (
 				3BCCBECA2795619600A0AD4C /* Debug */,
 				3BCCBECB2795619600A0AD4C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		44C0FE9F291595C700E61E9A /* Build configuration list for PBXNativeTarget "MembraneRTCTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44C0FE9D291595C700E61E9A /* Debug */,
+				44C0FE9E291595C700E61E9A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -1,0 +1,21 @@
+
+name: Run lint & tests
+on: [push]
+
+jobs:
+  build:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install deps
+        run: brew install swift-format xcbeautify
+
+      - name: Run formatter
+        run: swift-format format -i -r ./MembraneRTC/Sources/**/*.swift --configuration swift-format-config.json
+
+      - name: Run lint
+        run: swift-format lint -r ./MembraneRTC/Sources/**/*.swift --configuration swift-format-config.json
+
+      - name: Run tests
+        run: set -o pipefail && xcodebuild test -scheme MembraneVideoroomDemo -destination 'platform=iOS Simulator,name=iPhone 13,OS=16.0' -workspace 'MembraneVideoroomDemo.xcworkspace' -sdk iphonesimulator | xcbeautify
