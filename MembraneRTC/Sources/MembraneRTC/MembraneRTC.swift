@@ -378,10 +378,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      */
     public func setTrackBandwidth(trackId: String, bandwidth: BandwidthLimit) {
         guard let pc = connection else {
+            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
         guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
+            sdkLogger.error("\(#function): can't find track sender with trackId=\(trackId)")
             return
         }
 
@@ -402,16 +404,19 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      */
     public func setEncodingBandwidth(trackId: String, encoding: String, bandwidth: BandwidthLimit) {
         guard let pc = connection else {
+            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
         guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
+            sdkLogger.error("\(#function): can't find track sender with trackId=\(trackId)")
             return
         }
 
         let params = sender.parameters
         let encodingParams = params.encodings.first(where: { $0.rid == encoding })
         guard let encodingParams = encodingParams else {
+            sdkLogger.error("\(#function): invalid encoding=\(encoding)")
             return
         }
 
@@ -438,6 +443,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     /// Adds given broadcast track to the peer connection and forces track renegotiation.
     private func setupScreencastTrack(track: LocalScreenBroadcastTrack, metadata: Metadata) {
         guard let pc = connection else {
+            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
@@ -527,15 +533,18 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     private func setTrackEncoding(trackId: String, encoding: TrackEncoding, enabled: Bool) {
         guard let pc = connection else {
+            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
         guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
+            sdkLogger.error("\(#function): can't find track sender with trackId=\(trackId)")
             return
         }
 
         let params = sender.parameters
         guard let encoding = params.encodings.first(where: { $0.rid == encoding.description }) else {
+            sdkLogger.error("\(#function): invalid encoding=\(encoding)")
             return
         }
         encoding.isActive = enabled
@@ -558,6 +567,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     private func splitBitrate(encodings: [RTCRtpEncodingParameters], bitrate: Int) {
         if encodings.isEmpty {
+            sdkLogger.error("\(#function): Attempted to limit bandwidth of the track that doesn't have any encodings")
             return
         }
 
@@ -765,6 +775,7 @@ extension MembraneRTC: EventTransportDelegate {
             let peerLeft = event as! PeerLeftEvent
 
             guard let peer = remotePeers[peerLeft.data.peerId] else {
+                sdkLogger.error("Failed to process PeerLeft event: Peer not found: \(peerLeft.data.peerId)")
                 return
             }
 
@@ -795,6 +806,7 @@ extension MembraneRTC: EventTransportDelegate {
             let peerUpdated = event as! PeerUpdateEvent
 
             guard var peer = remotePeers[peerUpdated.data.peerId] else {
+                sdkLogger.error("Failed to process PeerUpdated event: Peer not found: \(peerUpdated.data.peerId)")
                 return
             }
 
@@ -837,6 +849,7 @@ extension MembraneRTC: EventTransportDelegate {
             }
 
             guard var peer = remotePeers[tracksAdded.data.peerId] else {
+                sdkLogger.error("Failed to process TracksAdded event: Peer not found: \(tracksAdded.data.peerId)")
                 return
             }
 
@@ -859,12 +872,14 @@ extension MembraneRTC: EventTransportDelegate {
             let tracksRemoved = event as! TracksRemovedEvent
 
             guard let _ = remotePeers[tracksRemoved.data.peerId] else {
+                sdkLogger.error("Failed to process TracksRemoved event: Peer not found: \(tracksRemoved.data.peerId)")
                 return
             }
 
             // for each track clear its context and notify delegates
             tracksRemoved.data.trackIds.forEach { id in
                 guard let context = self.trackContexts[id] else {
+                    sdkLogger.error("Failed to process TracksRemoved event: Track not found: \(id)")
                     return
                 }
 
@@ -880,6 +895,7 @@ extension MembraneRTC: EventTransportDelegate {
             let id = tracksUpdated.data.trackId
 
             guard let context = self.trackContexts[id] else {
+                sdkLogger.error("Failed to process TrackUpdated event: Track not found: \(id)")
                 return
             }
 
