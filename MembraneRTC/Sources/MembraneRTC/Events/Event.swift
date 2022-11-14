@@ -13,6 +13,7 @@ public enum ReceivableEventType: String, Codable {
     case PeerJoined = "peerJoined"
     case PeerLeft = "peerLeft"
     case PeerUpdated = "peerUpdated"
+    case PeerRemoved = "peerRemoved"
     case Custom = "custom"
     case OfferData = "offerData"
     case Candidate = "candidate"
@@ -20,6 +21,7 @@ public enum ReceivableEventType: String, Codable {
     case TracksRemoved = "tracksRemoved"
     case TrackUpdated = "trackUpdated"
     case SdpAnswer = "sdpAnswer"
+    case EncodingSwitched = "encodingSwitched"
 }
 
 /// Protocol for incoming `MembraneRTC` events
@@ -144,6 +146,20 @@ public enum Events {
 
             case .SdpAnswer:
                 guard let event: CustomEvent<SdpAnswerEvent> = decodeEvent(from: data) else {
+                    return nil
+                }
+
+                return event.data
+
+            case .EncodingSwitched:
+                guard let event: CustomEvent<EncodingSwitchedEvent> = decodeEvent(from: data) else {
+                    return nil
+                }
+
+                return event.data
+
+            case .PeerRemoved:
+                guard let event: CustomEvent<PeerRemovedEvent> = decodeEvent(from: data) else {
                     return nil
                 }
 
@@ -309,6 +325,16 @@ struct PeerUpdateEvent: ReceivableEvent, Codable {
     let data: Data
 }
 
+struct PeerRemovedEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let peerId: String
+        let reason: String
+    }
+
+    let type: ReceivableEventType
+    let data: Data
+}
+
 struct OfferDataEvent: ReceivableEvent, Codable {
     struct TurnServer: Codable {
         let username: String
@@ -374,6 +400,17 @@ struct RemoteCandidateEvent: ReceivableEvent, Codable {
         let candidate: String
         let sdpMLineIndex: Int32
         let sdpMid: String?
+    }
+
+    let type: ReceivableEventType
+    let data: Data
+}
+
+struct EncodingSwitchedEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let peerId: String
+        let trackId: String
+        let encoding: String
     }
 
     let type: ReceivableEventType

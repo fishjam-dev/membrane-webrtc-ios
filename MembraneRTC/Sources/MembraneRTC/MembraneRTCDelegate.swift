@@ -32,8 +32,24 @@ public protocol MembraneRTCDelegate {
     /// Callback invoked when peer's metadata gets updated.
     func onPeerUpdated(peer: Peer)
 
+    /// Callback invoked every time a local peer is removed by the server
+    func onRemoved(reason: String)
+
+    /// Callback invoked when received track encoding has changed
+    func onTrackEncodingChanged(peerId: String, trackId: String, encoding: String)
+
     /// Callback invoked when an errors happens.
     ///
     /// For more information about the error type please refere to `MembraneRTCError`.
     func onError(_ error: MembraneRTCError)
+}
+
+extension MembraneRTCDelegate {
+    public func onTrackEncodingChanged(peerId: String, trackId: String, encoding: String) {
+        sdkLogger.info("Track encoding changed \(trackId) -> \(encoding)")
+    }
+
+    public func onRemoved(reason: String) {
+        sdkLogger.error("Peer removed, reason: \(reason)")
+    }
 }

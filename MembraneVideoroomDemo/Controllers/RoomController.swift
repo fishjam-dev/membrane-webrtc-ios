@@ -65,7 +65,9 @@ class RoomController: ObservableObject {
 
         let preset = VideoParameters.presetHD43
         let videoParameters = VideoParameters(
-            dimensions: preset.dimensions.flip(), maxBandwidth: preset.maxBandwidth, maxFps: preset.maxFps
+            dimensions: preset.dimensions.flip(),
+            maxBandwidth: .SimulcastBandwidthLimit(["l": 150, "m": 500, "h": 1500]),
+            simulcastConfig: videoSimulcastConfig
         )
 
         localVideoTrack = room.createVideoTrack(

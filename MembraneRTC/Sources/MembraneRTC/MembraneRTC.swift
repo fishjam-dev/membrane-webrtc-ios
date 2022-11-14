@@ -819,6 +819,18 @@ extension MembraneRTC: EventTransportDelegate {
                 $0.onPeerUpdated(peer: peer)
             }
 
+        case .PeerRemoved:
+            let peerRemoved = event as! PeerRemovedEvent
+
+            guard peerRemoved.data.peerId == localPeer.id else {
+                sdkLogger.error("Received onRemoved media event, but it does not refer to the local peer")
+                return
+            }
+
+            notify {
+                $0.onRemoved(reason: peerRemoved.data.reason)
+            }
+
         case .OfferData:
             let offerData = event as! OfferDataEvent
 
@@ -908,6 +920,13 @@ extension MembraneRTC: EventTransportDelegate {
             self.trackContexts[id] = newContext
             notify {
                 $0.onTrackUpdated(ctx: newContext)
+            }
+        case .EncodingSwitched:
+            let encodingSwitched = event as! EncodingSwitchedEvent
+            self.notify {
+                $0.onTrackEncodingChanged(
+                    peerId: encodingSwitched.data.peerId, trackId: encodingSwitched.data.trackId,
+                    encoding: encodingSwitched.data.encoding)
             }
 
         default:
