@@ -61,7 +61,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     // `RTCPeerConnection` config
     private var config: RTCConfiguration
 
-    private var connectionManager: ConnectionManager
+    private var peerConnectionFactoryWrapper: PeerConnectionFactoryWrapper
 
     private var localTracks: [LocalTrack] = []
 
@@ -79,7 +79,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     private var encoder: Encoder
 
     private lazy var peerConnectionManager: PeerConnectionManager = {
-        return PeerConnectionManager(config: self.config, encoder: self.encoder, peerConnectionListener: self)
+        return PeerConnectionManager(
+            config: self.config, peerConnectionFactory: self.peerConnectionFactoryWrapper, peerConnectionListener: self)
     }()
 
     internal init(
@@ -98,7 +99,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         // setup local peer
         localPeer = localPeer.with(metadata: peerMetadata)
 
-        connectionManager = ConnectionManager(encoder: encoder)
+        peerConnectionFactoryWrapper = PeerConnectionFactoryWrapper(encoder: encoder)
 
         self.encoder = encoder
 
@@ -176,7 +177,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         -> LocalVideoTrack
     {
         let videoTrack = LocalVideoTrack.create(
-            for: .camera, videoParameters: videoParameters, connectionManager: connectionManager)
+            for: .camera, videoParameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
 
         if state == .connected {
             peerConnectionManager.addTrack(track: videoTrack, localStreamId: localStreamId)
@@ -206,7 +207,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Returns: `LocalAudioTrack` instance that user then can use for things such as front / back camera switch.
      */
     public func createAudioTrack(metadata: Metadata) -> LocalAudioTrack {
-        let audioTrack = LocalAudioTrack(connectionManager: connectionManager)
+        let audioTrack = LocalAudioTrack(peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
 
         if state == .connected {
             peerConnectionManager.addTrack(track: audioTrack, localStreamId: localStreamId)
@@ -246,7 +247,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void
     ) -> LocalScreenBroadcastTrack {
         let screensharingTrack = LocalScreenBroadcastTrack(
-            appGroup: appGroup, videoParameters: videoParameters, connectionManager: connectionManager)
+            appGroup: appGroup, videoParameters: videoParameters,
+            peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
         localTracks.append(screensharingTrack)
 
         broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(

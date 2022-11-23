@@ -6,7 +6,7 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
     // `RTCPeerConnection` config
     private var config: RTCConfiguration
 
-    private var connectionManager: ConnectionManager
+    private var peerConnectionFactory: PeerConnectionFactoryWrapper
 
     // Underyling RTC connection
     private var connection: RTCPeerConnection?
@@ -26,10 +26,13 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
 
     private let peerConnectionListener: PeerConnectionListener
 
-    internal init(config: RTCConfiguration, encoder: Encoder, peerConnectionListener: PeerConnectionListener) {
+    internal init(
+        config: RTCConfiguration, peerConnectionFactory: PeerConnectionFactoryWrapper,
+        peerConnectionListener: PeerConnectionListener
+    ) {
         self.config = config
         iceServers = []
-        connectionManager = ConnectionManager(encoder: encoder)
+        self.peerConnectionFactory = peerConnectionFactory
         self.peerConnectionListener = peerConnectionListener
     }
 
@@ -63,7 +66,7 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
         }
 
         guard
-            let peerConnection = connectionManager.createPeerConnection(
+            let peerConnection = peerConnectionFactory.createPeerConnection(
                 config, constraints: Self.mediaConstraints)
         else {
             fatalError("Failed to initialize new PeerConnection")

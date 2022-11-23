@@ -11,11 +11,11 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
         case camera, file
     }
 
-    internal init(parameters: VideoParameters, connectionManager: ConnectionManager) {
-        let source = connectionManager.createVideoSource()
+    internal init(parameters: VideoParameters, peerConnectionFactoryWrapper: PeerConnectionFactoryWrapper) {
+        let source = peerConnectionFactoryWrapper.createVideoSource()
 
         videoSource = source
-        track = connectionManager.createVideoTrack(source: source)
+        track = peerConnectionFactoryWrapper.createVideoTrack(source: source)
 
         self.videoParameters = parameters
 
@@ -25,14 +25,16 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
     }
 
     static func create(
-        for capturer: Capturer, videoParameters: VideoParameters, connectionManager: ConnectionManager
+        for capturer: Capturer, videoParameters: VideoParameters,
+        peerConnectionFactoryWrapper: PeerConnectionFactoryWrapper
     ) -> LocalVideoTrack {
         switch capturer {
         case .camera:
             return LocalCameraVideoTrack(
-                parameters: videoParameters, connectionManager: connectionManager)
+                parameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
         case .file:
-            return LocalFileVideoTrack(parameters: videoParameters, connectionManager: connectionManager)
+            return LocalFileVideoTrack(
+                parameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
         }
     }
 
@@ -46,7 +48,7 @@ public class LocalVideoTrack: VideoTrack, LocalTrack {
     public static func create(videoParameters: VideoParameters) -> LocalVideoTrack {
         return create(
             for: .camera, videoParameters: videoParameters,
-            connectionManager: ConnectionManager(encoder: .DEFAULT))
+            peerConnectionFactoryWrapper: PeerConnectionFactoryWrapper(encoder: .DEFAULT))
     }
 
     internal func createCapturer(videoSource _: RTCVideoSource) -> VideoCapturer {
