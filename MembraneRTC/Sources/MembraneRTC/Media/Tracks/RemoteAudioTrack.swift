@@ -29,4 +29,8 @@ public class RemoteAudioTrack: AudioTrack, RemoteTrack {
     override func rtcTrack() -> RTCMediaStreamTrack {
         return track
     }
+
+    public func trackId() -> String {
+        return track.trackId
+    }
 }
