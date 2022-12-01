@@ -66,4 +66,25 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
             sdkLogger.error("Failed to set configuration for audio session")
         }
     }
+
+    private func setMode(mode: String) {
+        let audioSession = RTCAudioSession.sharedInstance()
+        audioSession.lockForConfiguration()
+        defer { audioSession.unlockForConfiguration() }
+
+        do {
+            config.mode = mode
+            try audioSession.setConfiguration(config)
+        } catch {
+            sdkLogger.error("Failed to set configuration for audio session")
+        }
+    }
+
+    public func setVoiceChatMode() {
+        setMode(mode: AVAudioSession.Mode.voiceChat.rawValue)
+    }
+
+    public func setVideoChatMode() {
+        setMode(mode: AVAudioSession.Mode.videoChat.rawValue)
+    }
 }
