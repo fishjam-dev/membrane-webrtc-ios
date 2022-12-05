@@ -61,7 +61,12 @@ class RoomController: ObservableObject {
         isScreensharingEnabled = false
 
         let localPeer = room.currentPeer()
-        let trackMetadata = ["user_id": localPeer.metadata["displayName"] ?? "UNKNOWN", "active": true]
+        let videoTrackMetadata = [
+            "user_id": localPeer.metadata["displayName"] ?? "UNKNOWN", "active": true, "type": "camera",
+        ]
+        let audioTrackMetadata = [
+            "user_id": localPeer.metadata["displayName"] ?? "UNKNOWN", "active": true, "type": "audio",
+        ]
 
         let preset = VideoParameters.presetHD43
         let videoParameters = VideoParameters(
@@ -71,8 +76,8 @@ class RoomController: ObservableObject {
         )
 
         localVideoTrack = room.createVideoTrack(
-            videoParameters: videoParameters, metadata: .init(trackMetadata))
-        localAudioTrack = room.createAudioTrack(metadata: .init(trackMetadata))
+            videoParameters: videoParameters, metadata: .init(videoTrackMetadata))
+        localAudioTrack = room.createAudioTrack(metadata: .init(audioTrackMetadata))
 
         room.add(delegate: self)
 
@@ -132,14 +137,16 @@ class RoomController: ObservableObject {
             isMicEnabled = !isMicEnabled
             localAudioTrack?.setEnabled(isMicEnabled)
             if let trackId = localAudioTrack?.trackId() {
-                room.updateTrackMetadata(trackId: trackId, trackMetadata: .init(["active": isMicEnabled]))
+                room.updateTrackMetadata(
+                    trackId: trackId, trackMetadata: .init(["active": isMicEnabled, "type": "audio"]))
             }
 
         case .video:
             isCameraEnabled = !isCameraEnabled
             localVideoTrack?.setEnabled(isCameraEnabled)
             if let trackId = localVideoTrack?.trackId() {
-                room.updateTrackMetadata(trackId: trackId, trackMetadata: .init(["active": isCameraEnabled]))
+                room.updateTrackMetadata(
+                    trackId: trackId, trackMetadata: .init(["active": isCameraEnabled, "type": "camera"]))
             }
 
         case .screensharing:
