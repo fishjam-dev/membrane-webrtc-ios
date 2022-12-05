@@ -55,28 +55,28 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
         return track.trackId
     }
 
-    private func configure(setActive: Bool) {
+    private func withAudioSession(callback: ((RTCAudioSession) throws -> Void)) {
         let audioSession = RTCAudioSession.sharedInstance()
         audioSession.lockForConfiguration()
         defer { audioSession.unlockForConfiguration() }
 
         do {
-            try audioSession.setConfiguration(config, active: setActive)
+            try callback(audioSession)
         } catch {
             sdkLogger.error("Failed to set configuration for audio session")
         }
     }
 
-    private func setMode(mode: String) {
-        let audioSession = RTCAudioSession.sharedInstance()
-        audioSession.lockForConfiguration()
-        defer { audioSession.unlockForConfiguration() }
+    private func configure(setActive: Bool) {
+        withAudioSession { audioSession in
+            try audioSession.setConfiguration(config, active: setActive)
+        }
+    }
 
-        do {
+    private func setMode(mode: String) {
+        withAudioSession { audioSession in
             config.mode = mode
             try audioSession.setConfiguration(config)
-        } catch {
-            sdkLogger.error("Failed to set configuration for audio session")
         }
     }
 
