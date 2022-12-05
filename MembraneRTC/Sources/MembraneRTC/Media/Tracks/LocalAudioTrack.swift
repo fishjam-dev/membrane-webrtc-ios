@@ -80,10 +80,14 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
         }
     }
 
+    /// Sets AVAudioSession configuration mode to voice chat
+    /// (https://developer.apple.com/documentation/avfaudio/avaudiosession/mode/1616455-voicechat)
     public func setVoiceChatMode() {
         setMode(mode: AVAudioSession.Mode.voiceChat.rawValue)
     }
 
+    /// Sets AVAudioSession configuration mode to video chat
+    /// (https://developer.apple.com/documentation/avfaudio/avaudiosession/mode/1616590-videochat)
     public func setVideoChatMode() {
         setMode(mode: AVAudioSession.Mode.videoChat.rawValue)
     }
