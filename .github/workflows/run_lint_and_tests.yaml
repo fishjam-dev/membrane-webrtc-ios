@@ -10,6 +10,9 @@ jobs:
 
       - name: Install deps
         run: brew install swift-format xcbeautify
+      
+      - name: Set dev config
+        run: cp Release.xcconfig Debug.xcconfig
 
       - name: Run formatter
         run: swift-format format -i -r ./MembraneRTC/Sources/**/*.swift --configuration swift-format-config.json
