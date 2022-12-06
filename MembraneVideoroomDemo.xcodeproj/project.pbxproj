@@ -34,7 +34,7 @@
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
 		3BD7249327AAD3DE00AFE9D9 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BD7249227AAD3DE00AFE9D9 /* logo.png */; };
 		3BDAC1E027A2FCE200A2BB0D /* ParticipantVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */; };
-		44C0FE9A291595C700E61E9A /* MembraneRTCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C0FE99291595C700E61E9A /* MembraneRTCTest.swift */; };
+		44C0FE9A291595C700E61E9A /* PeerConnectionManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C0FE99291595C700E61E9A /* PeerConnectionManagerTest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -95,7 +95,7 @@
 		3BD7249227AAD3DE00AFE9D9 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantVideoView.swift; sourceTree = "<group>"; };
 		44C0FE97291595C700E61E9A /* MembraneRTCTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MembraneRTCTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		44C0FE99291595C700E61E9A /* MembraneRTCTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembraneRTCTest.swift; sourceTree = "<group>"; };
+		44C0FE99291595C700E61E9A /* PeerConnectionManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerConnectionManagerTest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -248,7 +248,7 @@
 		44C0FE98291595C700E61E9A /* MembraneRTCTest */ = {
 			isa = PBXGroup;
 			children = (
-				44C0FE99291595C700E61E9A /* MembraneRTCTest.swift */,
+				44C0FE99291595C700E61E9A /* PeerConnectionManagerTest.swift */,
 			);
 			path = MembraneRTCTest;
 			sourceTree = "<group>";
@@ -451,7 +451,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				44C0FE9A291595C700E61E9A /* MembraneRTCTest.swift in Sources */,
+				44C0FE9A291595C700E61E9A /* PeerConnectionManagerTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
