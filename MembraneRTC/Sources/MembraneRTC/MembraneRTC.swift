@@ -25,9 +25,9 @@ internal let pcLogPrefix = "[PeerConnection]"
 /// Once the user received `onConnected` notification they can call the `join` method to initialize joining the session.
 /// After receiving `onJoinSuccess` a user will receive notification about various peers joining/leaving the session, new tracks being published and ready for playback
 /// or going inactive.
-public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObject {
-    static let version = "0.1.0"
-
+public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObject, RTCEngineListener,
+    PeerConnectionListener
+{
     enum State {
         case uninitialized
         case awaitingJoin
@@ -48,7 +48,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
 
     var state: State
-    private var transport: EventTransport
+
+    private var eventTransport: EventTransport
+
+    private lazy var engineCommunication: RTCEngineCommunication = {
+        return RTCEngineCommunication(transport: eventTransport, engineListener: self)
+    }()
 
     // a common stream ID used for all non-screenshare and audio tracks
     private let localStreamId = UUID().uuidString
@@ -56,13 +61,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     // `RTCPeerConnection` config
     private var config: RTCConfiguration
 
-    private var connectionManager: ConnectionManager
-
-    // Underyling RTC connection
-    private var connection: RTCPeerConnection?
-
-    // List of ice (may be turn) servers that are used for initializing the `RTCPeerConnection`
-    private var iceServers: [RTCIceServer]
+    private var peerConnectionFactoryWrapper: PeerConnectionFactoryWrapper
 
     private var localTracks: [LocalTrack] = []
 
@@ -74,15 +73,15 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     // mapping from remote track's id to its context
     private var trackContexts: [String: TrackContext] = [:]
 
-    // mapping from transceiver's mid to its remote track id
-    private var midToTrackId: [String: String] = [:]
-
     // receiver used for iOS screen broadcast
     private var broadcastScreenshareReceiver: ScreenBroadcastNotificationReceiver?
 
-    private static let mediaConstraints = RTCMediaConstraints(
-        mandatoryConstraints: nil,
-        optionalConstraints: ["DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue])
+    private var encoder: Encoder
+
+    private lazy var peerConnectionManager: PeerConnectionManager = {
+        return PeerConnectionManager(
+            config: self.config, peerConnectionFactory: self.peerConnectionFactoryWrapper, peerConnectionListener: self)
+    }()
 
     internal init(
         eventTransport: EventTransport, config: RTCConfiguration, peerMetadata: Metadata,
@@ -92,14 +91,17 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         sdkLogger.logLevel = .info
 
         state = .uninitialized
-        transport = eventTransport
+
+        self.eventTransport = eventTransport
+
         self.config = config
-        iceServers = []
 
         // setup local peer
         localPeer = localPeer.with(metadata: peerMetadata)
 
-        connectionManager = ConnectionManager(encoder: encoder)
+        peerConnectionFactoryWrapper = PeerConnectionFactoryWrapper(encoder: encoder)
+
+        self.encoder = encoder
 
         super.init()
     }
@@ -144,22 +146,20 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             return
         }
 
-        transport.send(event: JoinEvent(metadata: localPeer.metadata))
+        engineCommunication.join(peerMetadata: localPeer.metadata)
     }
 
     /// Disconnects from the `Membrane RTC Engine` transport and closes the exisitng `RTCPeerConnection`
     ///
     /// Once the `disconnect` gets invoked the client can't be reused and user should create a new client instance instead.
     public func disconnect() {
-        transport.disconnect()
+        engineCommunication.disconnect()
 
         localTracks.forEach { track in
             track.stop()
         }
 
-        if let pc = connection {
-            pc.close()
-        }
+        peerConnectionManager.close()
     }
 
     /**
@@ -177,13 +177,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         -> LocalVideoTrack
     {
         let videoTrack = LocalVideoTrack.create(
-            for: .camera, videoParameters: videoParameters, connectionManager: connectionManager)
+            for: .camera, videoParameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
 
         if state == .connected {
-            if let pc = connection {
-                addTrack(peerConnection: pc, track: videoTrack, localStreamId: localStreamId)
-                pc.enforceSendOnlyDirection()
-            }
+            peerConnectionManager.addTrack(track: videoTrack, localStreamId: localStreamId)
         }
 
         videoTrack.start()
@@ -193,7 +190,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         localPeer = localPeer.withTrack(trackId: videoTrack.rtcTrack().trackId, metadata: metadata)
 
         if state == .connected {
-            transport.send(event: RenegotiateTracksEvent())
+            engineCommunication.renegotiateTracks()
         }
 
         return videoTrack
@@ -210,11 +207,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Returns: `LocalAudioTrack` instance that user then can use for things such as front / back camera switch.
      */
     public func createAudioTrack(metadata: Metadata) -> LocalAudioTrack {
-        let audioTrack = LocalAudioTrack(connectionManager: connectionManager)
+        let audioTrack = LocalAudioTrack(peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
 
         if state == .connected {
-            connection?.add(audioTrack.rtcTrack(), streamIds: [localStreamId])
-            connection?.enforceSendOnlyDirection()
+            peerConnectionManager.addTrack(track: audioTrack, localStreamId: localStreamId)
         }
 
         audioTrack.start()
@@ -224,7 +220,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         localPeer = localPeer.withTrack(trackId: audioTrack.rtcTrack().trackId, metadata: metadata)
 
         if state == .connected {
-            transport.send(event: RenegotiateTracksEvent())
+            engineCommunication.renegotiateTracks()
         }
 
         return audioTrack
@@ -251,7 +247,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void
     ) -> LocalScreenBroadcastTrack {
         let screensharingTrack = LocalScreenBroadcastTrack(
-            appGroup: appGroup, videoParameters: videoParameters, connectionManager: connectionManager)
+            appGroup: appGroup, videoParameters: videoParameters,
+            peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
         localTracks.append(screensharingTrack)
 
         broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(
@@ -294,19 +291,13 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
 
         let track = localTracks.remove(at: index)
-        let rtcTrack = track.rtcTrack()
         track.stop()
 
-        if let pc = connection,
-            let sender = pc.transceivers.first(where: { $0.sender.track?.trackId == rtcTrack.trackId })?
-                .sender
-        {
-            pc.removeTrack(sender)
-        }
+        peerConnectionManager.removeTrack(trackId: trackId)
 
         localPeer = localPeer.withoutTrack(trackId: trackId)
 
-        transport.send(event: RenegotiateTracksEvent())
+        engineCommunication.renegotiateTracks()
 
         return true
     }
@@ -348,7 +339,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      callback `onPeerUpdated` will be triggered for other peers in the room.
      */
     public func updatePeerMetadata(peerMetadata: Metadata) {
-        transport.send(event: UpdatePeerMetadata(metadata: peerMetadata))
+        engineCommunication.updatePeerMetadata(peerMetadata: peerMetadata)
         localPeer = localPeer.with(metadata: peerMetadata)
     }
 
@@ -363,7 +354,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      callback `onTrackUpdated` will be triggered for other peers in the room.
      */
     public func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
-        transport.send(event: UpdateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata))
+        engineCommunication.updateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata)
         localPeer = localPeer.withTrack(trackId: trackId, metadata: trackMetadata)
     }
 
@@ -377,21 +368,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
          - bandwidth: bandwidth in kbps
      */
     public func setTrackBandwidth(trackId: String, bandwidth: BandwidthLimit) {
-        guard let pc = connection else {
-            sdkLogger.error("\(#function): Peer connection not yet established")
-            return
-        }
-
-        guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
-            sdkLogger.error("\(#function): can't find track sender with trackId=\(trackId)")
-            return
-        }
-
-        let params = sender.parameters
-
-        applyBitrate(encodings: params.encodings, maxBitrate: .BandwidthLimit(bandwidth))
-
-        sender.parameters = params
+        peerConnectionManager.setTrackBandwidth(trackId: trackId, bandwidth: bandwidth)
     }
 
     /**
@@ -403,31 +380,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
          - bandwidth: bandwidth in kbps
      */
     public func setEncodingBandwidth(trackId: String, encoding: String, bandwidth: BandwidthLimit) {
-        guard let pc = connection else {
-            sdkLogger.error("\(#function): Peer connection not yet established")
-            return
-        }
-
-        guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
-            sdkLogger.error("\(#function): can't find track sender with trackId=\(trackId)")
-            return
-        }
-
-        let params = sender.parameters
-        let encodingParams = params.encodings.first(where: { $0.rid == encoding })
-        guard let encodingParams = encodingParams else {
-            sdkLogger.error("\(#function): invalid encoding=\(encoding)")
-            return
-        }
-
-        encodingParams.maxBitrateBps = (bandwidth * 1024) as NSNumber
-
-        sender.parameters = params
+        peerConnectionManager.setEncodingBandwidth(trackId: trackId, encoding: encoding, bandwidth: bandwidth)
     }
 
     internal func connect() {
         // initiate a transport connection
-        transport.connect(delegate: self).then {
+        engineCommunication.connect().then {
             self.notify {
                 self.state = .awaitingJoin
 
@@ -442,78 +400,13 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     /// Adds given broadcast track to the peer connection and forces track renegotiation.
     private func setupScreencastTrack(track: LocalScreenBroadcastTrack, metadata: Metadata) {
-        guard let pc = connection else {
-            sdkLogger.error("\(#function): Peer connection not yet established")
-            return
-        }
-
         let screencastStreamId = UUID().uuidString
 
-        addTrack(peerConnection: pc, track: track, localStreamId: screencastStreamId)
-
-        pc.enforceSendOnlyDirection()
+        peerConnectionManager.addTrack(track: track, localStreamId: screencastStreamId)
 
         localPeer = localPeer.withTrack(trackId: track.rtcTrack().trackId, metadata: metadata)
 
-        transport.send(event: RenegotiateTracksEvent())
-    }
-
-    /// Sets up the local peer connection with previously prepared config and local media tracks.
-    private func setupPeerConnection() {
-        let config = self.config
-        config.sdpSemantics = .unifiedPlan
-        config.continualGatheringPolicy = .gatherContinually
-        config.candidateNetworkPolicy = .all
-        config.disableIPV6 = true
-        config.tcpCandidatePolicy = .disabled
-
-        // if ice servers are not empty that probably means we are using turn servers
-        if iceServers.count > 0 {
-            self.config.iceServers = iceServers
-        } else {
-            self.config.iceServers = [Self.defaultIceServer()]
-        }
-
-        guard
-            let peerConnection = connectionManager.createPeerConnection(
-                config, constraints: Self.mediaConstraints)
-        else {
-            fatalError("Failed to initialize new PeerConnection")
-        }
-        connection = peerConnection
-
-        peerConnection.delegate = self
-
-        localTracks.forEach { track in
-            addTrack(peerConnection: peerConnection, track: track, localStreamId: localStreamId)
-        }
-
-        peerConnection.enforceSendOnlyDirection()
-    }
-
-    private func addTrack(peerConnection: RTCPeerConnection, track: LocalTrack, localStreamId: String) {
-        let transceiverInit = RTCRtpTransceiverInit()
-        transceiverInit.direction = RTCRtpTransceiverDirection.sendOnly
-        transceiverInit.streamIds = [localStreamId]
-        var sendEncodings: [RTCRtpEncodingParameters] = []
-        if track.rtcTrack().kind == "video"
-            && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.enabled == true
-        {
-            let simulcastConfig = (track as? LocalVideoTrack)?.videoParameters.simulcastConfig
-
-            sendEncodings = Constants.simulcastEncodings()
-
-            simulcastConfig?.activeEncodings.forEach { enconding in
-                sendEncodings[enconding.rawValue].isActive = true
-            }
-        } else {
-            sendEncodings = [RTCRtpEncodingParameters.create(active: true)]
-        }
-        if let maxBandwidth = (track as? LocalVideoTrack)?.videoParameters.maxBandwidth {
-            applyBitrate(encodings: sendEncodings, maxBitrate: maxBandwidth)
-        }
-        transceiverInit.sendEncodings = sendEncodings
-        peerConnection.addTransceiver(with: track.rtcTrack(), init: transceiverInit)
+        engineCommunication.renegotiateTracks()
     }
 
     /**
@@ -528,118 +421,242 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             - encoding: an encoding to receive
      */
     public func setTargetTrackEncoding(trackId: String, encoding: TrackEncoding) {
-        transport.send(event: SelectEncodingEvent(trackId: trackId, encoding: encoding.description))
+        engineCommunication.setTargetTrackEncoding(trackId: trackId, encoding: encoding)
     }
 
     private func setTrackEncoding(trackId: String, encoding: TrackEncoding, enabled: Bool) {
-        guard let pc = connection else {
-            sdkLogger.error("\(#function): Peer connection not yet established")
-            return
-        }
-
-        guard let sender = pc.senders.first(where: { $0.track?.trackId == trackId }) else {
-            sdkLogger.error("\(#function): can't find track sender with trackId=\(trackId)")
-            return
-        }
-
-        let params = sender.parameters
-        guard let encoding = params.encodings.first(where: { $0.rid == encoding.description }) else {
-            sdkLogger.error("\(#function): invalid encoding=\(encoding)")
-            return
-        }
-        encoding.isActive = enabled
-        sender.parameters = params
+        peerConnectionManager.setTrackEncoding(trackId: trackId, encoding: encoding, enabled: enabled)
     }
 
-    private func applyBitrate(encodings: [RTCRtpEncodingParameters], maxBitrate: TrackBandwidthLimit) {
-        switch maxBitrate {
-        case .BandwidthLimit(let limit):
-            splitBitrate(encodings: encodings, bitrate: limit)
-            break
-        case .SimulcastBandwidthLimit(let limit):
-            encodings.forEach { encoding in
-                let encodingLimit = limit[encoding.rid ?? ""] ?? 0
-                encoding.maxBitrateBps = encodingLimit == 0 ? nil : (encodingLimit * 1024) as NSNumber
+    func onPeerAccepted(peerId: String, peersInRoom: [Peer]) {
+        localPeer = localPeer.with(id: peerId)
+
+        // initialize all present peers
+        peersInRoom.forEach { peer in
+            self.remotePeers[peer.id] = peer
+
+            // initialize peer's track contexts
+            peer.trackIdToMetadata?.forEach { trackId, metadata in
+                let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
+
+                self.trackContexts[trackId] = context
+
+                self.notify {
+                    $0.onTrackAdded(ctx: context)
+                }
             }
-            break
+        }
+
+        notify {
+            $0.onJoinSuccess(peerID: peerId, peersInRoom: peersInRoom)
         }
     }
 
-    private func splitBitrate(encodings: [RTCRtpEncodingParameters], bitrate: Int) {
-        if encodings.isEmpty {
-            sdkLogger.error("\(#function): Attempted to limit bandwidth of the track that doesn't have any encodings")
+    func onPeerDenied() {
+        notify {
+            $0.onJoinError(metadata: [:])
+        }
+    }
+
+    func onPeerJoined(peer: Peer) {
+        guard peer.id != localPeer.id else {
             return
         }
 
-        if bitrate == 0 {
-            encodings.forEach({ encoding in
-                encoding.maxBitrateBps = nil
-            })
+        remotePeers[peer.id] = peer
+
+        notify {
+            $0.onPeerJoined(peer: peer)
+        }
+    }
+
+    func onPeerLeft(peerId: String) {
+        guard let peer = remotePeers[peerId] else {
+            sdkLogger.error("Failed to process PeerLeft event: Peer not found: \(peerId)")
             return
         }
 
-        let k0 = Double(
-            truncating:
-                encodings.min(by: {
-                    a, b in
-                    Double(truncating: a.scaleResolutionDownBy ?? 1)
-                        < Double(truncating: b.scaleResolutionDownBy ?? 1)
-                })?.scaleResolutionDownBy ?? 1)
+        remotePeers.removeValue(forKey: peer.id)
 
-        let bitrateParts = encodings.reduce(
-            0.0,
-            { acc, encoding in
-                acc + pow((k0 / Double(truncating: encoding.scaleResolutionDownBy ?? 1)), 2)
-            })
+        // for a leaving peer clear his track contexts
+        if let trackIds = peer.trackIdToMetadata?.keys {
+            let contexts = trackIds.compactMap { id in
+                self.trackContexts[id]
+            }
 
-        let x = Double(bitrate) / bitrateParts
+            trackIds.forEach { id in
+                self.trackContexts.removeValue(forKey: id)
+            }
 
-        encodings.forEach({ encoding in
-            encoding.maxBitrateBps =
-                Int((x * pow(k0 / Double(truncating: encoding.scaleResolutionDownBy ?? 1), 2) * 1024))
-                as NSNumber
-        })
-    }
-}
+            contexts.forEach { context in
+                self.notify {
+                    $0.onTrackRemoved(ctx: context)
+                }
+            }
+        }
 
-extension MembraneRTC: RTCPeerConnectionDelegate {
-    public func peerConnection(_: RTCPeerConnection, didAdd _: RTCMediaStream) {
-        sdkLogger.info("\(pcLogPrefix) new stream added")
+        notify {
+            $0.onPeerLeft(peer: peer)
+        }
     }
 
-    public func peerConnection(_: RTCPeerConnection, didRemove _: RTCMediaStream) {
-        sdkLogger.info("\(pcLogPrefix) stream has been removed")
+    func onPeerUpdated(peerId: String, peerMetadata: Metadata) {
+        guard var peer = remotePeers[peerId] else {
+            sdkLogger.error("Failed to process PeerUpdated event: Peer not found: \(peerId)")
+            return
+        }
+
+        // update peer's metadata
+        peer = peer.with(metadata: peerMetadata)
+
+        remotePeers.updateValue(peer, forKey: peer.id)
+
+        notify {
+            $0.onPeerUpdated(peer: peer)
+        }
     }
 
-    public func peerConnection(_: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
-        let descriptions: [RTCSignalingState: String] = [
-            .haveLocalOffer: "have local offer",
-            .haveRemoteOffer: "have remote offer",
-            .haveLocalPrAnswer: "have local pr answer",
-            .haveRemotePrAnswer: "have remote pr answer",
-            .stable: "stable",
-            .closed: "closed",
-        ]
+    func onOfferData(integratedTurnServers: [OfferDataEvent.TurnServer], tracksTypes: [String: Int]) {
+        peerConnectionManager.getSdpOffer(
+            integratedTurnServers: integratedTurnServers, tracksTypes: tracksTypes, localTracks: localTracks
+        ) { sdp, midToTrackId, error in
+            if let err = error {
+                self.notify {
+                    $0.onError(.rtc(err.localizedDescription))
+                }
+            }
 
-        sdkLogger.debug(
-            "\(pcLogPrefix) changed signaling state to \(descriptions[stateChanged] ?? "unknown")")
+            if let sdp = sdp, let midToTrackId = midToTrackId {
+                self.engineCommunication.sdpOffer(
+                    sdp: sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata ?? [:],
+                    midToTrackId: midToTrackId)
+            }
+
+        }
     }
 
-    public func peerConnection(
-        _: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver
-    ) {
-        guard let trackId = midToTrackId[transceiver.mid],
-            var trackContext = trackContexts[trackId]
+    func onSdpAnswer(type: String, sdp: String, midToTrackId: [String: String?]) {
+        peerConnectionManager.onSdpAnswer(sdp: sdp, midToTrackId: midToTrackId, localTracks: localTracks)
+    }
+
+    func onRemoteCandidate(candidate: String, sdpMLineIndex: Int32, sdpMid: String?) {
+        let candidate = RTCIceCandidate(sdp: candidate, sdpMLineIndex: sdpMLineIndex, sdpMid: sdpMid)
+
+        peerConnectionManager.onRemoteCandidate(candidate: candidate)
+    }
+
+    func onTracksAdded(peerId: String, trackIdToMetadata: [String: Metadata]) {
+        // ignore local participant
+        guard localPeer.id != peerId else {
+            return
+        }
+
+        guard var peer = remotePeers[peerId] else {
+            sdkLogger.error("Failed to process TracksAdded event: Peer not found: \(peerId)")
+            return
+        }
+
+        // update tracks of the remote peer
+        peer = peer.with(trackIdToMetadata: trackIdToMetadata)
+        remotePeers[peer.id] = peer
+
+        // for each track create a corresponding track context
+        peer.trackIdToMetadata?.forEach { trackId, metadata in
+            let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
+
+            self.trackContexts[trackId] = context
+
+            self.notify {
+                $0.onTrackAdded(ctx: context)
+            }
+        }
+    }
+
+    func onTracksRemoved(peerId: String, trackIds: [String]) {
+        guard let _ = remotePeers[peerId] else {
+            sdkLogger.error("Failed to process TracksRemoved event: Peer not found: \(peerId)")
+            return
+        }
+
+        // for each track clear its context and notify delegates
+        trackIds.forEach { id in
+            guard let context = self.trackContexts[id] else {
+                sdkLogger.error("Failed to process TracksRemoved event: Track not found: \(id)")
+                return
+            }
+
+            self.trackContexts.removeValue(forKey: id)
+
+            self.notify {
+                $0.onTrackRemoved(ctx: context)
+            }
+        }
+    }
+
+    func onTrackUpdated(peerId: String, trackId: String, metadata: Metadata) {
+        guard let context = self.trackContexts[trackId] else {
+            sdkLogger.error("Failed to process TrackUpdated event: Track not found: \(trackId)")
+            return
+        }
+
+        let newContext = TrackContext(
+            track: context.track,
+            peer: context.peer,
+            trackId: trackId,
+            metadata: metadata
+        )
+        self.trackContexts[trackId] = newContext
+        notify {
+            $0.onTrackUpdated(ctx: newContext)
+        }
+    }
+
+    func onTrackEncodingChanged(peerId: String, trackId: String, encoding: String) {
+        self.notify {
+            $0.onTrackEncodingChanged(
+                peerId: peerId, trackId: trackId,
+                encoding: encoding)
+        }
+    }
+
+    func onRemoved(peerId: String, reason: String) {
+        guard peerId == localPeer.id else {
+            sdkLogger.error("Received onRemoved media event, but it does not refer to the local peer")
+            return
+        }
+
+        notify {
+            $0.onRemoved(reason: reason)
+        }
+    }
+
+    func onError(error: EventTransportError) {
+        notify {
+            $0.onError(.transport(error.description))
+        }
+    }
+
+    func onClose() {
+        notify {
+            $0.onError(.transport("Transport has been closed"))
+        }
+    }
+
+    /// Sends the local ice candidate to the `Membrane RTC Engine` instance via transport layer.
+    func onLocalIceCandidate(candidate: RTCIceCandidate) {
+        engineCommunication.localCandidate(sdp: candidate.sdp, sdpMLineIndex: candidate.sdpMLineIndex)
+    }
+
+    func onAddTrack(trackId: String, track: RTCMediaStreamTrack) {
+        guard var trackContext = trackContexts[trackId]
         else {
             sdkLogger.error(
-                "\(pcLogPrefix) started receiving on a transceiver with an unknown 'mid' parameter or without registered track context"
+                "\(pcLogPrefix) started receiving on a transceiver without registered track context"
             )
             return
         }
 
         // assign given receiver to its track's context
-
-        let track = transceiver.receiver.track
         if let audioTrack = track as? RTCAudioTrack {
             trackContext.track = RemoteAudioTrack(track: audioTrack)
         }
@@ -653,50 +670,9 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
         notify {
             $0.onTrackReady(ctx: trackContext)
         }
-
-        sdkLogger.debug(
-            "\(pcLogPrefix) started receiving on a transceiver with a mid: \(transceiver.mid) and id \(transceiver.receiver.track?.trackId ?? "")"
-        )
     }
 
-    public func peerConnection(
-        _: RTCPeerConnection,
-        didAdd receiver: RTCRtpReceiver, streams _: [RTCMediaStream]
-    ) {
-        sdkLogger.info("\(pcLogPrefix) new receiver has been added: \(receiver.receiverId)")
-    }
-
-    public func peerConnection(_: RTCPeerConnection, didRemove rtpReceiver: RTCRtpReceiver) {
-        sdkLogger.info("\(pcLogPrefix) receiver has been removed: \(rtpReceiver.receiverId)")
-    }
-
-    public func peerConnection(
-        _: RTCPeerConnection, didChangeLocalCandidate local: RTCIceCandidate,
-        remoteCandidate remote: RTCIceCandidate, lastReceivedMs _: Int32, changeReason reason: String
-    ) {
-        sdkLogger.debug(
-            "\(pcLogPrefix) a local candidate has been changed due to: '\(reason)'\nlocal: \(local.sdp)\nremote: \(remote.sdp)"
-        )
-    }
-
-    public func peerConnectionShouldNegotiate(_: RTCPeerConnection) {
-        sdkLogger.debug("\(pcLogPrefix) should negotiate")
-    }
-
-    public func peerConnection(_: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
-        let descriptions: [RTCIceConnectionState: String] = [
-            .new: "new",
-            .checking: "checking",
-            .connected: "connected",
-            .closed: "closed",
-            .completed: "completed",
-            .disconnected: "disconnected",
-            .failed: "failed",
-            .count: "count",
-        ]
-
-        sdkLogger.debug("\(pcLogPrefix) new connection state: \(descriptions[newState] ?? "unknown")")
-
+    func onPeerConnectionStateChange(newState: RTCIceConnectionState) {
         switch newState {
         case .connected:
             state = .connected
@@ -705,445 +681,6 @@ extension MembraneRTC: RTCPeerConnectionDelegate {
         default:
             break
         }
-    }
-
-    public func peerConnection(_: RTCPeerConnection, didChange newState: RTCIceGatheringState) {
-        let descriptions: [RTCIceGatheringState: String] = [
-            .new: "new",
-            .gathering: "gathering",
-            .complete: "complete",
-        ]
-
-        sdkLogger.debug(
-            "\(pcLogPrefix) new ice gathering state: \(descriptions[newState] ?? "unknown")")
-    }
-
-    public func peerConnection(_: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-        onLocalCandidate(candidate)
-    }
-
-    public func peerConnection(_: RTCPeerConnection, didRemove _: [RTCIceCandidate]) {
-        sdkLogger.debug("\(pcLogPrefix) a list of candidates has been removed")
-    }
-
-    public func peerConnection(_: RTCPeerConnection, didOpen _: RTCDataChannel) {}
-}
-
-extension MembraneRTC: EventTransportDelegate {
-    public func didReceive(event: ReceivableEvent) {
-        switch event.type {
-        case .PeerAccepted:
-            let peerAccepted = event as! PeerAcceptedEvent
-
-            localPeer = localPeer.with(id: peerAccepted.data.id)
-
-            // initialize all present peers
-            peerAccepted.data.peersInRoom.forEach { peer in
-                self.remotePeers[peer.id] = peer
-
-                // initialize peer's track contexts
-                peer.trackIdToMetadata?.forEach { trackId, metadata in
-                    let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
-
-                    self.trackContexts[trackId] = context
-
-                    self.notify {
-                        $0.onTrackAdded(ctx: context)
-                    }
-                }
-            }
-
-            notify {
-                $0.onJoinSuccess(peerID: peerAccepted.data.id, peersInRoom: peerAccepted.data.peersInRoom)
-            }
-
-        case .PeerJoined:
-            let peerJoined = event as! PeerJoinedEvent
-
-            guard peerJoined.data.peer.id != localPeer.id else {
-                return
-            }
-
-            let peer = peerJoined.data.peer
-            remotePeers[peerJoined.data.peer.id] = peer
-
-            notify {
-                $0.onPeerJoined(peer: peerJoined.data.peer)
-            }
-
-        case .PeerLeft:
-            let peerLeft = event as! PeerLeftEvent
-
-            guard let peer = remotePeers[peerLeft.data.peerId] else {
-                sdkLogger.error("Failed to process PeerLeft event: Peer not found: \(peerLeft.data.peerId)")
-                return
-            }
-
-            remotePeers.removeValue(forKey: peer.id)
-
-            // for a leaving peer clear his track contexts
-            if let trackIds = peer.trackIdToMetadata?.keys {
-                let contexts = trackIds.compactMap { id in
-                    self.trackContexts[id]
-                }
-
-                trackIds.forEach { id in
-                    self.trackContexts.removeValue(forKey: id)
-                }
-
-                contexts.forEach { context in
-                    self.notify {
-                        $0.onTrackRemoved(ctx: context)
-                    }
-                }
-            }
-
-            notify {
-                $0.onPeerLeft(peer: peer)
-            }
-
-        case .PeerUpdated:
-            let peerUpdated = event as! PeerUpdateEvent
-
-            guard var peer = remotePeers[peerUpdated.data.peerId] else {
-                sdkLogger.error("Failed to process PeerUpdated event: Peer not found: \(peerUpdated.data.peerId)")
-                return
-            }
-
-            // update peer's metadata
-            peer = peer.with(metadata: peerUpdated.data.metadata)
-
-            remotePeers.updateValue(peer, forKey: peer.id)
-
-            notify {
-                $0.onPeerUpdated(peer: peer)
-            }
-
-        case .PeerRemoved:
-            let peerRemoved = event as! PeerRemovedEvent
-
-            guard peerRemoved.data.peerId == localPeer.id else {
-                sdkLogger.error("Received onRemoved media event, but it does not refer to the local peer")
-                return
-            }
-
-            notify {
-                $0.onRemoved(reason: peerRemoved.data.reason)
-            }
-
-        case .OfferData:
-            let offerData = event as! OfferDataEvent
-
-            DispatchQueue.sdk.async {
-                self.onOfferData(offerData)
-            }
-
-        case .SdpAnswer:
-            let sdpAnswer = event as! SdpAnswerEvent
-
-            DispatchQueue.sdk.async {
-                self.onSdpAnswer(sdpAnswer)
-            }
-
-        case .Candidate:
-            let candidate = event as! RemoteCandidateEvent
-
-            DispatchQueue.sdk.async {
-                self.onRemoteCandidate(candidate)
-            }
-
-        case .TracksAdded:
-            let tracksAdded = event as! TracksAddedEvent
-
-            // ignore local participant
-            guard localPeer.id != tracksAdded.data.peerId else {
-                return
-            }
-
-            guard var peer = remotePeers[tracksAdded.data.peerId] else {
-                sdkLogger.error("Failed to process TracksAdded event: Peer not found: \(tracksAdded.data.peerId)")
-                return
-            }
-
-            // update tracks of the remote peer
-            peer = peer.with(trackIdToMetadata: tracksAdded.data.trackIdToMetadata)
-            remotePeers[peer.id] = peer
-
-            // for each track create a corresponding track context
-            peer.trackIdToMetadata?.forEach { trackId, metadata in
-                let context = TrackContext(track: nil, peer: peer, trackId: trackId, metadata: metadata)
-
-                self.trackContexts[trackId] = context
-
-                self.notify {
-                    $0.onTrackAdded(ctx: context)
-                }
-            }
-
-        case .TracksRemoved:
-            let tracksRemoved = event as! TracksRemovedEvent
-
-            guard let _ = remotePeers[tracksRemoved.data.peerId] else {
-                sdkLogger.error("Failed to process TracksRemoved event: Peer not found: \(tracksRemoved.data.peerId)")
-                return
-            }
-
-            // for each track clear its context and notify delegates
-            tracksRemoved.data.trackIds.forEach { id in
-                guard let context = self.trackContexts[id] else {
-                    sdkLogger.error("Failed to process TracksRemoved event: Track not found: \(id)")
-                    return
-                }
-
-                self.trackContexts.removeValue(forKey: id)
-
-                self.notify {
-                    $0.onTrackRemoved(ctx: context)
-                }
-            }
-        case .TrackUpdated:
-            let tracksUpdated = event as! TracksUpdatedEvent
-
-            let id = tracksUpdated.data.trackId
-
-            guard let context = self.trackContexts[id] else {
-                sdkLogger.error("Failed to process TrackUpdated event: Track not found: \(id)")
-                return
-            }
-
-            let newContext = TrackContext(
-                track: context.track,
-                peer: context.peer,
-                trackId: id,
-                metadata: tracksUpdated.data.metadata
-            )
-            self.trackContexts[id] = newContext
-            notify {
-                $0.onTrackUpdated(ctx: newContext)
-            }
-        case .EncodingSwitched:
-            let encodingSwitched = event as! EncodingSwitchedEvent
-            self.notify {
-                $0.onTrackEncodingChanged(
-                    peerId: encodingSwitched.data.peerId, trackId: encodingSwitched.data.trackId,
-                    encoding: encodingSwitched.data.encoding)
-            }
-
-        default:
-            sdkLogger.error("Failed to handle ReceivableEvent of type \(event.type)")
-
-            return
-        }
-    }
-
-    public func didReceive(error: EventTransportError) {
-        notify {
-            $0.onError(.transport(error.description))
-        }
-    }
-}
-
-extension MembraneRTC {
-    /// Handles the `OfferDataEvent`, creates a local description and sends `SdpAnswerEvent`
-    func onOfferData(_ offerData: OfferDataEvent) {
-        setTurnServers(offerData.data.integratedTurnServers)
-
-        if connection == nil {
-            setupPeerConnection()
-        }
-
-        guard let pc = connection else {
-            return
-        }
-
-        addNecessaryTransceivers(offerData)
-
-        if state == .connected {
-            pc.restartIce()
-        }
-
-        pc.offer(
-            for: Self.mediaConstraints,
-            completionHandler: { offer, error in
-                guard let offer = offer else {
-                    if let err = error {
-                        self.notify {
-                            $0.onError(.rtc(err.localizedDescription))
-                        }
-                    }
-                    return
-                }
-
-                pc.setLocalDescription(
-                    offer,
-                    completionHandler: { error in
-                        guard let err = error else {
-                            self.transport.send(
-                                event: SdpOfferEvent(
-                                    sdp: offer.sdp, trackIdToTrackMetadata: self.localPeer.trackIdToMetadata ?? [:],
-                                    midToTrackId: self.getMidToTrackId()))
-                            return
-                        }
-
-                        self.notify {
-                            $0.onError(.rtc(err.localizedDescription))
-                        }
-
-                    })
-            })
-    }
-
-    /// Parses a list of turn servers and sets them up as `iceServers` that can be used for `RTCPeerConnection` ceration.
-    private func setTurnServers(_ turnServers: [OfferDataEvent.TurnServer]) {
-        config.iceTransportPolicy = .relay
-
-        let servers: [RTCIceServer] = turnServers.map { server in
-            let url = [
-                "turn", ":", server.serverAddr, ":", String(server.serverPort), "?transport=",
-                server.transport,
-            ].joined()
-
-            return RTCIceServer(
-                urlStrings: [url],
-                username: server.username,
-                credential: server.password
-            )
-        }
-
-        iceServers = servers
-    }
-
-    /// On each `OfferData` we receive an information about an amount of audio/video
-    /// tracks that we have to receive. For each type of track we need a proper transceiver that
-    /// will be used for receiving the media. So each time when we don't have an appropriate amount of audio/video
-    /// transceiers just create the missing ones and set their directions to `recvOnly` which is the only direction
-    /// acceptable by the `Membrane RTC Engine`.
-    private func addNecessaryTransceivers(_ offerData: OfferDataEvent) {
-        guard let pc = connection else {
-            return
-        }
-
-        let necessaryAudio = offerData.data.tracksTypes["audio"] ?? 0
-        let necessaryVideo = offerData.data.tracksTypes["video"] ?? 0
-
-        var lackingAudio: Int = necessaryAudio
-        var lackingVideo: Int = necessaryVideo
-
-        pc.transceivers.filter {
-            $0.direction == .recvOnly
-        }.forEach { transceiver in
-            guard let track = transceiver.receiver.track else {
-                return
-            }
-
-            switch track.kind {
-            case "audio": lackingAudio -= 1
-            case "video": lackingVideo -= 1
-            default:
-                break
-            }
-        }
-
-        sdkLogger.info(
-            "peerConnection adding \(lackingAudio) audio and \(lackingVideo) video lacking transceivers")
-
-        // NOTE: check the lacking amount just in case there are some bugs
-        // that caused the lacking amount to go under zero
-        if lackingAudio > 0 {
-            for _ in 0..<lackingAudio {
-                pc.addTransceiver(of: .audio)?.setDirection(.recvOnly, error: nil)
-            }
-        }
-
-        if lackingVideo > 0 {
-            for _ in 0..<lackingVideo {
-                pc.addTransceiver(of: .video)?.setDirection(.recvOnly, error: nil)
-            }
-        }
-    }
-
-    /// Returns a mapping from `mid` of transceivers to their corresponding remote tracks' ids.
-    private func getMidToTrackId() -> [String: String] {
-        guard let pc = connection else {
-            return [:]
-        }
-
-        var mapping: [String: String] = [:]
-        if let localTracksKeys = localPeer.trackIdToMetadata?.keys {
-            let localTracks: [String] = Array(localTracksKeys)
-
-            pc.transceivers.forEach { transceiver in
-                guard let trackId: String = transceiver.sender.track?.trackId,
-                    localTracks.contains(trackId)
-                else {
-                    return
-                }
-                mapping[transceiver.mid] = trackId
-            }
-        }
-
-        return mapping
-    }
-
-    /// Receives the `SdpAnswerEvent` and sets the remote description.
-    func onSdpAnswer(_ sdpAnswer: SdpAnswerEvent) {
-        guard let pc = connection else {
-            return
-        }
-
-        // FIXEME: trackId returned from backend sometimes happens to be null...
-        midToTrackId = sdpAnswer.data.midToTrackId.filter { $0.value != nil } as! [String: String]
-
-        let description = RTCSessionDescription(type: .answer, sdp: sdpAnswer.data.sdp)
-
-        // this is workaround of a backend issue with ~ in sdp answer
-        // client sends sdp offer with disabled tracks marked with ~, backend doesn't send ~ in sdp answer so all tracks are enabled
-        // and we need to disable them manually
-        pc.setRemoteDescription(
-            description,
-            completionHandler: { error in
-                guard let err = error else {
-                    [TrackEncoding.h, TrackEncoding.m, TrackEncoding.l].forEach({ encoding in
-                        self.localTracks.forEach({ track in
-                            if track.rtcTrack().kind == "video"
-                                && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.activeEncodings
-                                    .contains(encoding) != true
-                            {
-                                self.disableTrackEncoding(trackId: track.rtcTrack().trackId, encoding: encoding)
-                            }
-                        })
-                    })
-                    return
-                }
-                sdkLogger.error("error occured while trying to set a remote description \(err)")
-            })
-    }
-
-    /// Receives the `RemoveCandidateEvent`, parses it to an ice candidate and adds to the current peer connection.
-    func onRemoteCandidate(_ remoteCandidate: RemoteCandidateEvent) {
-        guard let pc = connection else {
-            return
-        }
-
-        let candidate = RTCIceCandidate(
-            sdp: remoteCandidate.data.candidate, sdpMLineIndex: remoteCandidate.data.sdpMLineIndex,
-            sdpMid: remoteCandidate.data.sdpMid)
-
-        pc.add(
-            candidate,
-            completionHandler: { error in
-                guard let err = error else {
-                    return
-                }
-
-                sdkLogger.error("error occured  during remote ice candidate processing: \(err)")
-            })
-    }
-
-    /// Sends the local ice candidate to the `Membrane RTC Engine` instance via transport layer.
-    func onLocalCandidate(_ candidate: RTCIceCandidate) {
-        transport.send(
-            event: LocalCandidateEvent(candidate: candidate.sdp, sdpMLineIndex: candidate.sdpMLineIndex))
     }
 }
 

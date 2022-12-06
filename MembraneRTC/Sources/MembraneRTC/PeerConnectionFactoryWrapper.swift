@@ -2,7 +2,7 @@ import WebRTC
 
 // class for managing RTCPeerConnection responsible for managing its media sources and
 // handling various kinds of notifications
-internal class ConnectionManager {
+internal class PeerConnectionFactoryWrapper {
     let factory: RTCPeerConnectionFactory
 
     init(encoder: Encoder) {

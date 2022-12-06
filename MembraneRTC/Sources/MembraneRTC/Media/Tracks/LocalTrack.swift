@@ -3,4 +3,5 @@ internal protocol LocalTrack: MediaTrackProvider {
     func stop()
     func enabled() -> Bool
     func setEnabled(_ enabled: Bool)
+    func trackId() -> String
 }
