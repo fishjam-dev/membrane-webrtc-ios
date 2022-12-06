@@ -18,7 +18,7 @@ final class AppController: ObservableObject {
     }
 
     public func connect(room: String, displayName: String) {
-        let engineUrl = Constants.rtcEngineUrl.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let engineUrl = Constants.getRtcEngineUrl().trimmingCharacters(in: CharacterSet(charactersIn: "/"))
 
         let transportUrl = "\(engineUrl)/socket"
 
