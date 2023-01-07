@@ -5,7 +5,7 @@ The repository consists of 3 separapable components:
 - `ScreenBroadcastExt` - An instance of `Broadcast Upload Extension` providing a screencast funcionality to the Demo application
 
 ### MembraneRTC
-The main goal of the client was to be as similar to [web version](https://github.com/membraneframework/membrane_rtc_engine) as possible.
+The main goal of the client was to be as similar to [web version](https://github.com/jellyfish-dev/membrane_rtc_engine) as possible.
 Just like with web client, the native mobile client is pretty raw. It is as low level as possible without exposing any of WebRTC details.
 It is user's responsibility to keep track of all peers in the room and their corresponding tracks. The client's responsibility is just to 
 notify the user about all the changes regarding the underlying session with the backend server.
@@ -50,7 +50,7 @@ The server then can capture and deserialize the packets which will get forwarded
 Both extensnion and application must share the same App Group so that a proper CFMessagePort can get created.
 
 ## Documentation
-API documentation is available [here](https://docs.membrane.stream/membrane-webrtc-ios/documentation/membranertc/).
+API documentation is available [here](https://jellyfish-dev.github.io/membrane-webrtc-ios/documentation/membranertc/).
 
 ## Necessary setup
 For the application to work properly one must set necessary constants inside 
