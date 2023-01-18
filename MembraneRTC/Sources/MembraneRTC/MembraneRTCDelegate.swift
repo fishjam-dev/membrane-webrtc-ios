@@ -38,6 +38,11 @@ public protocol MembraneRTCDelegate {
     /// Callback invoked when received track encoding has changed
     func onTrackEncodingChanged(peerId: String, trackId: String, encoding: String)
 
+    ///Called every time the server estimates client's bandwidth.
+    ///estimation - client's available incoming bitrate estimated
+    ///by the server. It's measured in bits per second.
+    func onBandwidthEstimationChanged(estimation: Int)
+
     /// Callback invoked when an errors happens.
     ///
     /// For more information about the error type please refere to `MembraneRTCError`.
@@ -51,5 +56,9 @@ extension MembraneRTCDelegate {
 
     public func onRemoved(reason: String) {
         sdkLogger.error("Peer removed, reason: \(reason)")
+    }
+
+    public func onBandwidthEstimationChanged(estimation: Int) {
+        sdkLogger.info("Bandwidth estimation changed \(estimation)")
     }
 }

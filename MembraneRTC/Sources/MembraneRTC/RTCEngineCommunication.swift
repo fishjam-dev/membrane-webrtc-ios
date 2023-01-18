@@ -92,7 +92,13 @@ internal class RTCEngineCommunication: EventTransportDelegate {
             let encodingSwitched = event as! EncodingSwitchedEvent
             engineListener.onTrackEncodingChanged(
                 peerId: encodingSwitched.data.peerId, trackId: encodingSwitched.data.trackId,
-                encoding: encodingSwitched.data.encoding)
+                encoding: encodingSwitched.data.encoding, encodingReason: encodingSwitched.data.reason)
+        case .VadNotification:
+            let vadNotification = event as! VadNotificationEvent
+            engineListener.onVadNotification(trackId: vadNotification.data.trackId, status: vadNotification.data.status)
+        case .BandwidthEstimation:
+            let bandwidthEstimation = event as! BandwidthEstimationEvent
+            engineListener.onBandwidthEstimation(estimation: Int(bandwidthEstimation.data.estimation))
         default:
             sdkLogger.error("Failed to handle ReceivableEvent of type \(event.type)")
             return
