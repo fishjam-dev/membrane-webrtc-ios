@@ -50,12 +50,12 @@ public class TrackContext {
     /// - when sender stopped sending some encoding (because of bandwidth change)
     /// - when receiver doesn't have enough bandwidth
     /// Some of those reasons are indicated in TrackContext.encodingReason
-    public func setOnTrackEncodingChangeListener(listener: ((_ trackContext: TrackContext) -> Void)?) {
+    public func setOnEncodingChangeListener(listener: ((_ trackContext: TrackContext) -> Void)?) {
         onTrackEncodingChangeListener = listener
     }
 
     /// Sets listener that is called every time an update about voice activity is received from the server.
-    public func setOnVadNotificationListener(listener: ((_ trackContext: TrackContext) -> Void)?) {
+    public func setOnVoiceActivityChangedListener(listener: ((_ trackContext: TrackContext) -> Void)?) {
         onVadNotificationListener = listener
     }
 }

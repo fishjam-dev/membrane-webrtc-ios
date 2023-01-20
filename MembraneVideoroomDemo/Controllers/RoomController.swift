@@ -335,7 +335,7 @@ extension RoomController: MembraneRTCDelegate {
     }
 
     func onTrackReady(ctx: TrackContext) {
-        ctx.setOnVadNotificationListener { trackContext in
+        ctx.setOnVoiceActivityChangedListener { trackContext in
             if let participantVideo = self.participantVideos.first(where: { $0.participant.id == trackContext.peer.id })
             {
                 DispatchQueue.main.async {
