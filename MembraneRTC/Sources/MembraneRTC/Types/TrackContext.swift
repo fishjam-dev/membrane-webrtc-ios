@@ -13,7 +13,7 @@ public class TrackContext {
 
     public internal(set) var vadStatus: VadStatus = VadStatus.silence {
         didSet {
-            if let listener = self.onVadNotificationListener {
+            if let listener = self.onVoiceActivityChangedListener {
                 listener(self)
             }
         }
@@ -28,7 +28,7 @@ public class TrackContext {
     internal func setEncoding(encoding: TrackEncoding, encodingReason: EncodingReason) {
         self.encoding = encoding
         self.encodingReason = encodingReason
-        if let listener = onTrackEncodingChangeListener {
+        if let listener = onTrackEncodingChangedListener {
             listener(self)
         }
     }
@@ -40,8 +40,8 @@ public class TrackContext {
         self.metadata = metadata
     }
 
-    private var onTrackEncodingChangeListener: ((_ trackContext: TrackContext) -> Void)?
-    private var onVadNotificationListener: ((_ trackContext: TrackContext) -> Void)?
+    private var onTrackEncodingChangedListener: ((_ trackContext: TrackContext) -> Void)?
+    private var onVoiceActivityChangedListener: ((_ trackContext: TrackContext) -> Void)?
 
     /// Sets listener that is called each time track encoding has changed.
     ///
@@ -50,12 +50,12 @@ public class TrackContext {
     /// - when sender stopped sending some encoding (because of bandwidth change)
     /// - when receiver doesn't have enough bandwidth
     /// Some of those reasons are indicated in TrackContext.encodingReason
-    public func setOnEncodingChangeListener(listener: ((_ trackContext: TrackContext) -> Void)?) {
-        onTrackEncodingChangeListener = listener
+    public func setOnEncodingChangedListener(listener: ((_ trackContext: TrackContext) -> Void)?) {
+        onTrackEncodingChangedListener = listener
     }
 
     /// Sets listener that is called every time an update about voice activity is received from the server.
     public func setOnVoiceActivityChangedListener(listener: ((_ trackContext: TrackContext) -> Void)?) {
-        onVadNotificationListener = listener
+        onVoiceActivityChangedListener = listener
     }
 }
