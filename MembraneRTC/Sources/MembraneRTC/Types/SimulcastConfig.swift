@@ -14,6 +14,19 @@ public enum TrackEncoding: Int, CustomStringConvertible {
         case .h: return "h"
         }
     }
+
+    static func fromString(_ s: String) -> TrackEncoding? {
+        switch s {
+        case "l":
+            return .l
+        case "m":
+            return .m
+        case "h":
+            return .h
+        default:
+            return nil
+        }
+    }
 }
 
 /// Simulcast configuration.

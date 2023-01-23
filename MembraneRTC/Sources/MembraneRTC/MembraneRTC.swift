@@ -599,23 +599,39 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             return
         }
 
-        let newContext = TrackContext(
-            track: context.track,
-            peer: context.peer,
-            trackId: trackId,
-            metadata: metadata
-        )
-        self.trackContexts[trackId] = newContext
+        context.metadata = metadata
+
         notify {
-            $0.onTrackUpdated(ctx: newContext)
+            $0.onTrackUpdated(ctx: context)
         }
     }
 
-    func onTrackEncodingChanged(peerId: String, trackId: String, encoding: String) {
+    func onTrackEncodingChanged(peerId: String, trackId: String, encoding: String, encodingReason: String) {
         self.notify {
             $0.onTrackEncodingChanged(
                 peerId: peerId, trackId: trackId,
                 encoding: encoding)
+        }
+        if let trackEncoding = TrackEncoding.fromString(encoding),
+            let trackContext = self.trackContexts[trackId],
+            let encodingReasonEnum = EncodingReason(rawValue: encodingReason)
+        {
+            trackContext.setEncoding(encoding: trackEncoding, encodingReason: encodingReasonEnum)
+        }
+    }
+
+    func onVadNotification(trackId: String, status: String) {
+        if let vadStatus = VadStatus(rawValue: status),
+            let trackContext = self.trackContexts[trackId]
+        {
+            trackContext.vadStatus = vadStatus
+        }
+
+    }
+
+    func onBandwidthEstimation(estimation: Int) {
+        self.notify {
+            $0.onBandwidthEstimationChanged(estimation: estimation)
         }
     }
 
@@ -648,7 +664,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
 
     func onAddTrack(trackId: String, track: RTCMediaStreamTrack) {
-        guard var trackContext = trackContexts[trackId]
+        guard let trackContext = trackContexts[trackId]
         else {
             sdkLogger.error(
                 "\(pcLogPrefix) started receiving on a transceiver without registered track context"
@@ -664,8 +680,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         if let videoTrack = track as? RTCVideoTrack {
             trackContext.track = RemoteVideoTrack(track: videoTrack)
         }
-
-        trackContexts[trackId] = trackContext
 
         notify {
             $0.onTrackReady(ctx: trackContext)

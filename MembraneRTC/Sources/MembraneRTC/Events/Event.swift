@@ -22,6 +22,8 @@ public enum ReceivableEventType: String, Codable {
     case TrackUpdated = "trackUpdated"
     case SdpAnswer = "sdpAnswer"
     case EncodingSwitched = "encodingSwitched"
+    case VadNotification = "vadNotification"
+    case BandwidthEstimation = "bandwidthEstimation"
 }
 
 /// Protocol for incoming `MembraneRTC` events
@@ -160,6 +162,20 @@ public enum Events {
 
             case .PeerRemoved:
                 guard let event: CustomEvent<PeerRemovedEvent> = decodeEvent(from: data) else {
+                    return nil
+                }
+
+                return event.data
+
+            case .VadNotification:
+                guard let event: CustomEvent<VadNotificationEvent> = decodeEvent(from: data) else {
+                    return nil
+                }
+
+                return event.data
+
+            case .BandwidthEstimation:
+                guard let event: CustomEvent<BandwidthEstimationEvent> = decodeEvent(from: data) else {
                     return nil
                 }
 
@@ -411,6 +427,26 @@ struct EncodingSwitchedEvent: ReceivableEvent, Codable {
         let peerId: String
         let trackId: String
         let encoding: String
+        let reason: String
+    }
+
+    let type: ReceivableEventType
+    let data: Data
+}
+
+struct VadNotificationEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let trackId: String
+        let status: String
+    }
+
+    let type: ReceivableEventType
+    let data: Data
+}
+
+struct BandwidthEstimationEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let estimation: Double
     }
 
     let type: ReceivableEventType

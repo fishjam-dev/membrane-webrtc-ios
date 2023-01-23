@@ -13,6 +13,7 @@ class ParticipantVideo: Identifiable, ObservableObject {
 
     @Published var videoTrack: VideoTrack
     @Published var mirror: Bool
+    @Published var vadStatus: VadStatus
 
     init(
         id: String, participant: Participant, videoTrack: VideoTrack, isScreensharing: Bool = false,
@@ -23,6 +24,7 @@ class ParticipantVideo: Identifiable, ObservableObject {
         self.videoTrack = videoTrack
         self.isScreensharing = isScreensharing
         self.mirror = mirror
+        self.vadStatus = VadStatus.silence
     }
 }
 
@@ -333,6 +335,19 @@ extension RoomController: MembraneRTCDelegate {
     }
 
     func onTrackReady(ctx: TrackContext) {
+        ctx.setOnVoiceActivityChangedListener { trackContext in
+            if let participantVideo = self.participantVideos.first(where: { $0.participant.id == trackContext.peer.id })
+            {
+                DispatchQueue.main.async {
+                    participantVideo.vadStatus = trackContext.vadStatus
+                }
+            }
+            if self.primaryVideo?.participant.id == trackContext.peer.id {
+                DispatchQueue.main.async {
+                    self.primaryVideo?.vadStatus = trackContext.vadStatus
+                }
+            }
+        }
         guard let participant = participants[ctx.peer.id],
             let videoTrack = ctx.track as? VideoTrack
         else {

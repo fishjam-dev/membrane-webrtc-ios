@@ -49,6 +49,7 @@ struct ParticipantVideoView: View {
             .background(Color.blue.darker(by: 0.6))
             .frame(width: self.width, height: self.height, alignment: .leading)
             .clipShape(RoundedRectangle(cornerRadius: 15))
+            .border(.white, width: self.participantVideo.vadStatus == VadStatus.silence ? 0 : 5)
 
             Text(
                 self.participantVideo.participant.displayName
