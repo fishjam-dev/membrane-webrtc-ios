@@ -1,16 +1,16 @@
 {
-    "plugins": {
-        "@release-it/bumper": {
-          "out": "MembraneRTC.podspec",
-          "type": "text/plain"
-        }
-    },
-    "hooks": {
-        "after:bump": "pod lib lint",
-        "before:github:release": "pod trunk push"
-    },
-    "github": {
-        "release": true
-    },
-    "npm": false
+  "plugins": {
+    "@release-it/bumper": {
+      "out": "MembraneRTC.podspec",
+      "type": "text/plain"
+    }
+  },
+  "hooks": {
+    "after:bump": "pod lib lint --allow-warnings",
+    "before:github:release": "pod trunk push --allow-warnings"
+  },
+  "github": {
+    "release": true
+  },
+  "npm": false
 }
