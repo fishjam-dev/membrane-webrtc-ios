@@ -36,6 +36,7 @@ public protocol MembraneRTCDelegate {
     func onRemoved(reason: String)
 
     /// Callback invoked when received track encoding has changed
+    @available(*, deprecated, message: "Deprecated, use TrackContext::setOnEncodingChangedListener")
     func onTrackEncodingChanged(peerId: String, trackId: String, encoding: String)
 
     ///Called every time the server estimates client's bandwidth.
