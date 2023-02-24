@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   s.dependency 'WebRTC-SDK'
   s.dependency 'SwiftProtobuf'
   s.dependency 'PromisesSwift'
-  s.dependency 'SwiftPhoenixClient'
+  s.dependency 'SwiftPhoenixClient', '~> 4.0.0'
   s.dependency 'Logging'
   s.dependency 'SwiftCollection'
   s.pod_target_xcconfig = { 'ENABLE_BITCODE' => 'NO' }
