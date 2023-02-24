@@ -10,6 +10,7 @@ public class PhoenixTransport: EventTransport {
 
     /// Channel's topic
     let topic: String
+    let channelParams: [String: Any]
 
     let socket: Socket
     var channel: Channel?
@@ -19,8 +20,9 @@ public class PhoenixTransport: EventTransport {
 
     let queue = DispatchQueue(label: "membrane.rtc.transport", qos: .background)
 
-    public init(url: String, topic: String, params: [String: Any]) {
+    public init(url: String, topic: String, params: [String: Any], channelParams: [String: Any] = [:]) {
         self.topic = topic
+        self.channelParams = channelParams
 
         socket = Socket(
             endPoint: url, transport: { URLSessionTransport(url: $0) }, paramsClosure: { params })
@@ -43,7 +45,7 @@ public class PhoenixTransport: EventTransport {
             self.socket.onClose { self.onClose() }
             self.socket.onError { error in self.onError(error) }
 
-            let channel = self.socket.channel(self.topic)
+            let channel = self.socket.channel(self.topic, params: self.channelParams)
 
             channel.join(timeout: 3.0)
                 .receive(

@@ -24,7 +24,8 @@ final class AppController: ObservableObject {
 
         let client = MembraneRTC.connect(
             with: MembraneRTC.ConnectOptions(
-                transport: PhoenixTransport(url: transportUrl, topic: "room:\(room)", params: [:]),
+                transport: PhoenixTransport(
+                    url: transportUrl, topic: "room:\(room)", params: [:], channelParams: ["isSimulcastOn": true]),
                 config: .init(["displayName": displayName])
             ),
             delegate: self
