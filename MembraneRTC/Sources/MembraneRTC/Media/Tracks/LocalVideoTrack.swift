@@ -95,12 +95,12 @@ public class LocalCameraVideoTrack: LocalVideoTrack {
         capturer.switchCamera()
     }
 
-    public func switchCamera(deviceName: String) {
+    public func switchCamera(deviceId: String) {
         guard let capturer = capturer as? CameraCapturer else {
             return
         }
 
-        capturer.switchCamera(deviceName: deviceName)
+        capturer.switchCamera(deviceId: deviceId)
     }
 
     public static func getCaptureDevices() -> [AVCaptureDevice] {

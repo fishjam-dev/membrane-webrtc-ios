@@ -30,11 +30,11 @@ class CameraCapturer: VideoCapturer {
         startCapture()
     }
 
-    public func switchCamera(deviceName: String) {
+    public func switchCamera(deviceId: String) {
         stopCapture()
 
         let devices = RTCCameraVideoCapturer.captureDevices()
-        device = devices.first(where: { $0.localizedName == deviceName })
+        device = devices.first(where: { $0.uniqueID == deviceId })
 
         isFront = device?.position == .front
 

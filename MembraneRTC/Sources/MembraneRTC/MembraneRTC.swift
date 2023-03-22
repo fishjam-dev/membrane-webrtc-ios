@@ -176,11 +176,33 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata)
         -> LocalVideoTrack
     {
+        return createVideoTrack(videoParameters: videoParameters, metadata: metadata, captureDeviceId: nil)
+    }
+
+    /**
+   Creates a new video track utilizing device's specified camera.
+
+   The client assumes that app user already granted camera access permissions.
+
+   - Parameters:
+   - videoParameters: The parameters used for choosing the proper camera resolution, target framerate, bitrate and simulcast config
+   - metadata: The metadata that will be sent to the `Membrane RTC Engine` for media negotiation
+   - captureDeviceId: name of the chosen camera. Obtain devices using `LocalVideoTrack.getCaptureDevices` and an id using `uniqueID` property
+
+   - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
+   */
+    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, captureDeviceId: String?)
+        -> LocalVideoTrack
+    {
         let videoTrack = LocalVideoTrack.create(
             for: .camera, videoParameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
 
         if state == .connected {
             peerConnectionManager.addTrack(track: videoTrack, localStreamId: localStreamId)
+        }
+
+        if let captureDeviceId = captureDeviceId, let videoTrack = videoTrack as? LocalCameraVideoTrack {
+            videoTrack.switchCamera(deviceId: captureDeviceId)
         }
 
         videoTrack.start()
