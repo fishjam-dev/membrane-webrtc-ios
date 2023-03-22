@@ -94,6 +94,18 @@ public class LocalCameraVideoTrack: LocalVideoTrack {
 
         capturer.switchCamera()
     }
+
+    public func switchCamera(deviceName: String) {
+        guard let capturer = capturer as? CameraCapturer else {
+            return
+        }
+
+        capturer.switchCamera(deviceName: deviceName)
+    }
+
+    public static func getCaptureDevices() -> [AVCaptureDevice] {
+        return RTCCameraVideoCapturer.captureDevices()
+    }
 }
 
 public class LocalFileVideoTrack: LocalVideoTrack {
