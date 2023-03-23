@@ -5,18 +5,11 @@ class CameraCapturer: VideoCapturer {
     private let videoParameters: VideoParameters
     private let capturer: RTCCameraVideoCapturer
     private var isFront: Bool = true
+    private var device: AVCaptureDevice? = nil
 
     init(videoParameters: VideoParameters, delegate: RTCVideoCapturerDelegate) {
         self.videoParameters = videoParameters
         self.capturer = RTCCameraVideoCapturer(delegate: delegate)
-    }
-
-    public func startCapture() {
-        if isFront {
-            startCapturing(for: .front)
-        } else {
-            startCapturing(for: .back)
-        }
     }
 
     public func stopCapture() {
@@ -28,18 +21,34 @@ class CameraCapturer: VideoCapturer {
 
         isFront = !isFront
 
+        let devices = RTCCameraVideoCapturer.captureDevices()
+
+        let position: AVCaptureDevice.Position = isFront ? .front : .back
+
+        device = devices.first(where: { $0.position == position })
+
         startCapture()
     }
 
-    internal func startCapturing(for position: AVCaptureDevice.Position) {
-        let devices = RTCCameraVideoCapturer.captureDevices()
+    public func switchCamera(deviceId: String) {
+        stopCapture()
 
-        guard let frontCamera = devices.first(where: { $0.position == position }) else {
+        let devices = RTCCameraVideoCapturer.captureDevices()
+        device = devices.first(where: { $0.uniqueID == deviceId })
+
+        isFront = device?.position == .front
+
+        startCapture()
+    }
+
+    public func startCapture() {
+        if device == nil {
+            device = RTCCameraVideoCapturer.captureDevices().first(where: { $0.position == .front })
+        }
+        guard let device = device else {
             return
         }
-
-        let formats: [AVCaptureDevice.Format] = RTCCameraVideoCapturer.supportedFormats(
-            for: frontCamera)
+        let formats: [AVCaptureDevice.Format] = RTCCameraVideoCapturer.supportedFormats(for: device)
 
         let (targetWidth, targetHeight) = (
             videoParameters.dimensions.width,
@@ -80,7 +89,7 @@ class CameraCapturer: VideoCapturer {
         }
 
         capturer.startCapture(
-            with: frontCamera,
+            with: device,
             format: selectedFormat,
             fps: fps)
     }
