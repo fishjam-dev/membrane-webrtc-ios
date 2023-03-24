@@ -21,7 +21,7 @@ public class LocalAudioTrack: AudioTrack, LocalTrack {
         config = RTCAudioSessionConfiguration.webRTC()
         config.category = AVAudioSession.Category.playAndRecord.rawValue
         config.mode = AVAudioSession.Mode.videoChat.rawValue
-        config.categoryOptions = AVAudioSession.CategoryOptions.duckOthers
+        config.categoryOptions = [.duckOthers, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP]
 
         let audioSource = peerConnectionFactoryWrapper.createAudioSource(audioConstraints)
 
