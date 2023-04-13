@@ -160,7 +160,7 @@ class RoomController: ObservableObject {
 
             let displayName = room.currentPeer().metadata["displayName"] ?? "UNKNOWN"
 
-            let preset = VideoParameters.presetScreenShareFHD30
+            let preset = VideoParameters.presetScreenShareHD15
             let videoParameters = VideoParameters(
                 dimensions: preset.dimensions.flip(), maxBandwidth: preset.maxBandwidth,
                 maxFps: preset.maxFps, simulcastConfig: screencastSimulcastConfig)
