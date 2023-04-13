@@ -49,9 +49,9 @@ class RoomController: ObservableObject {
     var isFrontCamera: Bool = true
 
     @Published var videoSimulcastConfig: SimulcastConfig = SimulcastConfig(
-        enabled: true, activeEncodings: [TrackEncoding.l, TrackEncoding.m, TrackEncoding.h])
+        enabled: true, activeEncodings: [TrackEncoding.l, TrackEncoding.m])
     @Published var screencastSimulcastConfig: SimulcastConfig = SimulcastConfig(
-        enabled: true, activeEncodings: [TrackEncoding.l, TrackEncoding.m, TrackEncoding.h])
+        enabled: false, activeEncodings: [])
 
     init(_ room: MembraneRTC) {
         self.room = room
