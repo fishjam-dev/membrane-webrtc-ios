@@ -370,6 +370,37 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
             })
     }
 
+    func disableEncodings(sdpAnswer: String, encodingsToDisable: [String]) -> String {
+        var newSdpAnswer = ""
+        let prefix = "a=simulcast:recv "
+
+        let sdpLines = sdpAnswer.components(separatedBy: "\r\n").dropLast(1)
+
+        for line in sdpLines {
+            if line.hasPrefix(prefix) {
+                let lineSuffix = String(line.suffix(from: prefix.endIndex))
+
+                var encodings = lineSuffix.components(separatedBy: ";")
+
+                var newEncodings = [String]()
+                for encoding in encodings {
+                    if encodingsToDisable.contains(encoding) {
+                        newEncodings.append("~\(encoding)")
+                    } else {
+                        newEncodings.append(encoding)
+                    }
+                }
+
+                let newLine = prefix + newEncodings.joined(separator: ";") + "\r\n"
+                newSdpAnswer += newLine
+            } else {
+                newSdpAnswer += "\(line)\r\n"
+            }
+        }
+
+        return newSdpAnswer
+    }
+
     public func onSdpAnswer(sdp: String, midToTrackId: [String: String?], localTracks: [LocalTrack]) {
         guard let pc = connection else {
             return
@@ -378,26 +409,30 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
         // FIXEME: trackId returned from backend sometimes happens to be null...
         self.midToTrackId = midToTrackId.filter { $0.value != nil } as! [String: String]
 
-        let description = RTCSessionDescription(type: .answer, sdp: sdp)
-
         // this is workaround of a backend issue with ~ in sdp answer
         // client sends sdp offer with disabled tracks marked with ~, backend doesn't send ~ in sdp answer so all tracks are enabled
         // and we need to disable them manually
+        var encodingsToDisable = [String]()
+        let encodings: [TrackEncoding] = [.h, .m, .l]
+        encodings.forEach({ encoding in
+            localTracks.forEach({ track in
+                if track.rtcTrack().kind == "video"
+                    && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.enabled ?? false
+                    && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.activeEncodings.contains(encoding)
+                        != true
+                {
+                    encodingsToDisable.append(encoding.description)
+                }
+            })
+        })
+
+        let sdpWithDisabledEncodings = disableEncodings(sdpAnswer: sdp, encodingsToDisable: encodingsToDisable)
+
+        let description = RTCSessionDescription(type: .answer, sdp: sdpWithDisabledEncodings)
         pc.setRemoteDescription(
             description,
             completionHandler: { error in
                 guard let err = error else {
-                    [TrackEncoding.h, TrackEncoding.m, TrackEncoding.l].forEach({ encoding in
-                        localTracks.forEach({ track in
-                            if track.rtcTrack().kind == "video"
-                                && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.activeEncodings
-                                    .contains(encoding) != true
-                            {
-                                self.setTrackEncoding(
-                                    trackId: track.rtcTrack().trackId, encoding: encoding, enabled: false)
-                            }
-                        })
-                    })
                     return
                 }
                 sdkLogger.error("error occured while trying to set a remote description \(err)")
