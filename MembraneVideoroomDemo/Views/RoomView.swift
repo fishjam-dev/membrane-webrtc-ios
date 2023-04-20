@@ -81,17 +81,6 @@ struct RoomView: View {
                     simulcastConfig: room.videoSimulcastConfig,
                     toggleEncoding: room.toggleVideoTrackEncoding(encoding:))
             }
-
-            if room.isScreensharingEnabled {
-                HStack {
-                    Text("Screencast quality")
-                        .font(.system(size: 12))
-
-                    simulcastButtons(
-                        simulcastConfig: room.screencastSimulcastConfig,
-                        toggleEncoding: room.toggleScreencastTrackEncoding(encoding:))
-                }
-            }
         }
     }
 
@@ -203,7 +192,7 @@ struct RoomView: View {
         if orientationReceiver.orientation.isLandscape {
             return geometry.size.height * 0.5 - 20
         } else {
-            return geometry.size.height * 0.2 - 40
+            return geometry.size.height * 0.25 - 40
         }
     }
 
