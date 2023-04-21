@@ -443,17 +443,15 @@ extension RoomController: MembraneRTCDelegate {
     }
 
     func onTrackUpdated(ctx: TrackContext) {
-        let isActive =
-            (ctx.metadata["active"] != nil)
-            ? ctx.metadata["active"] as? Bool : getDefaultIsActiveValueForTrack(ctx: ctx)
+        let isActive = ctx.metadata["active"] as? Bool ?? false
 
         if ctx.metadata["type"] as? String == "camera" {
             DispatchQueue.main.async {
                 if ctx.peer.id == self.primaryVideo?.participant.id {
-                    self.primaryVideo?.isActive = isActive ?? false
+                    self.primaryVideo?.isActive = isActive
                 } else {
                     self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.isActive =
-                        isActive ?? false
+                        isActive
                 }
             }
         } else {
@@ -461,7 +459,7 @@ extension RoomController: MembraneRTCDelegate {
                 guard var p = self.participants[ctx.peer.id] else {
                     return
                 }
-                p.isAudioTrackActive = isActive ?? false
+                p.isAudioTrackActive = isActive
                 self.participants[ctx.peer.id] = p
                 if ctx.peer.id == self.primaryVideo?.participant.id {
                     self.primaryVideo?.participant = p
@@ -537,9 +535,5 @@ extension RoomController: MembraneRTCDelegate {
         }
         screencastSimulcastConfig = toggleTrackEncoding(
             simulcastConfig: screencastSimulcastConfig, trackId: trackId, encoding: encoding)
-    }
-
-    func getDefaultIsActiveValueForTrack(ctx: TrackContext) -> Bool {
-        return ctx.metadata["type"] as? String == "camera" ? false : true
     }
 }
