@@ -232,8 +232,6 @@ struct RoomView: View {
                                 if let primaryVideo = room.primaryVideo {
                                     ParticipantVideoView(primaryVideo, height: videoFrameHeight, width: videoFrameWidth)
                                         .padding(.bottom)
-                                } else {
-                                    Text("Local video track is not available yet...").foregroundColor(.white)
                                 }
 
                                 VStack {
