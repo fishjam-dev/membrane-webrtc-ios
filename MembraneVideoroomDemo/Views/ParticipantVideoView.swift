@@ -41,7 +41,7 @@ struct ParticipantVideoView: View {
         ZStack(alignment: .topLeading) {
             if self.participantVideo.isActive {
                 SwiftUIVideoView(
-                    self.participantVideo.videoTrack, layout: self.layout, mirror: self.participantVideo.mirror,
+                    (self.participantVideo.videoTrack)!, layout: self.layout, mirror: self.participantVideo.mirror,
                     dimensions: $localDimensions
                 )
                 .onChange(of: localDimensions) { value in

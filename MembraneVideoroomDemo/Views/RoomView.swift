@@ -86,13 +86,26 @@ struct RoomView: View {
 
     @ViewBuilder
     func participantsVideoViews(_ participantVideos: [ParticipantVideo], size: CGFloat) -> some View {
-        ScrollView(orientationReceiver.orientation.isLandscape ? .vertical : .horizontal) {
-            AdaptiveStack(orientation: self.orientationReceiver.orientation, naturalAlignment: false) {
-                ForEach(participantVideos) { video in
-                    ParticipantVideoView(video, height: size, width: size)
-                        .onTapGesture {
-                            self.room.focus(video: video)
+        ScrollView(.vertical) {
+            VStack {
+                ForEach(Array(stride(from: 0, to: participantVideos.count, by: 2)), id: \.self) { index in
+                    HStack {
+                        Spacer()
+                        ParticipantVideoView(participantVideos[index], height: size, width: size)
+                            .onTapGesture {
+                                self.room.focus(video: participantVideos[index])
+                            }
+                        Spacer()
+
+                        if index + 1 < participantVideos.count {
+                            ParticipantVideoView(participantVideos[index + 1], height: size, width: size)
+                                .onTapGesture {
+                                    self.room.focus(video: participantVideos[index + 1])
+                                }
+                            Spacer()
                         }
+                    }
+                    Spacer()
                 }
             }
         }
@@ -147,10 +160,10 @@ struct RoomView: View {
             Spacer()
 
             mediaControlButton(.audio, enabled: self.room.isMicEnabled)
-                .padding(.trailing)
+            //                .padding(.trailing)
 
             mediaControlButton(.video, enabled: self.room.isCameraEnabled)
-                .padding(.trailing)
+            //                .padding(.trailing)
 
             Button(action: {
                 self.appCtrl.disconnect()
@@ -158,14 +171,14 @@ struct RoomView: View {
                 Image(systemName: "phone.down.fill")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(Color.red.darker())
-            }.padding(.trailing)
+            }  //.padding(.trailing)
 
             cameraSwitchButton()
-                .padding(.trailing)
+            //.padding(.trailing)
 
             if #available(iOS 12, *) {
                 screensharingControlButton()
-                    .padding(.trailing)
+                //.padding(.trailing)
             }
 
             Spacer()
@@ -176,7 +189,7 @@ struct RoomView: View {
         if orientationReceiver.orientation.isLandscape {
             return geometry.size.height * 0.9 - 20
         } else {
-            return geometry.size.height * 0.30 - 20 - geometry.safeAreaInsets.top
+            return 200 * 16 / 9
         }
     }
 
@@ -184,7 +197,7 @@ struct RoomView: View {
         if orientationReceiver.orientation.isLandscape {
             return geometry.size.width * 0.67 - 20
         } else {
-            return geometry.size.width * 0.5 - 40
+            return 200
         }
     }
 
@@ -201,36 +214,39 @@ struct RoomView: View {
             let videoFrameHeight = calculatePrimaryFrameHeight(geometry: geometry)
             let videoFrameWidth = calculatePrimaryFrameWidth(geometry: geometry)
             let participantVideoSize = calculateSecondaryFrameSize(geometry: geometry)
-
             VStack {
-                Text("Membrane iOS Demo")
-                    .bold()
-                    .font(.system(size: 20))
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .foregroundColor(.white)
+                ScrollView(.vertical) {
+                    VStack {
+                        Text("Membrane iOS Demo")
+                            .bold()
+                            .font(.system(size: 20))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .foregroundColor(.white)
 
-                simulcastControls()
+                        simulcastControls()
 
-                if let errorMessage = room.errorMessage {
-                    Text(errorMessage).foregroundColor(.red)
-                } else {
-                    AdaptiveStack(orientation: self.orientationReceiver.orientation) {
-                        if let primaryVideo = room.primaryVideo {
-                            ParticipantVideoView(primaryVideo, height: videoFrameHeight, width: videoFrameWidth)
-                                .padding(.bottom)
+                        if let errorMessage = room.errorMessage {
+                            Text(errorMessage).foregroundColor(.red)
                         } else {
-                            Text("Local video track is not available yet...").foregroundColor(.white)
-                        }
+                            AdaptiveStack(orientation: self.orientationReceiver.orientation) {
+                                if let primaryVideo = room.primaryVideo {
+                                    ParticipantVideoView(primaryVideo, height: videoFrameHeight, width: videoFrameWidth)
+                                        .padding(.bottom)
+                                } else {
+                                    Text("Local video track is not available yet...").foregroundColor(.white)
+                                }
 
-                        VStack {
-                            participantsVideoViews(room.participantVideos, size: participantVideoSize)
-                            Spacer()
-                            controls()
+                                VStack {
+                                    participantsVideoViews(room.participantVideos, size: participantVideoSize)
+                                }
+                            }
                         }
                     }
+                    .padding(8)
                 }
+                Spacer()
+                controls()
             }
-            .padding(8)
         }
         .onChange(of: scenePhase) { newPhase in
             switch newPhase {

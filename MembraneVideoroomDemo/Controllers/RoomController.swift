@@ -13,12 +13,12 @@ class ParticipantVideo: Identifiable, ObservableObject {
 
     @Published var participant: Participant
     @Published var isActive: Bool
-    @Published var videoTrack: VideoTrack
+    @Published var videoTrack: VideoTrack?
     @Published var mirror: Bool
     @Published var vadStatus: VadStatus
 
     init(
-        id: String, participant: Participant, videoTrack: VideoTrack, isScreensharing: Bool = false,
+        id: String, participant: Participant, videoTrack: VideoTrack? = nil, isScreensharing: Bool = false,
         isActive: Bool = false,
         mirror: Bool = false
     ) {
@@ -146,14 +146,17 @@ class RoomController: ObservableObject {
                 room.updateTrackMetadata(
                     trackId: trackId, trackMetadata: .init(["active": isMicEnabled, "type": "audio"]))
             }
-            guard var p = participants[localParticipantId],
-                var pv = participantVideos.first(where: { $0.participant.id == localParticipantId })
-            else {
+            guard var p = participants[localParticipantId] else {
                 return
             }
+            var pv = participantVideos.first(where: { $0.participant.id == localParticipantId })
+            if pv == nil {
+                pv = primaryVideo?.participant.id == localParticipantId ? primaryVideo : nil
+            }
+
             p.isAudioTrackActive = isMicEnabled
             participants[localParticipantId] = p
-            pv.participant = p
+            pv?.participant = p
             self.objectWillChange.send()
 
         case .video:
@@ -163,11 +166,12 @@ class RoomController: ObservableObject {
                 room.updateTrackMetadata(
                     trackId: trackId, trackMetadata: .init(["active": isCameraEnabled, "type": "camera"]))
             }
-            guard var pv = participantVideos.first(where: { $0.participant.id == localParticipantId })
-            else {
-                return
+            var pv = participantVideos.first(where: { $0.participant.id == localParticipantId })
+            if pv == nil {
+                pv = primaryVideo?.participant.id == localParticipantId ? primaryVideo : nil
             }
-            pv.isActive = isCameraEnabled
+
+            pv?.isActive = isCameraEnabled
             self.objectWillChange.send()
 
         case .screensharing:
@@ -263,6 +267,7 @@ class RoomController: ObservableObject {
     //
     // otherwise simply appends to participant videos
     func add(video: ParticipantVideo) {
+        print("KAROL", "add")
         DispatchQueue.main.async {
             guard self.findParticipantVideo(id: video.id) == nil else {
                 print("RoomController tried to add already existing ParticipantVideo")
@@ -337,6 +342,10 @@ extension RoomController: MembraneRTCDelegate {
         }
 
         DispatchQueue.main.async {
+            self.participantVideos = participants.map { p in
+                ParticipantVideo(id: p.id, participant: p, videoTrack: nil, isActive: false)
+            }
+
             guard let videoTrack = self.localVideoTrack else {
                 fatalError("failed to setup local video")
             }
@@ -377,6 +386,15 @@ extension RoomController: MembraneRTCDelegate {
         guard let videoTrack = ctx.track as? VideoTrack else {
             participant.isAudioTrackActive = (ctx.metadata["active"] != nil)
             participants[ctx.peer.id] = participant
+            DispatchQueue.main.async {
+                if self.primaryVideo?.participant.id == ctx.peer.id {
+                    self.primaryVideo?.participant = participant
+                } else {
+                    self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.participant = participant
+                }
+                self.objectWillChange.send()
+            }
+
             return
         }
 
@@ -385,6 +403,7 @@ extension RoomController: MembraneRTCDelegate {
         if let participantVideo = participantVideos.first(where: { $0.id == ctx.trackId }) {
             DispatchQueue.main.async {
                 participantVideo.videoTrack = videoTrack
+                self.objectWillChange.send()
             }
 
             return
@@ -394,13 +413,45 @@ extension RoomController: MembraneRTCDelegate {
         let isScreensharing = ctx.metadata["type"] as? String == "screensharing"
         let video = ParticipantVideo(
             id: ctx.trackId, participant: participant, videoTrack: videoTrack,
-            isScreensharing: isScreensharing, isActive: (ctx.metadata["active"] != nil))
+            isScreensharing: isScreensharing, isActive: (ctx.metadata["active"] != nil) || isScreensharing)
 
-        add(video: video)
-
-        if isScreensharing {
-            focus(video: video)
+        var existingVideo =
+            participantVideos.first(where: {
+                $0.participant.id == ctx.peer.id
+            })
+        if existingVideo == nil {
+            existingVideo = primaryVideo?.participant.id == ctx.peer.id ? primaryVideo : nil
+            if existingVideo == nil {
+                return
+            }
+            if isScreensharing {
+                add(video: video)
+                return
+            }
+            DispatchQueue.main.async {
+                self.primaryVideo = video
+                self.objectWillChange.send()
+            }
+            return
         }
+        print("KAROLkc", existingVideo, existingVideo?.isActive, ctx.metadata)
+        if isScreensharing == false {
+            guard let idx = self.participantVideos.firstIndex(where: { $0.id == existingVideo!.id }) else {
+                return
+            }
+
+            DispatchQueue.main.async {
+                self.participantVideos[idx] = video
+                self.objectWillChange.send()
+            }
+        } else {
+            add(video: video)
+
+            if isScreensharing {
+                focus(video: video)
+            }
+        }
+
     }
 
     func onTrackAdded(ctx _: TrackContext) {}
@@ -422,32 +473,52 @@ extension RoomController: MembraneRTCDelegate {
     func onTrackUpdated(ctx: TrackContext) {
         if ctx.peer.id == self.primaryVideo?.participant.id {
             if ctx.metadata["type"] as! String == "camera" {
-                self.primaryVideo?.isActive =
-                    (ctx.metadata["active"] != nil) ? ctx.metadata["active"] as! Bool : false
+                DispatchQueue.main.async {
+                    self.primaryVideo?.isActive =
+                        (ctx.metadata["active"] != nil) ? ctx.metadata["active"] as! Bool : false
+                    self.objectWillChange.send()
+                }
+
             } else {
                 var p = participants[ctx.peer.id]
                 p?.isAudioTrackActive = (ctx.metadata["active"] != nil) ? ctx.metadata["active"] as! Bool : true
                 self.participants[ctx.peer.id] = p
-                self.primaryVideo?.participant = p!
+                DispatchQueue.main.async {
+                    self.primaryVideo?.participant = p!
+                    self.objectWillChange.send()
+                }
+
             }
 
             return
         }
 
         if ctx.metadata["type"] as! String == "camera" {
-            self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.isActive =
-                (ctx.metadata["active"] != nil) ? ctx.metadata["active"] as! Bool : false
+            DispatchQueue.main.async {
+                self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.isActive =
+                    (ctx.metadata["active"] != nil) ? ctx.metadata["active"] as! Bool : false
+                self.objectWillChange.send()
+            }
         } else {
             var p = participants[ctx.peer.id]
             p?.isAudioTrackActive = (ctx.metadata["active"] != nil) ? ctx.metadata["active"] as! Bool : true
             self.participants[ctx.peer.id] = p
-            self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.participant = p!
+            DispatchQueue.main.async {
+                self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.participant = p!
+                self.objectWillChange.send()
+
+            }
+
         }
     }
 
     func onPeerJoined(peer: Peer) {
-        participants[peer.id] = Participant(
+        self.participants[peer.id] = Participant(
             id: peer.id, displayName: peer.metadata["displayName"] as? String ?? "", isAudioTrackActive: false)
+        let pv =
+            ParticipantVideo(id: peer.id, participant: participants[peer.id]!, videoTrack: nil, isActive: false)
+        add(video: pv)
+
     }
 
     func onPeerLeft(peer: Peer) {
