@@ -160,10 +160,8 @@ struct RoomView: View {
             Spacer()
 
             mediaControlButton(.audio, enabled: self.room.isMicEnabled)
-            //                .padding(.trailing)
 
             mediaControlButton(.video, enabled: self.room.isCameraEnabled)
-            //                .padding(.trailing)
 
             Button(action: {
                 self.appCtrl.disconnect()
@@ -171,14 +169,12 @@ struct RoomView: View {
                 Image(systemName: "phone.down.fill")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(Color.red.darker())
-            }  //.padding(.trailing)
+            }
 
             cameraSwitchButton()
-            //.padding(.trailing)
 
             if #available(iOS 12, *) {
                 screensharingControlButton()
-                //.padding(.trailing)
             }
 
             Spacer()

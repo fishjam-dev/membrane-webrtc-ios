@@ -462,28 +462,13 @@ extension RoomController: MembraneRTCDelegate {
             (ctx.metadata["active"] != nil)
             ? ctx.metadata["active"] as! Bool : ctx.metadata["type"] as! String == "camera" ? false : true
 
-        if ctx.peer.id == self.primaryVideo?.participant.id {
-            if ctx.metadata["type"] as! String == "camera" {
-                DispatchQueue.main.async {
-                    self.primaryVideo?.isActive = isActive
-                    self.objectWillChange.send()
-                }
-            } else {
-                var p = participants[ctx.peer.id]
-                p?.isAudioTrackActive = isActive
-                self.participants[ctx.peer.id] = p
-                DispatchQueue.main.async {
-                    self.primaryVideo?.participant = p!
-                    self.objectWillChange.send()
-                }
-            }
-
-            return
-        }
-
         if ctx.metadata["type"] as! String == "camera" {
             DispatchQueue.main.async {
-                self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.isActive = isActive
+                if ctx.peer.id == self.primaryVideo?.participant.id {
+                    self.primaryVideo?.isActive = isActive
+                } else {
+                    self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.isActive = isActive
+                }
                 self.objectWillChange.send()
             }
         } else {
@@ -491,9 +476,12 @@ extension RoomController: MembraneRTCDelegate {
             p?.isAudioTrackActive = isActive
             self.participants[ctx.peer.id] = p
             DispatchQueue.main.async {
-                self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.participant = p!
+                if ctx.peer.id == self.primaryVideo?.participant.id {
+                    self.primaryVideo?.participant = p!
+                } else {
+                    self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.participant = p!
+                }
                 self.objectWillChange.send()
-
             }
 
         }

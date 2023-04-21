@@ -61,8 +61,6 @@ struct ParticipantVideoView: View {
                         .font(.system(size: 20, weight: .medium))
                         .foregroundColor(Color.white)
                 }.frame(width: width, height: height).clipShape(RoundedRectangle(cornerRadius: 15))
-
-                //                Spacer()
             }
             VStack {
                 if participantVideo.participant.isAudioTrackActive == false {
