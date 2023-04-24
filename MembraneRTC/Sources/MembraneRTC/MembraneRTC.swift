@@ -433,6 +433,16 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         peerConnectionManager.setTrackEncoding(trackId: trackId, encoding: encoding, enabled: enabled)
     }
 
+    /**
+     Changes severity level of debug logs.
+
+         - Parameters:
+            - severity: enum value representing the logging severity
+     */
+    public func changeWebRTCLoggingSeverity(severity: RTCLoggingSeverity) {
+        RTCSetMinDebugLogLevel(severity)
+    }
+
     func onPeerAccepted(peerId: String, peersInRoom: [Peer]) {
         localPeer = localPeer.with(id: peerId)
 
