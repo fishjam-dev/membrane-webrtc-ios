@@ -433,6 +433,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         peerConnectionManager.setTrackEncoding(trackId: trackId, encoding: encoding, enabled: enabled)
     }
 
+    public func getStats() {
+        print(peerConnectionManager.getStats())
+    }
+
     /**
      Changes severity level of debug logs.
 
