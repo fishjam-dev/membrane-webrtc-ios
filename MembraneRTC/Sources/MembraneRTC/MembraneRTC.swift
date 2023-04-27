@@ -433,8 +433,13 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         peerConnectionManager.setTrackEncoding(trackId: trackId, encoding: encoding, enabled: enabled)
     }
 
-    public func getStats() {
-        print(peerConnectionManager.getStats())
+    /**
+     Returns current connection stats.
+
+     - Returns: a map containing statistics
+     */
+    public func getStats() -> [String: [String: Any]] {
+        return peerConnectionManager.getStats()
     }
 
     /**
