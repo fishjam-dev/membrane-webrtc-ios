@@ -26,7 +26,7 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
 
     private let peerConnectionListener: PeerConnectionListener
 
-    private var peerConnectionStats: [String: [String: Any]] = [:]
+    private var peerConnectionStats: [String: RTCStats] = [:]
 
     internal init(
         config: RTCConfiguration, peerConnectionFactory: PeerConnectionFactoryWrapper,
@@ -277,44 +277,46 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
     }
 
     private func extractRelevantStats(rp: RTCStatisticsReport) {
-        //        print(rp.statistics)
         rp.statistics.forEach { it1 in
             let it = it1.value
             if it.type == "outbound-rtp" {
-                var tmp: [String: Any] = [:]
-                if let kind = it.values["kind"] {
-                    tmp["kind"] = kind
-                }
-                if let rid = it.values["rid"] {
-                    tmp["rid"] = rid
-                }
-                if let bytesSent = it.values["bytesSent"] {
-                    tmp["bytesSent"] = bytesSent
-                }
-                if let targetBitrate = it.values["targetBitrate"] {
-                    tmp["targetBitrate"] = targetBitrate
-                }
-                if let packetsSent = it.values["packetsSent"] {
-                    tmp["packetsSent"] = packetsSent
-                }
-                if let framesEncoded = it.values["framesEncoded"] {
-                    tmp["framesEncoded"] = framesEncoded
-                }
-                if let framesPerSecond = it.values["framesPerSecond"] {
-                    tmp["framesPerSecond"] = framesPerSecond
-                }
-                if let width = it.values["frameWidth"] as? Int, let height = it.values["frameHeight"] as? Int {
-                    tmp["frameWidthHeightRatio"] = Double(width) / Double(height)
-                }
-                if let qualityLimitationDurations = it.values["qualityLimitationDurations"] {
-                    tmp["qualityLimitationDurations"] = qualityLimitationDurations
-                }
+                let duration = it.values["qualityLimitationDurations"] as? [String: Double]
+                let qualityLimitation: QualityLimitationDurations = QualityLimitationDurations(
+                    bandwidth: duration?["bandwidth"] ?? 0.0,
+                    cpu: duration?["cpu"] ?? 0.0, none: duration?["none"] ?? 0.0, other: duration?["other"] ?? 0.0)
+                let tmp = RTCOutboundStats(
+                    kind: it.values["kind"] as? String ?? "",
+                    rid: it.values["rid"] as? String ?? "",
+                    bytesSent: it.values["bytesSent"] as? Int ?? 0,
+                    targetBitrate: it.values["targetBitrate"] as? Double ?? 0.0,
+                    packetsSent: it.values["packetsSent"] as? Int ?? 0,
+                    framesEncoded: it.values["framesEncoded"] as? Int ?? 0,
+                    framesPerSecond: it.values["framesPerSecond"] as? Double ?? 0.0,
+                    frameWidthHeightRatio: it.values["frameWidthHeightRatio"] as? Double ?? 0.0,
+                    qualityLimitationDurations: qualityLimitation
+                )
+
+                peerConnectionStats[it.id as String] = tmp
+            } else if it.type == "inbound-rtp" {
+                let tmp = RTCInboundStats(
+                    kind: it.values["kind"] as? String ?? "",
+                    jitter: it.values["jitter"] as? Double ?? 0.0,
+                    packetsLost: it.values["packetsLost"] as? Int ?? 0,
+                    packetsReceived: it.values["packetsReceived"] as? Int ?? 0,
+                    bytesReceived: it.values["bytesReceived"] as? Int ?? 0,
+                    framesReceived: it.values["framesReceived"] as? Int ?? 0,
+                    frameWidth: it.values["frameWidth"] as? Int ?? 0,
+                    frameHeight: it.values["frameHeight"] as? Int ?? 0,
+                    framesPerSecond: it.values["framesPerSecond"] as? Double ?? 0.0,
+                    framesDropped: it.values["framesDropped"] as? Int ?? 0
+                )
+
                 peerConnectionStats[it.id as String] = tmp
             }
         }
     }
 
-    public func getStats() -> [String: [String: Any]] {
+    public func getStats() -> [String: RTCStats] {
         if connection != nil {
             connection?.statistics(completionHandler: { RTCStatisticsReport in
                 self.extractRelevantStats(rp: RTCStatisticsReport)
