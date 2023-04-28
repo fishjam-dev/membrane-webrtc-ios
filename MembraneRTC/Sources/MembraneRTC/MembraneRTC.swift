@@ -434,6 +434,15 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
 
     /**
+     Returns current connection stats.
+
+     - Returns: a map containing statistics
+     */
+    public func getStats() -> [String: RTCStats] {
+        return peerConnectionManager.getStats()
+    }
+
+    /**
      Changes severity level of debug logs.
 
          - Parameters:
