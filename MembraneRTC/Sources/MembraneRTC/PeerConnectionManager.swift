@@ -284,15 +284,17 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
                 let qualityLimitation: QualityLimitationDurations = QualityLimitationDurations(
                     bandwidth: duration?["bandwidth"] ?? 0.0,
                     cpu: duration?["cpu"] ?? 0.0, none: duration?["none"] ?? 0.0, other: duration?["other"] ?? 0.0)
+
                 let tmp = RTCOutboundStats(
                     kind: it.values["kind"] as? String ?? "",
                     rid: it.values["rid"] as? String ?? "",
-                    bytesSent: it.values["bytesSent"] as? Int ?? 0,
+                    bytesSent: it.values["bytesSent"] as? UInt ?? 0,
                     targetBitrate: it.values["targetBitrate"] as? Double ?? 0.0,
-                    packetsSent: it.values["packetsSent"] as? Int ?? 0,
-                    framesEncoded: it.values["framesEncoded"] as? Int ?? 0,
+                    packetsSent: it.values["packetsSent"] as? UInt ?? 0,
+                    framesEncoded: it.values["framesEncoded"] as? UInt ?? 0,
                     framesPerSecond: it.values["framesPerSecond"] as? Double ?? 0.0,
-                    frameWidthHeightRatio: it.values["frameWidthHeightRatio"] as? Double ?? 0.0,
+                    frameWidth: it.values["frameWidth"] as? UInt ?? 0,
+                    frameHeight: it.values["frameHeight"] as? UInt ?? 0,
                     qualityLimitationDurations: qualityLimitation
                 )
 
@@ -301,14 +303,14 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
                 let tmp = RTCInboundStats(
                     kind: it.values["kind"] as? String ?? "",
                     jitter: it.values["jitter"] as? Double ?? 0.0,
-                    packetsLost: it.values["packetsLost"] as? Int ?? 0,
-                    packetsReceived: it.values["packetsReceived"] as? Int ?? 0,
-                    bytesReceived: it.values["bytesReceived"] as? Int ?? 0,
-                    framesReceived: it.values["framesReceived"] as? Int ?? 0,
-                    frameWidth: it.values["frameWidth"] as? Int ?? 0,
-                    frameHeight: it.values["frameHeight"] as? Int ?? 0,
+                    packetsLost: it.values["packetsLost"] as? UInt ?? 0,
+                    packetsReceived: it.values["packetsReceived"] as? UInt ?? 0,
+                    bytesReceived: it.values["bytesReceived"] as? UInt ?? 0,
+                    framesReceived: it.values["framesReceived"] as? UInt ?? 0,
+                    frameWidth: it.values["frameWidth"] as? UInt ?? 0,
+                    frameHeight: it.values["frameHeight"] as? UInt ?? 0,
                     framesPerSecond: it.values["framesPerSecond"] as? Double ?? 0.0,
-                    framesDropped: it.values["framesDropped"] as? Int ?? 0
+                    framesDropped: it.values["framesDropped"] as? UInt ?? 0
                 )
 
                 peerConnectionStats[it.id as String] = tmp
@@ -317,8 +319,8 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
     }
 
     public func getStats() -> [String: RTCStats] {
-        if connection != nil {
-            connection?.statistics(completionHandler: { RTCStatisticsReport in
+        if let connection = connection {
+            connection.statistics(completionHandler: { RTCStatisticsReport in
                 self.extractRelevantStats(rp: RTCStatisticsReport)
             })
         }
