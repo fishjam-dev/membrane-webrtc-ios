@@ -77,13 +77,8 @@ public enum Events {
      - to recognize the nested event's type
      - to finally deserialize the payload into an explicit event
      */
-    public static func deserialize(payload: Payload) -> ReceivableEvent? {
-        guard let rawData = payload["data"] as? String else {
-            sdkLogger.error("Failed to extract 'data' field from json payload: \(payload)")
-            return nil
-        }
-
-        let data = rawData.data(using: .utf8)!
+    public static func deserialize(payload: String) -> ReceivableEvent? {
+        let data = payload.data(using: .utf8)!
 
         guard let base: ReceivableEventBase = decodeEvent(from: data) else {
             sdkLogger.error("Failed to decode ReceivableEventBase")

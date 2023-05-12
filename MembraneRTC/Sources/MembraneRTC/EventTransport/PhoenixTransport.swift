@@ -2,8 +2,7 @@ import Foundation
 import Promises
 import SwiftPhoenixClient
 
-/// `EventTransport` implementation utilizing `Phoenix` socket and a channel.
-public class PhoenixTransport: EventTransport {
+public class PhoenixTransport {
     enum ConnectionState {
         case uninitialized, connecting, connected, closed, error
     }
@@ -16,7 +15,7 @@ public class PhoenixTransport: EventTransport {
     var channel: Channel?
     var connectionState: ConnectionState = .uninitialized
 
-    weak var delegate: EventTransportDelegate?
+    weak var delegate: PhoenixTransportDelegate?
 
     let queue = DispatchQueue(label: "membrane.rtc.transport", qos: .background)
 
@@ -28,10 +27,10 @@ public class PhoenixTransport: EventTransport {
             endPoint: url, transport: { URLSessionTransport(url: $0) }, paramsClosure: { params })
     }
 
-    public func connect(delegate: EventTransportDelegate) -> Promise<Void> {
+    public func connect(delegate: PhoenixTransportDelegate) -> Promise<Void> {
         return Promise(on: queue) { resolve, fail in
             guard case .uninitialized = self.connectionState else {
-                fail(EventTransportError.unexpected(reason: "Tried to connect on a pending socket"))
+                fail(PhoenixTransportError.unexpected(reason: "Tried to connect on a pending socket"))
                 return
             }
 
@@ -58,7 +57,7 @@ public class PhoenixTransport: EventTransport {
                     "error",
                     callback: { _ in
                         self.connectionState = .error
-                        fail(EventTransportError.connectionError)
+                        fail(PhoenixTransportError.connectionError)
                     })
 
             self.channel = channel
@@ -67,12 +66,7 @@ public class PhoenixTransport: EventTransport {
             self.channel!.on(
                 "mediaEvent",
                 callback: { message in
-                    guard let event: ReceivableEvent = Events.deserialize(payload: Payload(message.payload))
-                    else {
-                        return
-                    }
-
-                    self.delegate?.didReceive(event: event)
+                    self.delegate?.didReceive(event: message.payload["data"] as! SerializedMediaEvent)
                 })
         }
     }
@@ -89,7 +83,7 @@ public class PhoenixTransport: EventTransport {
         connectionState = .closed
     }
 
-    public func send(event: SendableEvent) {
+    public func send(event: SerializedMediaEvent) {
         guard connectionState == .connected,
             let channel = channel
         else {
@@ -97,13 +91,7 @@ public class PhoenixTransport: EventTransport {
             return
         }
 
-        let data = try! JSONEncoder().encode(event.serialize())
-
-        guard let dataPayload = String(data: data, encoding: .utf8) else {
-            return
-        }
-
-        channel.push("mediaEvent", payload: ["data": dataPayload])
+        channel.push("mediaEvent", payload: ["data": event])
     }
 }
 
@@ -118,6 +106,6 @@ extension PhoenixTransport {
 
     func onError(_: Error) {
         connectionState = .closed
-        delegate?.didReceive(error: EventTransportError.connectionError)
+        delegate?.didReceive(error: PhoenixTransportError.connectionError)
     }
 }
