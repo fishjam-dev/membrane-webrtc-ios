@@ -42,9 +42,9 @@ struct RoomView: View {
     @ObservedObject var orientationReceiver: OrientationReceiver
     @State private var localDimensions: Dimensions?
 
-    init(_ room: MembraneRTC) {
+    init(_ room: MembraneRTC, _ displayName: String) {
         orientationReceiver = OrientationReceiver()
-        self.room = RoomController(room)
+        self.room = RoomController(room, displayName)
     }
 
     @ViewBuilder

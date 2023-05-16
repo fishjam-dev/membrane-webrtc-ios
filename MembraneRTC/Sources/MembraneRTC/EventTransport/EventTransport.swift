@@ -1,7 +1,7 @@
 import Foundation
 import Promises
 
-public enum EventTransportError: Error {
+public enum PhoenixTransportError: Error {
     /// Thrown when user is not authorized to join the session
     case unauthorized
 
@@ -12,7 +12,7 @@ public enum EventTransportError: Error {
     case unexpected(reason: String)
 }
 
-extension EventTransportError: CustomStringConvertible {
+extension PhoenixTransportError: CustomStringConvertible {
     public var description: String {
         switch self {
         case .unauthorized:
@@ -25,19 +25,8 @@ extension EventTransportError: CustomStringConvertible {
     }
 }
 
-/// Protocol defining a behaviour of an events' transport used for exchaning messages
-/// between client and the server.
-///
-///  An implementation of such transport should take an `EventTransportDelegate` as its argument
-///  and pass received and parsed messages directly to the delegate.
-public protocol EventTransport {
-    func connect(delegate: EventTransportDelegate) -> Promise<Void>
-    func disconnect()
-    func send(event: SendableEvent)
-}
-
-/// Protocol for a delegate listening for messages received by the `EventTransport`
-public protocol EventTransportDelegate: AnyObject {
-    func didReceive(event: ReceivableEvent)
-    func didReceive(error: EventTransportError)
+/// Protocol for a delegate listening for messages received by the `PhoenixTransport`
+public protocol PhoenixTransportDelegate: AnyObject {
+    func didReceive(event: SerializedMediaEvent)
+    func didReceive(error: PhoenixTransportError)
 }

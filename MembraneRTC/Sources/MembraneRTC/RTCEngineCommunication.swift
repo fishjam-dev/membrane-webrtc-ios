@@ -1,52 +1,56 @@
+import Foundation
 import Promises
 
-internal class RTCEngineCommunication: EventTransportDelegate {
-    let transport: EventTransport
+internal class RTCEngineCommunication {
     let engineListener: RTCEngineListener
 
-    init(transport: EventTransport, engineListener: RTCEngineListener) {
-        self.transport = transport
+    init(engineListener: RTCEngineListener) {
         self.engineListener = engineListener
     }
 
-    func connect() -> Promise<Void> {
-        return transport.connect(delegate: self)
-    }
-
-    func disconnect() {
-        transport.disconnect()
-    }
-
     func join(peerMetadata: Metadata) {
-        transport.send(event: JoinEvent(metadata: peerMetadata))
+        sendEvent(event: JoinEvent(metadata: peerMetadata))
     }
 
     func updatePeerMetadata(peerMetadata: Metadata) {
-        transport.send(event: UpdatePeerMetadata(metadata: peerMetadata))
+        sendEvent(event: UpdatePeerMetadata(metadata: peerMetadata))
     }
 
     func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
-        transport.send(event: UpdateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata))
+        sendEvent(event: UpdateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata))
     }
 
     func setTargetTrackEncoding(trackId: String, encoding: TrackEncoding) {
-        transport.send(event: SelectEncodingEvent(trackId: trackId, encoding: encoding.description))
+        sendEvent(event: SelectEncodingEvent(trackId: trackId, encoding: encoding.description))
     }
 
     func renegotiateTracks() {
-        transport.send(event: RenegotiateTracksEvent())
+        sendEvent(event: RenegotiateTracksEvent())
     }
 
     func localCandidate(sdp: String, sdpMLineIndex: Int32) {
-        transport.send(event: LocalCandidateEvent(candidate: sdp, sdpMLineIndex: sdpMLineIndex))
+        sendEvent(event: LocalCandidateEvent(candidate: sdp, sdpMLineIndex: sdpMLineIndex))
     }
 
     func sdpOffer(sdp: String, trackIdToTrackMetadata: [String: Metadata], midToTrackId: [String: String]) {
-        transport.send(
+        sendEvent(
             event: SdpOfferEvent(sdp: sdp, trackIdToTrackMetadata: trackIdToTrackMetadata, midToTrackId: midToTrackId))
     }
 
-    func didReceive(event: ReceivableEvent) {
+    private func sendEvent(event: SendableEvent) {
+        let data = try! JSONEncoder().encode(event.serialize())
+
+        guard let dataPayload = String(data: data, encoding: .utf8) else {
+            return
+        }
+        engineListener.onSendMediaEvent(event: dataPayload)
+    }
+
+    func onEvent(serializedEvent: SerializedMediaEvent) {
+        guard let event = Events.deserialize(payload: serializedEvent) else {
+            sdkLogger.error("Failed to decode event \(serializedEvent)")
+            return
+        }
         switch event.type {
         case .PeerAccepted:
             let peerAccepted = event as! PeerAcceptedEvent
@@ -103,9 +107,5 @@ internal class RTCEngineCommunication: EventTransportDelegate {
             sdkLogger.error("Failed to handle ReceivableEvent of type \(event.type)")
             return
         }
-    }
-
-    func didReceive(error: EventTransportError) {
-        engineListener.onError(error: error)
     }
 }
