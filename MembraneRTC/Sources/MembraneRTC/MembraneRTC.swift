@@ -22,37 +22,30 @@ internal let pcLogPrefix = "[PeerConnection]"
 ///
 /// It is recommended to request necessary audio and video tracks before joining the room but it does not mean it can't be done afterwards (in case of screencast)
 ///
-/// Once the user received `onConnected` notification they can call the `join` method to initialize joining the session.
+/// Once the user created the MembraneRTC client and connected to the server transport layer they can call the `join` method to initialize joining the session.
 /// After receiving `onJoinSuccess` a user will receive notification about various peers joining/leaving the session, new tracks being published and ready for playback
 /// or going inactive.
 public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObject, RTCEngineListener,
     PeerConnectionListener
 {
     enum State {
-        case uninitialized
         case awaitingJoin
         case connected
         case disconnected
     }
 
-    public struct ConnectOptions {
-        let transport: EventTransport
-        let config: Metadata
+    public struct CreateOptions {
         let encoder: Encoder
 
-        public init(transport: EventTransport, config: Metadata, encoder: Encoder = Encoder.DEFAULT) {
-            self.transport = transport
-            self.config = config
+        public init(encoder: Encoder = Encoder.DEFAULT) {
             self.encoder = encoder
         }
     }
 
     var state: State
 
-    private var eventTransport: EventTransport
-
     private lazy var engineCommunication: RTCEngineCommunication = {
-        return RTCEngineCommunication(transport: eventTransport, engineListener: self)
+        return RTCEngineCommunication(engineListener: self)
     }()
 
     // a common stream ID used for all non-screenshare and audio tracks
@@ -83,21 +76,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             config: self.config, peerConnectionFactory: self.peerConnectionFactoryWrapper, peerConnectionListener: self)
     }()
 
-    internal init(
-        eventTransport: EventTransport, config: RTCConfiguration, peerMetadata: Metadata,
-        encoder: Encoder
-    ) {
-        // RTCSetMinDebugLogLevel(.error)
+    internal init(config: RTCConfiguration, encoder: Encoder) {
         sdkLogger.logLevel = .info
 
-        state = .uninitialized
-
-        self.eventTransport = eventTransport
+        state = .awaitingJoin
 
         self.config = config
-
-        // setup local peer
-        localPeer = localPeer.with(metadata: peerMetadata)
 
         peerConnectionFactoryWrapper = PeerConnectionFactoryWrapper(encoder: encoder)
 
@@ -107,26 +91,22 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
 
     /**
-     Initializes the connection with the `Membrane RTC Engine` transport layer
-     and sets up local audio and video track.
+     Initializes MembraneRTC client and  sets up local audio and video track.
 
      Should not be confused with joining the actual room, which is a separate process.
 
      - Parameters:
-        - with: Connection options, consists of an `EventTransport` instance that will be used for relaying media events, arbitrary `config` metadata used by `Membrane RTC Engine` for connection and `encoder` type
+        - with: Create options, consists of `encoder` type
         - delegate: The delegate that will receive all notification emitted by `MembraneRTC` client
 
-     -  Returns: `MembraneRTC` client instance in connecting state
+     -  Returns: `MembraneRTC` client instance
      */
-    public static func connect(with options: ConnectOptions, delegate: MembraneRTCDelegate)
+    public static func create(with options: CreateOptions = CreateOptions(), delegate: MembraneRTCDelegate)
         -> MembraneRTC
     {
-        let client = MembraneRTC(
-            eventTransport: options.transport, config: RTCConfiguration(), peerMetadata: options.config,
-            encoder: options.encoder)
+        let client = MembraneRTC(config: RTCConfiguration(), encoder: options.encoder)
 
         client.add(delegate: delegate)
-        client.connect()
 
         return client
     }
@@ -141,25 +121,36 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     /// Initiaites join process once the client has successfully connected.
     ///
     /// Once completed either `onJoinSuccess` or `onJoinError` of client's delegate gets invovked.
-    public func join() {
+    public func join(peerMetadata: Metadata) {
         guard state == .awaitingJoin else {
             return
         }
 
-        engineCommunication.join(peerMetadata: localPeer.metadata)
+        localPeer = localPeer.with(metadata: peerMetadata)
+
+        engineCommunication.join(peerMetadata: peerMetadata)
     }
 
     /// Disconnects from the `Membrane RTC Engine` transport and closes the exisitng `RTCPeerConnection`
     ///
     /// Once the `disconnect` gets invoked the client can't be reused and user should create a new client instance instead.
     public func disconnect() {
-        engineCommunication.disconnect()
-
         localTracks.forEach { track in
             track.stop()
         }
 
         peerConnectionManager.close()
+    }
+
+    /**
+   * Feeds media event received from RTC Engine to MembraneWebRTC.
+   * This function should be called whenever some media event from RTC Engine
+   * was received and can result in MembraneWebRTC generating some other
+   * media events.
+   * @param mediaEvent - String data received over custom signalling layer.
+   */
+    public func receiveMediaEvent(mediaEvent: SerializedMediaEvent) {
+        engineCommunication.onEvent(serializedEvent: mediaEvent)
     }
 
     /**
@@ -388,21 +379,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         peerConnectionManager.setEncodingBandwidth(trackId: trackId, encoding: encoding, bandwidth: bandwidth)
     }
 
-    internal func connect() {
-        // initiate a transport connection
-        engineCommunication.connect().then {
-            self.notify {
-                self.state = .awaitingJoin
-
-                $0.onConnected()
-            }
-        }.catch { error in
-            self.notify {
-                $0.onError(.transport(error.localizedDescription))
-            }
-        }
-    }
-
     /// Adds given broadcast track to the peer connection and forces track renegotiation.
     private func setupScreencastTrack(track: LocalScreenBroadcastTrack, metadata: Metadata) {
         let screencastStreamId = UUID().uuidString
@@ -450,6 +426,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      */
     public func changeWebRTCLoggingSeverity(severity: RTCLoggingSeverity) {
         RTCSetMinDebugLogLevel(severity)
+    }
+
+    func onSendMediaEvent(event: SerializedMediaEvent) {
+        notify {
+            $0.onSendMediaEvent(event: event)
+        }
     }
 
     func onPeerAccepted(peerId: String, peersInRoom: [Peer]) {
@@ -545,9 +527,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             integratedTurnServers: integratedTurnServers, tracksTypes: tracksTypes, localTracks: localTracks
         ) { sdp, midToTrackId, error in
             if let err = error {
-                self.notify {
-                    $0.onError(.rtc(err.localizedDescription))
-                }
+                sdkLogger.error("Failed to create sdp offer: \(err)")
+                return
             }
 
             if let sdp = sdp, let midToTrackId = midToTrackId {
@@ -667,18 +648,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
         notify {
             $0.onRemoved(reason: reason)
-        }
-    }
-
-    func onError(error: EventTransportError) {
-        notify {
-            $0.onError(.transport(error.description))
-        }
-    }
-
-    func onClose() {
-        notify {
-            $0.onError(.transport("Transport has been closed"))
         }
     }
 

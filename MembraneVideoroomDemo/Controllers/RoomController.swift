@@ -57,7 +57,7 @@ class RoomController: ObservableObject {
     @Published var screencastSimulcastConfig: SimulcastConfig = SimulcastConfig(
         enabled: false, activeEncodings: [])
 
-    init(_ room: MembraneRTC) {
+    init(_ room: MembraneRTC, _ displayName: String) {
         self.room = room
         participants = [:]
         participantVideos = []
@@ -66,18 +66,19 @@ class RoomController: ObservableObject {
         isCameraEnabled = true
         isScreensharingEnabled = false
 
-        let localPeer = room.currentPeer()
-        let videoTrackMetadata = [
-            "user_id": localPeer.metadata["displayName"] ?? "UNKNOWN", "active": true, "type": "camera",
-        ]
-        let audioTrackMetadata = [
-            "user_id": localPeer.metadata["displayName"] ?? "UNKNOWN", "active": true, "type": "audio",
-        ]
+        let videoTrackMetadata =
+            [
+                "user_id": displayName, "active": true, "type": "camera",
+            ] as [String: Any]
+        let audioTrackMetadata =
+            [
+                "user_id": displayName, "active": true, "type": "audio",
+            ] as [String: Any]
 
         let preset = VideoParameters.presetHD43
         let videoParameters = VideoParameters(
             dimensions: preset.dimensions.flip(),
-            maxBandwidth: .SimulcastBandwidthLimit(["l": 150, "m": 500, "h": 1500]),
+            maxBandwidth: TrackBandwidthLimit.SimulcastBandwidthLimit(["l": 150, "m": 500, "h": 1500]),
             simulcastConfig: videoSimulcastConfig
         )
 
@@ -87,7 +88,7 @@ class RoomController: ObservableObject {
 
         room.add(delegate: self)
 
-        self.room?.join()
+        self.room?.join(peerMetadata: .init(["displayName": displayName]))
     }
 
     func enableTrack(_ type: LocalTrackType, enabled: Bool) {
@@ -320,7 +321,8 @@ class RoomController: ObservableObject {
 }
 
 extension RoomController: MembraneRTCDelegate {
-    func onConnected() {}
+
+    func onSendMediaEvent(event: SerializedMediaEvent) {}
 
     func onJoinSuccess(peerID: String, peersInRoom: [Peer]) {
         localParticipantId = peerID
@@ -491,21 +493,6 @@ extension RoomController: MembraneRTCDelegate {
     }
 
     func onPeerUpdated(peer _: Peer) {}
-
-    func onError(_ error: MembraneRTCError) {
-        DispatchQueue.main.async {
-            switch error {
-            case .rtc(let message):
-                self.errorMessage = message
-
-            case .transport(let message):
-                self.errorMessage = message
-
-            case .unknown(let message):
-                self.errorMessage = message
-            }
-        }
-    }
 
     private func toggleTrackEncoding(
         simulcastConfig: SimulcastConfig, trackId: String, encoding: TrackEncoding

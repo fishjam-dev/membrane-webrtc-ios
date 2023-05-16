@@ -1,7 +1,7 @@
 /// Delegate responsible for receiving notification from `MembraneRTC` client.
 public protocol MembraneRTCDelegate {
-    /// Callback invoked when client has successfully connected via transport layer.
-    func onConnected()
+    /// Called each time MembraneWebRTC need to send some data to the server.
+    func onSendMediaEvent(event: SerializedMediaEvent)
 
     /// Callback invoked when the client has been approved to participate in session.
     func onJoinSuccess(peerID: String, peersInRoom: [Peer])
@@ -43,11 +43,6 @@ public protocol MembraneRTCDelegate {
     ///estimation - client's available incoming bitrate estimated
     ///by the server. It's measured in bits per second.
     func onBandwidthEstimationChanged(estimation: Int)
-
-    /// Callback invoked when an errors happens.
-    ///
-    /// For more information about the error type please refere to `MembraneRTCError`.
-    func onError(_ error: MembraneRTCError)
 }
 
 extension MembraneRTCDelegate {

@@ -1,4 +1,5 @@
 internal protocol RTCEngineListener {
+    func onSendMediaEvent(event: SerializedMediaEvent)
     func onPeerAccepted(peerId: String, peersInRoom: [Peer])
     func onPeerDenied()
     func onPeerJoined(peer: Peer)
@@ -14,6 +15,4 @@ internal protocol RTCEngineListener {
     func onVadNotification(trackId: String, status: String)
     func onBandwidthEstimation(estimation: Int)
     func onRemoved(peerId: String, reason: String)
-    func onError(error: EventTransportError)
-    func onClose()
 }
