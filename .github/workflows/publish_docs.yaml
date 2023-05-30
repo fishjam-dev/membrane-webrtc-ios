@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build Docs
-        run: mkdir MembraneRTC/docs && xcodebuild docbuild -scheme MembraneRTC -destination generic/platform=iOS OTHER_DOCC_FLAGS="--transform-for-static-hosting --output-path docs --hosting-base-path membrane-webrtc-ios"
+        run: mkdir docs && xcodebuild docbuild -destination generic/platform=iOS OTHER_DOCC_FLAGS="--transform-for-static-hosting --output-path docs --hosting-base-path membrane-webrtc-ios"
 
       - name: Install coreutils
         run: brew install coreutils

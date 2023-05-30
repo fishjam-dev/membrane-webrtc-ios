@@ -15,10 +15,10 @@ jobs:
         run: cp Release.xcconfig Debug.xcconfig
 
       - name: Run formatter
-        run: swift-format format -i -r ./MembraneRTC/Sources/**/*.swift --configuration swift-format-config.json
+        run: swift-format format -i -r ./Sources/**/*.swift --configuration swift-format-config.json
 
       - name: Run lint
-        run: swift-format lint -r ./MembraneRTC/Sources/**/*.swift --configuration swift-format-config.json
+        run: swift-format lint -r ./Sources/**/*.swift --configuration swift-format-config.json
 
       - name: Run tests
         run: set -o pipefail && xcodebuild test -scheme MembraneVideoroomDemo -destination 'platform=iOS Simulator,name=iPhone 13,OS=16.2' -workspace 'MembraneVideoroomDemo.xcworkspace' -sdk iphonesimulator | xcbeautify

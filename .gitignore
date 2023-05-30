@@ -5,3 +5,7 @@ build
 docs
 xcuserdata
 Debug.xcconfig
+.swiftpm
+/.build
+/Packages
+DerivedData/
