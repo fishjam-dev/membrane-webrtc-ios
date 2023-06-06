@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3B0148B927BA4F6A00907A8B /* MembraneRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3B0148B827BA4F6A00907A8B /* MembraneRTC */; };
-		3B0148BB27BA4F7300907A8B /* MembraneRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3B0148BA27BA4F7300907A8B /* MembraneRTC */; };
 		3B04D3942798190F00E2B755 /* SwiftPhoenixClient in Frameworks */ = {isa = PBXBuildFile; productRef = 3B04D3932798190F00E2B755 /* SwiftPhoenixClient */; };
 		3B1642DB27A134C4008BBBA7 /* RoomController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1642DA27A134C4008BBBA7 /* RoomController.swift */; };
 		3B16A1DC2796C42B0095941F /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B16A1BF2796C42B0095941F /* RoomView.swift */; };
@@ -34,6 +32,8 @@
 		3BCCBEF92795701600A0AD4C /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 3BCCBEF82795701600A0AD4C /* Promises */; };
 		3BD7249327AAD3DE00AFE9D9 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BD7249227AAD3DE00AFE9D9 /* logo.png */; };
 		3BDAC1E027A2FCE200A2BB0D /* ParticipantVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */; };
+		44788B4E2A27A12C00C43DD4 /* MembraneRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 44788B4D2A27A12C00C43DD4 /* MembraneRTC */; };
+		44788B502A27A13100C43DD4 /* MembraneRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 44788B4F2A27A13100C43DD4 /* MembraneRTC */; };
 		44ACD3EF293FC0D1001197EC /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 44ACD3EE293FC0D1001197EC /* Debug.xcconfig */; };
 		44ACD3F1293FCFA9001197EC /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 44ACD3F0293FCFA9001197EC /* Release.xcconfig */; };
 		44C0FE9A291595C700E61E9A /* PeerConnectionManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C0FE99291595C700E61E9A /* PeerConnectionManagerTest.swift */; };
@@ -71,7 +71,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		3B01482C27BA415D00907A8B /* MembraneRTC */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = MembraneRTC; sourceTree = "<group>"; };
 		3B1642DA27A134C4008BBBA7 /* RoomController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomController.swift; sourceTree = "<group>"; };
 		3B16A1BF2796C42B0095941F /* RoomView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
 		3B16A1C02796C42B0095941F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -96,6 +95,8 @@
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BD7249227AAD3DE00AFE9D9 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantVideoView.swift; sourceTree = "<group>"; };
+		446D54342A279B9E00960E30 /* MembraneRTC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MembraneRTC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		446D54382A279BA600960E30 /* MembraneRTC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MembraneRTC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		44ACD3EE293FC0D1001197EC /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		44ACD3F0293FCFA9001197EC /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		44C0FE97291595C700E61E9A /* MembraneRTCTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MembraneRTCTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,7 +111,7 @@
 				3BA235DB27AC1F600070031E /* FBLPromises in Frameworks */,
 				3B601BF027ABD2FE00668122 /* ReplayKit.framework in Frameworks */,
 				3BA235D727AC10C10070031E /* SwiftProtobuf in Frameworks */,
-				3B0148B927BA4F6A00907A8B /* MembraneRTC in Frameworks */,
+				44788B502A27A13100C43DD4 /* MembraneRTC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,8 +119,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44788B4E2A27A12C00C43DD4 /* MembraneRTC in Frameworks */,
 				3BCCBEF627956E1500A0AD4C /* Logging in Frameworks */,
-				3B0148BB27BA4F7300907A8B /* MembraneRTC in Frameworks */,
 				3B04D3942798190F00E2B755 /* SwiftPhoenixClient in Frameworks */,
 				3B601C0127ABF88A00668122 /* SwiftProtobuf in Frameworks */,
 				3BCCBEF92795701600A0AD4C /* Promises in Frameworks */,
@@ -136,13 +137,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		3B0148B327BA47C800907A8B /* Packages */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Packages;
-			sourceTree = "<group>";
-		};
 		3B16A1BE2796C42B0095941F /* MembraneVideoroomDemo */ = {
 			isa = PBXGroup;
 			children = (
@@ -202,6 +196,8 @@
 		3B601BEE27ABD2FE00668122 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				446D54382A279BA600960E30 /* MembraneRTC.framework */,
+				446D54342A279B9E00960E30 /* MembraneRTC.framework */,
 				3B601BEF27ABD2FE00668122 /* ReplayKit.framework */,
 			);
 			name = Frameworks;
@@ -230,8 +226,6 @@
 				44ACD3F0293FCFA9001197EC /* Release.xcconfig */,
 				44ACD3EE293FC0D1001197EC /* Debug.xcconfig */,
 				3BB35DA627D61A7100892A6E /* README.md */,
-				3B0148B327BA47C800907A8B /* Packages */,
-				3B01482C27BA415D00907A8B /* MembraneRTC */,
 				3BA235D927AC156E0070031E /* MembraneVideoroomDemoScreensharingDebug.entitlements */,
 				3B16A1BE2796C42B0095941F /* MembraneVideoroomDemo */,
 				3B601BF127ABD2FE00668122 /* ScreenBroadcastExt */,
@@ -278,7 +272,7 @@
 			packageProductDependencies = (
 				3BA235D627AC10C10070031E /* SwiftProtobuf */,
 				3BA235DA27AC1F600070031E /* FBLPromises */,
-				3B0148B827BA4F6A00907A8B /* MembraneRTC */,
+				44788B4F2A27A13100C43DD4 /* MembraneRTC */,
 			);
 			productName = MembraneVideoroomDemoScreensharing;
 			productReference = 3B601BED27ABD2FE00668122 /* ScreenBroadcastExt.appex */;
@@ -305,7 +299,7 @@
 				3BCCBEF82795701600A0AD4C /* Promises */,
 				3B04D3932798190F00E2B755 /* SwiftPhoenixClient */,
 				3B601C0027ABF88A00668122 /* SwiftProtobuf */,
-				3B0148BA27BA4F7300907A8B /* MembraneRTC */,
+				44788B4D2A27A12C00C43DD4 /* MembraneRTC */,
 			);
 			productName = MembraneVideoroomDemo;
 			productReference = 3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */;
@@ -836,14 +830,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		3B0148B827BA4F6A00907A8B /* MembraneRTC */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = MembraneRTC;
-		};
-		3B0148BA27BA4F7300907A8B /* MembraneRTC */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = MembraneRTC;
-		};
 		3B04D3932798190F00E2B755 /* SwiftPhoenixClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */;
@@ -873,6 +859,14 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */;
 			productName = Promises;
+		};
+		44788B4D2A27A12C00C43DD4 /* MembraneRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MembraneRTC;
+		};
+		44788B4F2A27A13100C43DD4 /* MembraneRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MembraneRTC;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
