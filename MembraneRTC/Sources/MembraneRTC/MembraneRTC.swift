@@ -474,6 +474,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         notify {
             $0.onJoinSuccess(peerID: peerId, peersInRoom: peersInRoom)
         }
+        engineCommunication.renegotiateTracks()
     }
 
     func onPeerDenied() {
