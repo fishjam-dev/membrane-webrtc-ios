@@ -9,11 +9,10 @@ public protocol SendableEvent {
 
 /// Available types of incoming media events.
 public enum ReceivableEventType: String, Codable {
-    case PeerAccepted = "peerAccepted"
-    case PeerJoined = "peerJoined"
-    case PeerLeft = "peerLeft"
-    case PeerUpdated = "peerUpdated"
-    case PeerRemoved = "peerRemoved"
+    case Connected = "connected"
+    case EndpointAdded = "endpointAdded"
+    case EndpointRemoved = "endpointRemoved"
+    case EndpointUpdated = "endpointUpdated"
     case Custom = "custom"
     case OfferData = "offerData"
     case Candidate = "candidate"
@@ -86,23 +85,23 @@ public enum Events {
         }
 
         switch base.type {
-        case .PeerAccepted:
-            let event: PeerAcceptedEvent? = decodeEvent(from: data)
+        case .Connected:
+            let event: ConnectedEvent? = decodeEvent(from: data)
 
             return event
 
-        case .PeerJoined:
-            let event: PeerJoinedEvent? = decodeEvent(from: data)
+        case .EndpointAdded:
+            let event: EndpointAddedEvent? = decodeEvent(from: data)
 
             return event
 
-        case .PeerLeft:
-            let event: PeerLeftEvent? = decodeEvent(from: data)
+        case .EndpointRemoved:
+            let event: EndpointRemovedEvent? = decodeEvent(from: data)
 
             return event
 
-        case .PeerUpdated:
-            let event: PeerUpdateEvent? = decodeEvent(from: data)
+        case .EndpointUpdated:
+            let event: EndpointUpdatedEvent? = decodeEvent(from: data)
 
             return event
 
@@ -155,13 +154,6 @@ public enum Events {
 
                 return event.data
 
-            case .PeerRemoved:
-                guard let event: CustomEvent<PeerRemovedEvent> = decodeEvent(from: data) else {
-                    return nil
-                }
-
-                return event.data
-
             case .VadNotification:
                 guard let event: CustomEvent<VadNotificationEvent> = decodeEvent(from: data) else {
                     return nil
@@ -190,12 +182,12 @@ public enum Events {
 /*
  Sendable events
  */
-struct JoinEvent: SendableEvent {
+struct ConnectEvent: SendableEvent {
     let metadata: Metadata
 
     func serialize() -> Payload {
         return .init([
-            "type": "join",
+            "type": "connect",
             "data": ["metadata": metadata],
         ])
     }
@@ -218,8 +210,8 @@ struct SdpOfferEvent: SendableEvent {
                     ],
                     "trackIdToTrackMetadata": trackIdToTrackMetadata,
                     "midToTrackId": midToTrackId,
-                ],
-            ],
+                ] as [String: Any],
+            ] as [String: Any],
         ])
     }
 }
@@ -236,8 +228,8 @@ struct LocalCandidateEvent: SendableEvent {
                 "data": [
                     "candidate": candidate,
                     "sdpMLineIndex": sdpMLineIndex,
-                ],
-            ],
+                ] as [String: Any],
+            ] as [String: Any],
         ])
     }
 }
@@ -266,12 +258,12 @@ struct SelectEncodingEvent: SendableEvent {
                     "trackId": trackId,
                     "variant": encoding,
                 ],
-            ],
+            ] as [String: Any],
         ])
     }
 }
 
-struct UpdatePeerMetadata: SendableEvent {
+struct UpdateEndpointMetadata: SendableEvent {
     let metadata: Metadata
 
     func serialize() -> Payload {
@@ -289,7 +281,7 @@ struct UpdateTrackMetadata: SendableEvent {
     func serialize() -> Payload {
         return .init([
             "type": "updateTrackMetadata",
-            "data": ["trackId": trackId, "trackMetadata": trackMetadata],
+            "data": ["trackId": trackId, "trackMetadata": trackMetadata] as [String: Any],
         ])
     }
 }
@@ -298,48 +290,41 @@ struct UpdateTrackMetadata: SendableEvent {
  Receivable events
  */
 
-struct PeerAcceptedEvent: ReceivableEvent, Codable {
+struct ConnectedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let id: String
-        let peersInRoom: [Peer]
+        let otherEndpoints: [Endpoint]
     }
 
     let type: ReceivableEventType
     let data: Data
 }
 
-struct PeerJoinedEvent: ReceivableEvent, Codable {
+struct EndpointAddedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
-        let peer: Peer
-    }
-
-    let type: ReceivableEventType
-    let data: Data
-}
-
-struct PeerLeftEvent: ReceivableEvent, Codable {
-    struct Data: Codable {
-        let peerId: String
-    }
-
-    let type: ReceivableEventType
-    let data: Data
-}
-
-struct PeerUpdateEvent: ReceivableEvent, Codable {
-    struct Data: Codable {
-        let peerId: String
+        let id: String
+        let type: String
         let metadata: Metadata
+        let trackIdToMetadata: [String: Metadata]?
     }
 
     let type: ReceivableEventType
     let data: Data
 }
 
-struct PeerRemovedEvent: ReceivableEvent, Codable {
+struct EndpointRemovedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
-        let peerId: String
-        let reason: String
+        let id: String
+    }
+
+    let type: ReceivableEventType
+    let data: Data
+}
+
+struct EndpointUpdatedEvent: ReceivableEvent, Codable {
+    struct Data: Codable {
+        let id: String
+        let metadata: Metadata
     }
 
     let type: ReceivableEventType
@@ -366,7 +351,7 @@ struct OfferDataEvent: ReceivableEvent, Codable {
 
 struct TracksAddedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
-        let peerId: String
+        let endpointId: String
         let trackIdToMetadata: [String: Metadata]
     }
 
@@ -376,7 +361,7 @@ struct TracksAddedEvent: ReceivableEvent, Codable {
 
 struct TracksRemovedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
-        let peerId: String
+        let endpointId: String
         let trackIds: [String]
     }
 
@@ -386,7 +371,7 @@ struct TracksRemovedEvent: ReceivableEvent, Codable {
 
 struct TracksUpdatedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
-        let peerId: String
+        let endpointId: String
         let trackId: String
         let metadata: Metadata
     }
@@ -419,7 +404,7 @@ struct RemoteCandidateEvent: ReceivableEvent, Codable {
 
 struct EncodingSwitchedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
-        let peerId: String
+        let endpointId: String
         let trackId: String
         let encoding: String
         let reason: String

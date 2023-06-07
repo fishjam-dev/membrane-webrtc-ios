@@ -84,9 +84,9 @@ extension AppController: MembraneRTCDelegate {
         transport?.send(event: event)
     }
 
-    func onJoinSuccess(peerID _: String, peersInRoom _: [Peer]) {}
+    func onConnected(endpointId _: String, otherEndpoints _: [Endpoint]) {}
 
-    func onJoinError(metadata _: Any) {}
+    func onConnectionError(metadata _: Any) {}
 
     func onTrackReady(ctx _: TrackContext) {}
 
@@ -96,11 +96,11 @@ extension AppController: MembraneRTCDelegate {
 
     func onTrackUpdated(ctx _: TrackContext) {}
 
-    func onPeerJoined(peer _: Peer) {}
+    func onEndpointAdded(endpoint _: Endpoint) {}
 
-    func onPeerLeft(peer _: Peer) {}
+    func onEndpointRemoved(endpoint _: Endpoint) {}
 
-    func onPeerUpdated(peer _: Peer) {}
+    func onEndpointUpdated(endpoint _: Endpoint) {}
 }
 
 extension AppController: PhoenixTransportDelegate {

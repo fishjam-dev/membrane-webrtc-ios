@@ -6,8 +6,8 @@
     }
   },
   "hooks": {
-    "after:bump": "pod lib lint --allow-warnings",
-    "before:github:release": "pod trunk push --allow-warnings"
+    "after:bump": "pod lib lint",
+    "before:github:release": "pod trunk push"
   },
   "github": {
     "release": true
