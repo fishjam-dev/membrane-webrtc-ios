@@ -4,10 +4,10 @@ public protocol MembraneRTCDelegate {
     func onSendMediaEvent(event: SerializedMediaEvent)
 
     /// Callback invoked when the client has been approved to participate in session.
-    func onJoinSuccess(peerID: String, peersInRoom: [Peer])
+    func onConnected(endpointId: String, otherEndpoints: [Endpoint])
 
     /// Callback invoked when client has been denied access to enter the room.
-    func onJoinError(metadata: Any)
+    func onConnectionError(metadata: Any)
 
     /// Callback invoked a track is ready to be played.
     func onTrackReady(ctx: TrackContext)
@@ -21,23 +21,16 @@ public protocol MembraneRTCDelegate {
     /// Callback invoked when track's metadata gets updated.
     func onTrackUpdated(ctx: TrackContext)
 
-    /// Callback invoked when a new peer joins the room.
-    func onPeerJoined(peer: Peer)
+    /// Callback invoked when a new endpoint is added..
+    func onEndpointAdded(endpoint: Endpoint)
 
-    /// Callback invoked when a peer leaves the room.
+    /// Callback invoked when an endpoint is removed from the room.
     ///
-    /// When a peer with active track leaves the room, `onTrackRemoved` will be called for all their tracks beforehand.
-    func onPeerLeft(peer: Peer)
+    /// When an endpoint with active track leaves the room, `onTrackRemoved` will be called for all endpoint's tracks beforehand.
+    func onEndpointRemoved(endpoint: Endpoint)
 
-    /// Callback invoked when peer's metadata gets updated.
-    func onPeerUpdated(peer: Peer)
-
-    /// Callback invoked every time a local peer is removed by the server
-    func onRemoved(reason: String)
-
-    /// Callback invoked when received track encoding has changed
-    @available(*, deprecated, message: "Deprecated, use TrackContext::setOnEncodingChangedListener")
-    func onTrackEncodingChanged(peerId: String, trackId: String, encoding: String)
+    /// Callback invoked when endpoint's metadata gets updated.
+    func onEndpointUpdated(endpoint: Endpoint)
 
     ///Called every time the server estimates client's bandwidth.
     ///estimation - client's available incoming bitrate estimated
@@ -46,14 +39,6 @@ public protocol MembraneRTCDelegate {
 }
 
 extension MembraneRTCDelegate {
-    public func onTrackEncodingChanged(peerId: String, trackId: String, encoding: String) {
-        sdkLogger.info("Track encoding changed \(trackId) -> \(encoding)")
-    }
-
-    public func onRemoved(reason: String) {
-        sdkLogger.error("Peer removed, reason: \(reason)")
-    }
-
     public func onBandwidthEstimationChanged(estimation: Int) {
         sdkLogger.info("Bandwidth estimation changed \(estimation)")
     }

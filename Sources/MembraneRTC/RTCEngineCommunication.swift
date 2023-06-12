@@ -8,12 +8,12 @@ internal class RTCEngineCommunication {
         self.engineListener = engineListener
     }
 
-    func join(peerMetadata: Metadata) {
-        sendEvent(event: JoinEvent(metadata: peerMetadata))
+    func connect(metadata: Metadata) {
+        sendEvent(event: ConnectEvent(metadata: metadata))
     }
 
-    func updatePeerMetadata(peerMetadata: Metadata) {
-        sendEvent(event: UpdatePeerMetadata(metadata: peerMetadata))
+    func updateEndpointMetadata(metadata: Metadata) {
+        sendEvent(event: UpdateEndpointMetadata(metadata: metadata))
     }
 
     func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
@@ -52,21 +52,22 @@ internal class RTCEngineCommunication {
             return
         }
         switch event.type {
-        case .PeerAccepted:
-            let peerAccepted = event as! PeerAcceptedEvent
-            engineListener.onPeerAccepted(peerId: peerAccepted.data.id, peersInRoom: peerAccepted.data.peersInRoom)
-        case .PeerJoined:
-            let peerJoined = event as! PeerJoinedEvent
-            engineListener.onPeerJoined(peer: peerJoined.data.peer)
-        case .PeerLeft:
-            let peerLeft = event as! PeerLeftEvent
-            engineListener.onPeerLeft(peerId: peerLeft.data.peerId)
-        case .PeerUpdated:
-            let peerUpdated = event as! PeerUpdateEvent
-            engineListener.onPeerUpdated(peerId: peerUpdated.data.peerId, peerMetadata: peerUpdated.data.metadata)
-        case .PeerRemoved:
-            let peerRemoved = event as! PeerRemovedEvent
-            engineListener.onRemoved(peerId: peerRemoved.data.peerId, reason: peerRemoved.data.reason)
+        case .Connected:
+            let connected = event as! ConnectedEvent
+            engineListener.onConnected(endpointId: connected.data.id, otherEndpoints: connected.data.otherEndpoints)
+        case .EndpointAdded:
+            let endpointAdded = event as! EndpointAddedEvent
+            engineListener.onEndpointAdded(
+                endpoint: Endpoint(
+                    id: endpointAdded.data.id, type: endpointAdded.data.type, metadata: endpointAdded.data.metadata,
+                    trackIdToMetadata: endpointAdded.data.trackIdToMetadata))
+        case .EndpointRemoved:
+            let endpointRemoved = event as! EndpointRemovedEvent
+            engineListener.onEndpointRemoved(endpointId: endpointRemoved.data.id)
+        case .EndpointUpdated:
+            let endpointUpdated = event as! EndpointUpdatedEvent
+            engineListener.onEndpointUpdated(
+                endpointId: endpointUpdated.data.endpointId, metadata: endpointUpdated.data.metadata)
         case .OfferData:
             let offerData = event as! OfferDataEvent
             engineListener.onOfferData(
@@ -79,14 +80,15 @@ internal class RTCEngineCommunication {
         case .TracksAdded:
             let tracksAdded = event as! TracksAddedEvent
             engineListener.onTracksAdded(
-                peerId: tracksAdded.data.peerId, trackIdToMetadata: tracksAdded.data.trackIdToMetadata)
+                endpointId: tracksAdded.data.endpointId, trackIdToMetadata: tracksAdded.data.trackIdToMetadata)
         case .TracksRemoved:
             let tracksRemoved = event as! TracksRemovedEvent
-            engineListener.onTracksRemoved(peerId: tracksRemoved.data.peerId, trackIds: tracksRemoved.data.trackIds)
+            engineListener.onTracksRemoved(
+                endpointId: tracksRemoved.data.endpointId, trackIds: tracksRemoved.data.trackIds)
         case .TrackUpdated:
             let tracksUpdated = event as! TracksUpdatedEvent
             engineListener.onTrackUpdated(
-                peerId: tracksUpdated.data.peerId, trackId: tracksUpdated.data.trackId,
+                endpointId: tracksUpdated.data.endpointId, trackId: tracksUpdated.data.trackId,
                 metadata: tracksUpdated.data.metadata)
         case .SdpAnswer:
             let sdpAnswer = event as! SdpAnswerEvent
@@ -95,7 +97,7 @@ internal class RTCEngineCommunication {
         case .EncodingSwitched:
             let encodingSwitched = event as! EncodingSwitchedEvent
             engineListener.onTrackEncodingChanged(
-                peerId: encodingSwitched.data.peerId, trackId: encodingSwitched.data.trackId,
+                endpointId: encodingSwitched.data.endpointId, trackId: encodingSwitched.data.trackId,
                 encoding: encodingSwitched.data.encoding, encodingReason: encodingSwitched.data.reason)
         case .VadNotification:
             let vadNotification = event as! VadNotificationEvent
