@@ -1,7 +1,7 @@
 internal protocol RTCEngineListener {
     func onSendMediaEvent(event: SerializedMediaEvent)
     func onConnected(endpointId: String, otherEndpoints: [Endpoint])
-    func onPeerDenied()
+    func onConnectionError()
     func onEndpointAdded(endpoint: Endpoint)
     func onEndpointRemoved(endpointId: String)
     func onEndpointUpdated(endpointId: String, metadata: Metadata)

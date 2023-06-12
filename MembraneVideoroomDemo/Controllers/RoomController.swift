@@ -353,7 +353,7 @@ extension RoomController: MembraneRTCDelegate {
     }
 
     func onConnectionError(metadata _: Any) {
-        errorMessage = "Failed to join a room"
+        errorMessage = "Failed to connect"
     }
 
     func onTrackReady(ctx: TrackContext) {

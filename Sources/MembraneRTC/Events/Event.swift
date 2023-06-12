@@ -323,7 +323,7 @@ struct EndpointRemovedEvent: ReceivableEvent, Codable {
 
 struct EndpointUpdatedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
-        let id: String
+        let endpointId: String
         let metadata: Metadata
     }
 

@@ -39,10 +39,6 @@ public protocol MembraneRTCDelegate {
 }
 
 extension MembraneRTCDelegate {
-    public func onRemoved(reason: String) {
-        sdkLogger.error("Peer removed, reason: \(reason)")
-    }
-
     public func onBandwidthEstimationChanged(estimation: Int) {
         sdkLogger.info("Bandwidth estimation changed \(estimation)")
     }

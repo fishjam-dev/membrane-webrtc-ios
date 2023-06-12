@@ -459,7 +459,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         engineCommunication.renegotiateTracks()
     }
 
-    func onPeerDenied() {
+    func onConnectionError() {
         notify {
             $0.onConnectionError(metadata: [:] as [String: Any])
         }

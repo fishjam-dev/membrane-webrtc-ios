@@ -67,7 +67,7 @@ internal class RTCEngineCommunication {
         case .EndpointUpdated:
             let endpointUpdated = event as! EndpointUpdatedEvent
             engineListener.onEndpointUpdated(
-                endpointId: endpointUpdated.data.id, metadata: endpointUpdated.data.metadata)
+                endpointId: endpointUpdated.data.endpointId, metadata: endpointUpdated.data.metadata)
         case .OfferData:
             let offerData = event as! OfferDataEvent
             engineListener.onOfferData(
