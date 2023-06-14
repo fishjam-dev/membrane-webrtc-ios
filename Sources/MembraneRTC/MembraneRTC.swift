@@ -91,7 +91,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
 
     /**
-     Initializes MembraneRTC client and  sets up local audio and video track.
+     Initializes MembraneRTC client.
 
      Should not be confused with joining the actual room, which is a separate process.
 
