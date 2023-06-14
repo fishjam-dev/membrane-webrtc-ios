@@ -104,11 +104,13 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     public static func create(with options: CreateOptions = CreateOptions(), delegate: MembraneRTCDelegate)
         -> MembraneRTC
     {
-        let client = MembraneRTC(config: RTCConfiguration(), encoder: options.encoder)
+        DispatchQueue.webRTC.sync {
+            let client = MembraneRTC(config: RTCConfiguration(), encoder: options.encoder)
 
-        client.add(delegate: delegate)
+            client.add(delegate: delegate)
 
-        return client
+            return client
+        }
     }
 
     // Default ICE server when no turn servers are specified
@@ -122,24 +124,28 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     ///
     /// Once completed either `onConnected` or `onConnectError` of client's delegate gets invovked.
     public func connect(metadata: Metadata) {
-        guard state == .awaitingConnect else {
-            return
+        DispatchQueue.webRTC.sync {
+            guard state == .awaitingConnect else {
+                return
+            }
+
+            localEndpoint = localEndpoint.with(metadata: metadata)
+
+            engineCommunication.connect(metadata: metadata)
         }
-
-        localEndpoint = localEndpoint.with(metadata: metadata)
-
-        engineCommunication.connect(metadata: metadata)
     }
 
     /// Disconnects from the `Membrane RTC Engine` transport and closes the exisitng `RTCPeerConnection`
     ///
     /// Once the `disconnect` gets invoked the client can't be reused and user should create a new client instance instead.
     public func disconnect() {
-        localTracks.forEach { track in
-            track.stop()
-        }
+        DispatchQueue.webRTC.sync {
+            localTracks.forEach { track in
+                track.stop()
+            }
 
-        peerConnectionManager.close()
+            peerConnectionManager.close()
+        }
     }
 
     /**
@@ -150,7 +156,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
    * @param mediaEvent - String data received over custom signalling layer.
    */
     public func receiveMediaEvent(mediaEvent: SerializedMediaEvent) {
-        engineCommunication.onEvent(serializedEvent: mediaEvent)
+        DispatchQueue.webRTC.sync {
+            engineCommunication.onEvent(serializedEvent: mediaEvent)
+        }
     }
 
     /**
@@ -168,28 +176,31 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, captureDeviceId: String? = nil)
         -> LocalVideoTrack
     {
-        let videoTrack = LocalVideoTrack.create(
-            for: .camera, videoParameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
+        DispatchQueue.webRTC.sync {
+            let videoTrack = LocalVideoTrack.create(
+                for: .camera, videoParameters: videoParameters,
+                peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
 
-        if state == .connected {
-            peerConnectionManager.addTrack(track: videoTrack, localStreamId: localStreamId)
+            if state == .connected {
+                peerConnectionManager.addTrack(track: videoTrack, localStreamId: localStreamId)
+            }
+
+            if let captureDeviceId = captureDeviceId, let videoTrack = videoTrack as? LocalCameraVideoTrack {
+                videoTrack.switchCamera(deviceId: captureDeviceId)
+            }
+
+            videoTrack.start()
+
+            localTracks.append(videoTrack)
+
+            localEndpoint = localEndpoint.withTrack(trackId: videoTrack.rtcTrack().trackId, metadata: metadata)
+
+            if state == .connected {
+                engineCommunication.renegotiateTracks()
+            }
+
+            return videoTrack
         }
-
-        if let captureDeviceId = captureDeviceId, let videoTrack = videoTrack as? LocalCameraVideoTrack {
-            videoTrack.switchCamera(deviceId: captureDeviceId)
-        }
-
-        videoTrack.start()
-
-        localTracks.append(videoTrack)
-
-        localEndpoint = localEndpoint.withTrack(trackId: videoTrack.rtcTrack().trackId, metadata: metadata)
-
-        if state == .connected {
-            engineCommunication.renegotiateTracks()
-        }
-
-        return videoTrack
     }
 
     /**
@@ -203,23 +214,25 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Returns: `LocalAudioTrack` instance that user then can use for things such as front / back camera switch.
      */
     public func createAudioTrack(metadata: Metadata) -> LocalAudioTrack {
-        let audioTrack = LocalAudioTrack(peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
+        DispatchQueue.webRTC.sync {
+            let audioTrack = LocalAudioTrack(peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
 
-        if state == .connected {
-            peerConnectionManager.addTrack(track: audioTrack, localStreamId: localStreamId)
+            if state == .connected {
+                peerConnectionManager.addTrack(track: audioTrack, localStreamId: localStreamId)
+            }
+
+            audioTrack.start()
+
+            localTracks.append(audioTrack)
+
+            localEndpoint = localEndpoint.withTrack(trackId: audioTrack.rtcTrack().trackId, metadata: metadata)
+
+            if state == .connected {
+                engineCommunication.renegotiateTracks()
+            }
+
+            return audioTrack
         }
-
-        audioTrack.start()
-
-        localTracks.append(audioTrack)
-
-        localEndpoint = localEndpoint.withTrack(trackId: audioTrack.rtcTrack().trackId, metadata: metadata)
-
-        if state == .connected {
-            engineCommunication.renegotiateTracks()
-        }
-
-        return audioTrack
     }
 
     /**
@@ -242,34 +255,36 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         appGroup: String, videoParameters: VideoParameters, metadata: Metadata,
         onStart: @escaping (_ track: LocalScreenBroadcastTrack) -> Void, onStop: @escaping () -> Void
     ) -> LocalScreenBroadcastTrack {
-        let screensharingTrack = LocalScreenBroadcastTrack(
-            appGroup: appGroup, videoParameters: videoParameters,
-            peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
-        localTracks.append(screensharingTrack)
+        DispatchQueue.webRTC.sync {
+            let screensharingTrack = LocalScreenBroadcastTrack(
+                appGroup: appGroup, videoParameters: videoParameters,
+                peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
+            localTracks.append(screensharingTrack)
 
-        broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(
-            onStart: { [weak self, weak screensharingTrack] in
-                guard let track = screensharingTrack else {
-                    return
-                }
-
-                DispatchQueue.main.async {
-                    self?.setupScreencastTrack(track: track, metadata: metadata)
-                    onStart(track)
-                }
-            },
-            onStop: { [weak self, weak screensharingTrack] in
-                DispatchQueue.main.async {
-                    if let track = screensharingTrack {
-                        self?.removeTrack(trackId: track.rtcTrack().trackId)
+            broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(
+                onStart: { [weak self, weak screensharingTrack] in
+                    guard let track = screensharingTrack else {
+                        return
                     }
-                    onStop()
-                }
-            })
 
-        screensharingTrack.delegate = broadcastScreenshareReceiver
-        screensharingTrack.start()
-        return screensharingTrack
+                    DispatchQueue.main.async {
+                        self?.setupScreencastTrack(track: track, metadata: metadata)
+                        onStart(track)
+                    }
+                },
+                onStop: { [weak self, weak screensharingTrack] in
+                    DispatchQueue.main.async {
+                        if let track = screensharingTrack {
+                            self?.removeTrack(trackId: track.rtcTrack().trackId)
+                        }
+                        onStop()
+                    }
+                })
+
+            screensharingTrack.delegate = broadcastScreenshareReceiver
+            screensharingTrack.start()
+            return screensharingTrack
+        }
     }
 
     /**
@@ -282,25 +297,29 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      */
     @discardableResult
     public func removeTrack(trackId: String) -> Bool {
-        guard let index = localTracks.firstIndex(where: { $0.rtcTrack().trackId == trackId }) else {
-            return false
+        DispatchQueue.webRTC.sync {
+            guard let index = localTracks.firstIndex(where: { $0.rtcTrack().trackId == trackId }) else {
+                return false
+            }
+
+            let track = localTracks.remove(at: index)
+            track.stop()
+
+            peerConnectionManager.removeTrack(trackId: trackId)
+
+            localEndpoint = localEndpoint.withoutTrack(trackId: trackId)
+
+            engineCommunication.renegotiateTracks()
+
+            return true
         }
-
-        let track = localTracks.remove(at: index)
-        track.stop()
-
-        peerConnectionManager.removeTrack(trackId: trackId)
-
-        localEndpoint = localEndpoint.withoutTrack(trackId: trackId)
-
-        engineCommunication.renegotiateTracks()
-
-        return true
     }
 
     /// Returns information about the current local endpoint
     public func currentEndpoint() -> Endpoint {
-        return localEndpoint
+        DispatchQueue.webRTC.sync {
+            return localEndpoint
+        }
     }
 
     /**
@@ -311,7 +330,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
            - encoding: an encoding that will be enabled
      */
     public func enableTrackEncoding(trackId: String, encoding: TrackEncoding) {
-        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: true)
+        DispatchQueue.webRTC.sync {
+            setTrackEncoding(trackId: trackId, encoding: encoding, enabled: true)
+        }
     }
 
     /**
@@ -322,7 +343,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             - encoding: an encoding that will be disabled
      */
     public func disableTrackEncoding(trackId: String, encoding: TrackEncoding) {
-        setTrackEncoding(trackId: trackId, encoding: encoding, enabled: false)
+        DispatchQueue.webRTC.sync {
+            setTrackEncoding(trackId: trackId, encoding: encoding, enabled: false)
+        }
     }
 
     /**
@@ -335,8 +358,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      callback `onEndpointUpdated` will be triggered for other peers in the room.
      */
     public func updateEndpointMetadata(metadata: Metadata) {
-        engineCommunication.updateEndpointMetadata(metadata: metadata)
-        localEndpoint = localEndpoint.with(metadata: metadata)
+        DispatchQueue.webRTC.sync {
+            engineCommunication.updateEndpointMetadata(metadata: metadata)
+            localEndpoint = localEndpoint.with(metadata: metadata)
+        }
     }
 
     /**
@@ -350,8 +375,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      callback `onTrackUpdated` will be triggered for other peers in the room.
      */
     public func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
-        engineCommunication.updateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata)
-        localEndpoint = localEndpoint.withTrack(trackId: trackId, metadata: trackMetadata)
+        DispatchQueue.webRTC.sync {
+            engineCommunication.updateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata)
+            localEndpoint = localEndpoint.withTrack(trackId: trackId, metadata: trackMetadata)
+        }
     }
 
     /**
@@ -364,7 +391,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
          - bandwidth: bandwidth in kbps
      */
     public func setTrackBandwidth(trackId: String, bandwidth: BandwidthLimit) {
-        peerConnectionManager.setTrackBandwidth(trackId: trackId, bandwidth: bandwidth)
+        DispatchQueue.webRTC.sync {
+            peerConnectionManager.setTrackBandwidth(trackId: trackId, bandwidth: bandwidth)
+        }
     }
 
     /**
@@ -376,7 +405,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
          - bandwidth: bandwidth in kbps
      */
     public func setEncodingBandwidth(trackId: String, encoding: String, bandwidth: BandwidthLimit) {
-        peerConnectionManager.setEncodingBandwidth(trackId: trackId, encoding: encoding, bandwidth: bandwidth)
+        DispatchQueue.webRTC.sync {
+            peerConnectionManager.setEncodingBandwidth(trackId: trackId, encoding: encoding, bandwidth: bandwidth)
+        }
     }
 
     /// Adds given broadcast track to the peer connection and forces track renegotiation.
@@ -402,7 +433,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             - encoding: an encoding to receive
      */
     public func setTargetTrackEncoding(trackId: String, encoding: TrackEncoding) {
-        engineCommunication.setTargetTrackEncoding(trackId: trackId, encoding: encoding)
+        DispatchQueue.webRTC.sync {
+            engineCommunication.setTargetTrackEncoding(trackId: trackId, encoding: encoding)
+        }
     }
 
     private func setTrackEncoding(trackId: String, encoding: TrackEncoding, enabled: Bool) {
@@ -415,7 +448,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      - Returns: a map containing statistics
      */
     public func getStats() -> [String: RTCStats] {
-        return peerConnectionManager.getStats()
+        DispatchQueue.webRTC.sync {
+            return peerConnectionManager.getStats()
+        }
     }
 
     /**
@@ -627,7 +662,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         {
             trackContext.vadStatus = vadStatus
         }
-
     }
 
     func onBandwidthEstimation(estimation: Int) {
@@ -678,5 +712,4 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
 extension DispatchQueue {
     static let webRTC = DispatchQueue(label: "membrane.rtc.webRTC")
-    static let sdk = DispatchQueue(label: "membrane.rtc.sdk")
 }
