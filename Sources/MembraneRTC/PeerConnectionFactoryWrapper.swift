@@ -21,35 +21,27 @@ internal class PeerConnectionFactoryWrapper {
     func createPeerConnection(_ configuration: RTCConfiguration, constraints: RTCMediaConstraints)
         -> RTCPeerConnection?
     {
-        DispatchQueue.webRTC.sync {
-            factory.peerConnection(with: configuration, constraints: constraints, delegate: nil)
-        }
+        factory.peerConnection(with: configuration, constraints: constraints, delegate: nil)
     }
 
     func createAudioSource(_ constraints: RTCMediaConstraints?) -> RTCAudioSource {
-        DispatchQueue.webRTC.sync {
-            factory.audioSource(with: constraints)
-        }
+        factory.audioSource(with: constraints)
     }
 
     func createAudioTrack(source: RTCAudioSource) -> RTCAudioTrack {
-        DispatchQueue.webRTC.sync {
-            factory.audioTrack(with: source, trackId: UUID().uuidString)
-        }
+        factory.audioTrack(with: source, trackId: UUID().uuidString)
     }
 
     func createVideoCapturer() -> RTCVideoCapturer {
-        DispatchQueue.webRTC.sync { RTCVideoCapturer() }
+        RTCVideoCapturer()
     }
 
     func createVideoSource(forScreencast _: Bool = false) -> RTCVideoSource {
-        DispatchQueue.webRTC.sync { factory.videoSource() }
+        factory.videoSource()
     }
 
     func createVideoTrack(source: RTCVideoSource) -> RTCVideoTrack {
-        DispatchQueue.webRTC.sync {
-            factory.videoTrack(with: source, trackId: UUID().uuidString)
-        }
+        factory.videoTrack(with: source, trackId: UUID().uuidString)
     }
 }
 

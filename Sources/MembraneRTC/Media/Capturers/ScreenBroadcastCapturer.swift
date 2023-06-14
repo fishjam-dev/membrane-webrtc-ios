@@ -84,9 +84,7 @@ class ScreenBroadcastCapturer: RTCVideoCapturer, VideoCapturer {
 
     private var timeoutTimer: Timer?
 
-    internal let supportedPixelFormats = DispatchQueue.webRTC.sync {
-        RTCCVPixelBuffer.supportedPixelFormats()
-    }
+    internal let supportedPixelFormats = RTCCVPixelBuffer.supportedPixelFormats()
 
     /**
      Creates a  broadcast screen capturer.
