@@ -51,6 +51,7 @@ class RoomController: ObservableObject {
     var localParticipantId: String?
     var localScreensharingVideoId: String?
     var isFrontCamera: Bool = true
+    let displayName: String
 
     @Published var videoSimulcastConfig: SimulcastConfig = SimulcastConfig(
         enabled: true, activeEncodings: [TrackEncoding.l, TrackEncoding.m])
@@ -59,32 +60,13 @@ class RoomController: ObservableObject {
 
     init(_ room: MembraneRTC, _ displayName: String) {
         self.room = room
+        self.displayName = displayName
         participants = [:]
         participantVideos = []
 
         isMicEnabled = true
         isCameraEnabled = true
         isScreensharingEnabled = false
-
-        let videoTrackMetadata =
-            [
-                "user_id": displayName, "active": true, "type": "camera",
-            ] as [String: Any]
-        let audioTrackMetadata =
-            [
-                "user_id": displayName, "active": true, "type": "audio",
-            ] as [String: Any]
-
-        let preset = VideoParameters.presetHD43
-        let videoParameters = VideoParameters(
-            dimensions: preset.dimensions.flip(),
-            maxBandwidth: TrackBandwidthLimit.SimulcastBandwidthLimit(["l": 150, "m": 500, "h": 1500]),
-            simulcastConfig: videoSimulcastConfig
-        )
-
-        localVideoTrack = room.createVideoTrack(
-            videoParameters: videoParameters, metadata: .init(videoTrackMetadata))
-        localAudioTrack = room.createAudioTrack(metadata: .init(audioTrackMetadata))
 
         room.add(delegate: self)
 
@@ -325,8 +307,6 @@ extension RoomController: MembraneRTCDelegate {
     func onSendMediaEvent(event: SerializedMediaEvent) {}
 
     func onConnected(endpointId: String, otherEndpoints: [Endpoint]) {
-        localParticipantId = endpointId
-
         let localParticipant = Participant(id: endpointId, displayName: "Me", isAudioTrackActive: true)
 
         let participants = otherEndpoints.map { endpoint in
@@ -334,6 +314,28 @@ extension RoomController: MembraneRTCDelegate {
                 id: endpoint.id, displayName: endpoint.metadata["displayName"] as? String ?? "",
                 isAudioTrackActive: false)
         }
+
+        let videoTrackMetadata =
+            [
+                "user_id": displayName, "active": true, "type": "camera",
+            ] as [String: Any]
+        let audioTrackMetadata =
+            [
+                "user_id": displayName, "active": true, "type": "audio",
+            ] as [String: Any]
+
+        let preset = VideoParameters.presetHD43
+        let videoParameters = VideoParameters(
+            dimensions: preset.dimensions.flip(),
+            maxBandwidth: TrackBandwidthLimit.SimulcastBandwidthLimit(["l": 150, "m": 500, "h": 1500]),
+            simulcastConfig: videoSimulcastConfig
+        )
+
+        localVideoTrack = room?.createVideoTrack(
+            videoParameters: videoParameters, metadata: .init(videoTrackMetadata))
+        localAudioTrack = room?.createAudioTrack(metadata: .init(audioTrackMetadata))
+
+        localParticipantId = endpointId
 
         DispatchQueue.main.async {
             self.participantVideos = participants.map { p in

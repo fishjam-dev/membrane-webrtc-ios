@@ -195,9 +195,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             localEndpoint = localEndpoint.withTrack(trackId: videoTrack.rtcTrack().trackId, metadata: metadata)
 
-            if state == .connected {
-                engineCommunication.renegotiateTracks()
-            }
+            engineCommunication.renegotiateTracks()
 
             return videoTrack
         }
@@ -227,9 +225,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             localEndpoint = localEndpoint.withTrack(trackId: audioTrack.rtcTrack().trackId, metadata: metadata)
 
-            if state == .connected {
-                engineCommunication.renegotiateTracks()
-            }
+            engineCommunication.renegotiateTracks()
 
             return audioTrack
         }
@@ -491,7 +487,6 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         notify {
             $0.onConnected(endpointId: endpointId, otherEndpoints: otherEndpoints)
         }
-        engineCommunication.renegotiateTracks()
     }
 
     func onConnectionError() {
