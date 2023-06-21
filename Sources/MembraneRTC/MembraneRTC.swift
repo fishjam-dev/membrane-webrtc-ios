@@ -181,9 +181,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
                 for: .camera, videoParameters: videoParameters,
                 peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
 
-            if state == .connected {
-                peerConnectionManager.addTrack(track: videoTrack, localStreamId: localStreamId)
-            }
+            peerConnectionManager.addTrack(track: videoTrack, localStreamId: localStreamId)
 
             if let captureDeviceId = captureDeviceId, let videoTrack = videoTrack as? LocalCameraVideoTrack {
                 videoTrack.switchCamera(deviceId: captureDeviceId)
@@ -215,9 +213,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         DispatchQueue.webRTC.sync {
             let audioTrack = LocalAudioTrack(peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
 
-            if state == .connected {
-                peerConnectionManager.addTrack(track: audioTrack, localStreamId: localStreamId)
-            }
+            peerConnectionManager.addTrack(track: audioTrack, localStreamId: localStreamId)
 
             audioTrack.start()
 

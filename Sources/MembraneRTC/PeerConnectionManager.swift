@@ -177,7 +177,6 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
 
     public func addTrack(track: LocalTrack, localStreamId: String) {
         guard let pc = connection else {
-            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
