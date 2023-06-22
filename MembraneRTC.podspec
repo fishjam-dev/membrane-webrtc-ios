@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'MembraneRTC'
-  s.version          = '4.4.1'
+  s.version          = '5.0.0'
   s.summary          = 'Membrane WebRTC client fully compatible with `Membrane RTC Engine` for iOS.'
 
   s.homepage         = 'https://github.com/membraneframework/membrane-webrtc-ios'
