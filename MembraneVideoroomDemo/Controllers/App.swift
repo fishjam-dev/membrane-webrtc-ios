@@ -6,35 +6,43 @@ final class AppController: ObservableObject {
     public static let shared = AppController()
 
     public private(set) var client: MembraneRTC?
+    public private(set) var transport: PhoenixTransport?
+    public private(set) var displayName: String = ""
 
     enum State {
         case awaiting, loading, connected, disconnected, error
     }
 
     @Published private(set) var state: State
+    @Published var errorMessage: String?
 
     private init() {
         state = .awaiting
     }
 
     public func connect(room: String, displayName: String) {
+        self.displayName = displayName
         let engineUrl = Constants.getRtcEngineUrl().trimmingCharacters(in: CharacterSet(charactersIn: "/"))
 
         let transportUrl = "\(engineUrl)/socket"
 
-        let client = MembraneRTC.connect(
-            with: MembraneRTC.ConnectOptions(
-                transport: PhoenixTransport(
-                    url: transportUrl, topic: "room:\(room)", params: [:], channelParams: ["isSimulcastOn": true]),
-                config: .init(["displayName": displayName])
-            ),
-            delegate: self
-        )
-
+        let transport = PhoenixTransport(
+            url: transportUrl, topic: "room:\(room)", params: [:], channelParams: ["isSimulcastOn": true])
         DispatchQueue.main.async {
             self.state = .loading
-            self.client = client
         }
+        transport.connect(delegate: self).then {
+            DispatchQueue.main.async {
+                self.client = MembraneRTC.create(delegate: self)
+                self.transport = transport
+                self.state = .connected
+            }
+        }.catch { error in
+            DispatchQueue.main.async {
+                self.state = .error
+            }
+        }
+
     }
 
     public func disconnect() {
@@ -42,6 +50,8 @@ final class AppController: ObservableObject {
             guard let client = self.client else {
                 return
             }
+
+            self.transport?.disconnect()
 
             client.remove(delegate: self)
 
@@ -70,15 +80,13 @@ final class AppController: ObservableObject {
 }
 
 extension AppController: MembraneRTCDelegate {
-    func onConnected() {
-        DispatchQueue.main.async {
-            self.state = .connected
-        }
+    func onSendMediaEvent(event: SerializedMediaEvent) {
+        transport?.send(event: event)
     }
 
-    func onJoinSuccess(peerID _: String, peersInRoom _: [Peer]) {}
+    func onConnected(endpointId _: String, otherEndpoints _: [Endpoint]) {}
 
-    func onJoinError(metadata _: Any) {}
+    func onConnectionError(metadata _: Any) {}
 
     func onTrackReady(ctx _: TrackContext) {}
 
@@ -88,15 +96,19 @@ extension AppController: MembraneRTCDelegate {
 
     func onTrackUpdated(ctx _: TrackContext) {}
 
-    func onPeerJoined(peer _: Peer) {}
+    func onEndpointAdded(endpoint _: Endpoint) {}
 
-    func onPeerLeft(peer _: Peer) {}
+    func onEndpointRemoved(endpoint _: Endpoint) {}
 
-    func onPeerUpdated(peer _: Peer) {}
+    func onEndpointUpdated(endpoint _: Endpoint) {}
+}
 
-    func onError(_: MembraneRTCError) {
-        DispatchQueue.main.async {
-            self.state = .error
-        }
+extension AppController: PhoenixTransportDelegate {
+    func didReceive(error: PhoenixTransportError) {
+        state = .error
+    }
+
+    func didReceive(event: SerializedMediaEvent) {
+        self.client?.receiveMediaEvent(mediaEvent: event)
     }
 }

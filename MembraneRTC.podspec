@@ -20,16 +20,15 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '13.0'
   s.swift_version = '5.0'
 
-  s.source_files = 'MembraneRTC/Sources/MembraneRTC/**/*'
+  s.source_files = 'Sources/MembraneRTC/**/*'
   s.dependency 'WebRTC-SDK', '104.5112.15'
   s.dependency 'SwiftProtobuf'
   s.dependency 'PromisesSwift'
   s.dependency 'SwiftPhoenixClient', '~> 4.0.0'
-  s.dependency 'Logging'
-  s.dependency 'SwiftCollection'
+  s.dependency 'SwiftLogJellyfish', '1.5.2'
   s.pod_target_xcconfig = { 'ENABLE_BITCODE' => 'NO' }
 
   s.subspec "Broadcast" do |spec|
-    spec.source_files = "MembraneRTC/Sources/MembraneRTC/Media/BroadcastSampleSource.swift", "MembraneRTC/Sources/MembraneRTC/IPC/**/*.{h,m,mm,swift}"
+    spec.source_files = "Sources/MembraneRTC/Media/BroadcastSampleSource.swift", "Sources/MembraneRTC/IPC/**/*.{h,m,mm,swift}"
   end
 end

@@ -51,14 +51,16 @@ class RoomController: ObservableObject {
     var localParticipantId: String?
     var localScreensharingVideoId: String?
     var isFrontCamera: Bool = true
+    let displayName: String
 
     @Published var videoSimulcastConfig: SimulcastConfig = SimulcastConfig(
         enabled: true, activeEncodings: [TrackEncoding.l, TrackEncoding.m])
     @Published var screencastSimulcastConfig: SimulcastConfig = SimulcastConfig(
         enabled: false, activeEncodings: [])
 
-    init(_ room: MembraneRTC) {
+    init(_ room: MembraneRTC, _ displayName: String) {
         self.room = room
+        self.displayName = displayName
         participants = [:]
         participantVideos = []
 
@@ -66,28 +68,9 @@ class RoomController: ObservableObject {
         isCameraEnabled = true
         isScreensharingEnabled = false
 
-        let localPeer = room.currentPeer()
-        let videoTrackMetadata = [
-            "user_id": localPeer.metadata["displayName"] ?? "UNKNOWN", "active": true, "type": "camera",
-        ]
-        let audioTrackMetadata = [
-            "user_id": localPeer.metadata["displayName"] ?? "UNKNOWN", "active": true, "type": "audio",
-        ]
-
-        let preset = VideoParameters.presetHD43
-        let videoParameters = VideoParameters(
-            dimensions: preset.dimensions.flip(),
-            maxBandwidth: .SimulcastBandwidthLimit(["l": 150, "m": 500, "h": 1500]),
-            simulcastConfig: videoSimulcastConfig
-        )
-
-        localVideoTrack = room.createVideoTrack(
-            videoParameters: videoParameters, metadata: .init(videoTrackMetadata))
-        localAudioTrack = room.createAudioTrack(metadata: .init(audioTrackMetadata))
-
         room.add(delegate: self)
 
-        self.room?.join()
+        self.room?.connect(metadata: .init(["displayName": displayName]))
     }
 
     func enableTrack(_ type: LocalTrackType, enabled: Bool) {
@@ -173,7 +156,7 @@ class RoomController: ObservableObject {
                 return
             }
 
-            let displayName = room.currentPeer().metadata["displayName"] ?? "UNKNOWN"
+            let displayName = room.currentEndpoint().metadata["displayName"] ?? "UNKNOWN"
 
             let preset = VideoParameters.presetScreenShareHD15
             let videoParameters = VideoParameters(
@@ -320,17 +303,39 @@ class RoomController: ObservableObject {
 }
 
 extension RoomController: MembraneRTCDelegate {
-    func onConnected() {}
 
-    func onJoinSuccess(peerID: String, peersInRoom: [Peer]) {
-        localParticipantId = peerID
+    func onSendMediaEvent(event: SerializedMediaEvent) {}
 
-        let localParticipant = Participant(id: peerID, displayName: "Me", isAudioTrackActive: true)
+    func onConnected(endpointId: String, otherEndpoints: [Endpoint]) {
+        let localParticipant = Participant(id: endpointId, displayName: "Me", isAudioTrackActive: true)
 
-        let participants = peersInRoom.map { peer in
+        let participants = otherEndpoints.map { endpoint in
             Participant(
-                id: peer.id, displayName: peer.metadata["displayName"] as? String ?? "", isAudioTrackActive: false)
+                id: endpoint.id, displayName: endpoint.metadata["displayName"] as? String ?? "",
+                isAudioTrackActive: false)
         }
+
+        let videoTrackMetadata =
+            [
+                "user_id": displayName, "active": true, "type": "camera",
+            ] as [String: Any]
+        let audioTrackMetadata =
+            [
+                "user_id": displayName, "active": true, "type": "audio",
+            ] as [String: Any]
+
+        let preset = VideoParameters.presetHD43
+        let videoParameters = VideoParameters(
+            dimensions: preset.dimensions.flip(),
+            maxBandwidth: TrackBandwidthLimit.SimulcastBandwidthLimit(["l": 150, "m": 500, "h": 1500]),
+            simulcastConfig: videoSimulcastConfig
+        )
+
+        localVideoTrack = room?.createVideoTrack(
+            videoParameters: videoParameters, metadata: .init(videoTrackMetadata))
+        localAudioTrack = room?.createAudioTrack(metadata: .init(audioTrackMetadata))
+
+        localParticipantId = endpointId
 
         DispatchQueue.main.async {
             self.participantVideos = participants.map { p in
@@ -349,34 +354,35 @@ extension RoomController: MembraneRTCDelegate {
         }
     }
 
-    func onJoinError(metadata _: Any) {
-        errorMessage = "Failed to join a room"
+    func onConnectionError(metadata _: Any) {
+        errorMessage = "Failed to connect"
     }
 
     func onTrackReady(ctx: TrackContext) {
         ctx.setOnVoiceActivityChangedListener { trackContext in
-            if let participantVideo = self.participantVideos.first(where: { $0.participant.id == trackContext.peer.id })
-            {
+            if let participantVideo = self.participantVideos.first(where: {
+                $0.participant.id == trackContext.endpoint.id
+            }) {
                 DispatchQueue.main.async {
                     participantVideo.vadStatus = trackContext.vadStatus
                 }
             }
-            if self.primaryVideo?.participant.id == trackContext.peer.id {
+            if self.primaryVideo?.participant.id == trackContext.endpoint.id {
                 DispatchQueue.main.async {
                     self.primaryVideo?.vadStatus = trackContext.vadStatus
                 }
             }
         }
 
-        guard var participant = participants[ctx.peer.id] else {
+        guard var participant = participants[ctx.endpoint.id] else {
             return
         }
 
         guard let videoTrack = ctx.track as? VideoTrack else {
             DispatchQueue.main.async {
                 participant.isAudioTrackActive = ctx.metadata["active"] as? Bool == true
-                self.participants[ctx.peer.id] = participant
-                let pv = self.findParticipantVideoByOwner(participantId: ctx.peer.id)
+                self.participants[ctx.endpoint.id] = participant
+                let pv = self.findParticipantVideoByOwner(participantId: ctx.endpoint.id)
                 pv?.participant = participant
             }
 
@@ -399,7 +405,7 @@ extension RoomController: MembraneRTCDelegate {
             id: ctx.trackId, participant: participant, videoTrack: videoTrack,
             isScreensharing: isScreensharing, isActive: ctx.metadata["active"] as? Bool == true || isScreensharing)
 
-        guard let existingVideo = self.findParticipantVideoByOwner(participantId: ctx.peer.id) else {
+        guard let existingVideo = self.findParticipantVideoByOwner(participantId: ctx.endpoint.id) else {
             add(video: video)
 
             if isScreensharing {
@@ -447,65 +453,50 @@ extension RoomController: MembraneRTCDelegate {
 
         if ctx.metadata["type"] as? String == "camera" {
             DispatchQueue.main.async {
-                if ctx.peer.id == self.primaryVideo?.participant.id {
+                if ctx.endpoint.id == self.primaryVideo?.participant.id {
                     self.primaryVideo?.isActive = isActive
                 } else {
-                    self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.isActive =
+                    self.participantVideos.first(where: { $0.participant.id == ctx.endpoint.id })?.isActive =
                         isActive
                 }
             }
         } else {
             DispatchQueue.main.async {
-                guard var p = self.participants[ctx.peer.id] else {
+                guard var p = self.participants[ctx.endpoint.id] else {
                     return
                 }
                 p.isAudioTrackActive = isActive
-                self.participants[ctx.peer.id] = p
-                if ctx.peer.id == self.primaryVideo?.participant.id {
+                self.participants[ctx.endpoint.id] = p
+                if ctx.endpoint.id == self.primaryVideo?.participant.id {
                     self.primaryVideo?.participant = p
                 } else {
-                    self.participantVideos.first(where: { $0.participant.id == ctx.peer.id })?.participant = p
+                    self.participantVideos.first(where: { $0.participant.id == ctx.endpoint.id })?.participant = p
                 }
             }
 
         }
     }
 
-    func onPeerJoined(peer: Peer) {
-        self.participants[peer.id] = Participant(
-            id: peer.id, displayName: peer.metadata["displayName"] as? String ?? "", isAudioTrackActive: false)
+    func onEndpointAdded(endpoint: Endpoint) {
+        self.participants[endpoint.id] = Participant(
+            id: endpoint.id, displayName: endpoint.metadata["displayName"] as? String ?? "", isAudioTrackActive: false)
         let pv =
-            ParticipantVideo(id: peer.id, participant: participants[peer.id]!, videoTrack: nil, isActive: false)
+            ParticipantVideo(id: endpoint.id, participant: participants[endpoint.id]!, videoTrack: nil, isActive: false)
         add(video: pv)
 
     }
 
-    func onPeerLeft(peer: Peer) {
+    func onEndpointRemoved(endpoint: Endpoint) {
         DispatchQueue.main.async {
-            self.participants.removeValue(forKey: peer.id)
-            self.participantVideos = self.participantVideos.filter({ $0.participant.id != peer.id })
-            if self.primaryVideo?.participant.id == peer.id {
+            self.participants.removeValue(forKey: endpoint.id)
+            self.participantVideos = self.participantVideos.filter({ $0.participant.id != endpoint.id })
+            if self.primaryVideo?.participant.id == endpoint.id {
                 self.primaryVideo = nil
             }
         }
     }
 
-    func onPeerUpdated(peer _: Peer) {}
-
-    func onError(_ error: MembraneRTCError) {
-        DispatchQueue.main.async {
-            switch error {
-            case .rtc(let message):
-                self.errorMessage = message
-
-            case .transport(let message):
-                self.errorMessage = message
-
-            case .unknown(let message):
-                self.errorMessage = message
-            }
-        }
-    }
+    func onEndpointUpdated(endpoint _: Endpoint) {}
 
     private func toggleTrackEncoding(
         simulcastConfig: SimulcastConfig, trackId: String, encoding: TrackEncoding

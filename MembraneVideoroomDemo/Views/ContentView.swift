@@ -9,7 +9,7 @@ struct ContentView: View {
 
             switch appCtrl.state {
             case .connected:
-                RoomView(appCtrl.client!)
+                RoomView(appCtrl.client!, appCtrl.displayName)
             default:
                 ConnectView()
             }

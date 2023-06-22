@@ -177,7 +177,6 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
 
     public func addTrack(track: LocalTrack, localStreamId: String) {
         guard let pc = connection else {
-            sdkLogger.error("\(#function): Peer connection not yet established")
             return
         }
 
@@ -433,7 +432,7 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
             if line.hasPrefix(prefix) {
                 let lineSuffix = String(line.suffix(from: prefix.endIndex))
 
-                var encodings = lineSuffix.components(separatedBy: ";")
+                let encodings = lineSuffix.components(separatedBy: ";")
 
                 var newEncodings = [String]()
                 for encoding in encodings {
