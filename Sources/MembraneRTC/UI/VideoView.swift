@@ -86,6 +86,14 @@ public class VideoView: UIView {
         }
     }
 
+    deinit {
+        if let rendererView = rendererView,
+            let rtcVideoTrack = track?.rtcTrack() as? RTCVideoTrack
+        {
+            rtcVideoTrack.remove(rendererView)
+        }
+    }
+
     /// Delegate listening for the view's changes such as dimensions.
     public weak var delegate: VideoViewDelegate?
 
