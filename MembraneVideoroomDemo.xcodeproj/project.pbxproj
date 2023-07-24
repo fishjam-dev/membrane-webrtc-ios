@@ -71,6 +71,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2F1E4DF72A6EABE300C857F9 /* membrane-webrtc-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "membrane-webrtc-ios"; sourceTree = "<group>"; };
 		3B1642DA27A134C4008BBBA7 /* RoomController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomController.swift; sourceTree = "<group>"; };
 		3B16A1BF2796C42B0095941F /* RoomView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
 		3B16A1C02796C42B0095941F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -95,8 +96,6 @@
 		3BCCBEBB2795619500A0AD4C /* MembraneVideoroomDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MembraneVideoroomDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BD7249227AAD3DE00AFE9D9 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		3BDAC1DF27A2FCE200A2BB0D /* ParticipantVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantVideoView.swift; sourceTree = "<group>"; };
-		446D54342A279B9E00960E30 /* MembraneRTC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MembraneRTC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		446D54382A279BA600960E30 /* MembraneRTC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MembraneRTC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		44ACD3EE293FC0D1001197EC /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		44ACD3F0293FCFA9001197EC /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		44C0FE97291595C700E61E9A /* MembraneRTCTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MembraneRTCTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -137,6 +136,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2F1E4DF62A6EABE300C857F9 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				2F1E4DF72A6EABE300C857F9 /* membrane-webrtc-ios */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		3B16A1BE2796C42B0095941F /* MembraneVideoroomDemo */ = {
 			isa = PBXGroup;
 			children = (
@@ -196,8 +203,6 @@
 		3B601BEE27ABD2FE00668122 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				446D54382A279BA600960E30 /* MembraneRTC.framework */,
-				446D54342A279B9E00960E30 /* MembraneRTC.framework */,
 				3B601BEF27ABD2FE00668122 /* ReplayKit.framework */,
 			);
 			name = Frameworks;
@@ -223,6 +228,7 @@
 		3BCCBEB22795619500A0AD4C = {
 			isa = PBXGroup;
 			children = (
+				2F1E4DF62A6EABE300C857F9 /* Packages */,
 				44ACD3F0293FCFA9001197EC /* Release.xcconfig */,
 				44ACD3EE293FC0D1001197EC /* Debug.xcconfig */,
 				3BB35DA627D61A7100892A6E /* README.md */,
