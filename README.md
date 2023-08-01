@@ -1,3 +1,5 @@
+[![Run lint & tests](https://github.com/jellyfish-dev/membrane-webrtc-ios/actions/workflows/run_lint_and_tests.yaml/badge.svg)](https://github.com/jellyfish-dev/membrane-webrtc-ios/actions/workflows/run_lint_and_tests.yaml)
+
 ## Components
 The repository consists of 3 separapable components:
 - `MembraneRTC` -  Membrane WebRTC client fully compatible with `Membrane RTC Engine`, responsible for exchaning media events and receiving media streams which then are presented to the user
