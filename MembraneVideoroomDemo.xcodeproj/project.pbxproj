@@ -71,7 +71,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		2F1E4DF72A6EABE300C857F9 /* membrane-webrtc-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "membrane-webrtc-ios"; sourceTree = "<group>"; };
 		3B1642DA27A134C4008BBBA7 /* RoomController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomController.swift; sourceTree = "<group>"; };
 		3B16A1BF2796C42B0095941F /* RoomView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
 		3B16A1C02796C42B0095941F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -100,6 +99,7 @@
 		44ACD3F0293FCFA9001197EC /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		44C0FE97291595C700E61E9A /* MembraneRTCTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MembraneRTCTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		44C0FE99291595C700E61E9A /* PeerConnectionManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerConnectionManagerTest.swift; sourceTree = "<group>"; };
+		C4887FE62A72BB7300056BCF /* membrane-webrtc-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "membrane-webrtc-ios"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,7 +139,7 @@
 		2F1E4DF62A6EABE300C857F9 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				2F1E4DF72A6EABE300C857F9 /* membrane-webrtc-ios */,
+				C4887FE62A72BB7300056BCF /* membrane-webrtc-ios */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -511,7 +511,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YGRG6VYGY2;
+				DEVELOPMENT_TEAM = J5FM626PE2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScreenBroadcastExt/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ScreenBroadcastExt;
@@ -696,7 +696,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MembraneVideoroomDemo/Preview Content\"";
-				DEVELOPMENT_TEAM = YGRG6VYGY2;
+				DEVELOPMENT_TEAM = J5FM626PE2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MembraneVideoroomDemo/Info.plist;

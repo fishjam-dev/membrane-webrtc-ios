@@ -85,6 +85,12 @@ struct RoomView: View {
     }
 
     @ViewBuilder
+    func soundDetectionInfo() -> some View {
+        Text(room.isSoundDetected ? "you are muted" : "").font(.system(size: 12))
+        Text("volume dB: \(room.soundVolumedB)").font(.system(size: 12))
+    }
+
+    @ViewBuilder
     func participantsVideoViews(_ participantVideos: [ParticipantVideo], size: CGFloat) -> some View {
         ScrollView(.vertical) {
             VStack {
@@ -118,6 +124,7 @@ struct RoomView: View {
 
         Button(action: {
             self.room.toggleLocalTrack(type)
+            self.room.toggleSoundDetection()
         }) {
             Image(systemName: enabled ? enabledLabel : disabledLabel)
                 .font(.system(size: 32, weight: .medium))
@@ -170,7 +177,11 @@ struct RoomView: View {
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(Color.red.darker())
             }
-
+            Button(action: {}) {
+                Image(systemName: !room.isMicEnabled ? "mic.fill" : "mic.slash.fill")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(room.isSoundDetected ? Color.blue.lighter() : Color.gray.darker())
+            }
             cameraSwitchButton()
 
             if #available(iOS 12, *) {
@@ -220,7 +231,7 @@ struct RoomView: View {
                             .foregroundColor(.white)
 
                         simulcastControls()
-
+                        soundDetectionInfo()
                         if let errorMessage = room.errorMessage {
                             Text(errorMessage).foregroundColor(.red)
                         } else {

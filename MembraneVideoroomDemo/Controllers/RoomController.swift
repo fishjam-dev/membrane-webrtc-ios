@@ -35,6 +35,7 @@ class ParticipantVideo: Identifiable, ObservableObject {
 class RoomController: ObservableObject {
     weak var room: MembraneRTC?
 
+    @Published var soundDetection: SoundDetection?
     var localVideoTrack: LocalVideoTrack?
     var localAudioTrack: LocalAudioTrack?
     var localScreencastTrack: LocalScreenBroadcastTrack?
@@ -43,7 +44,8 @@ class RoomController: ObservableObject {
     @Published var isMicEnabled: Bool
     @Published var isCameraEnabled: Bool
     @Published var isScreensharingEnabled: Bool
-
+    @Published var isSoundDetected: Bool
+    @Published var soundVolumedB: Int
     @Published var primaryVideo: ParticipantVideo?
 
     @Published var participants: [String: Participant]
@@ -60,6 +62,8 @@ class RoomController: ObservableObject {
 
     init(_ room: MembraneRTC, _ displayName: String) {
         self.room = room
+        soundDetection = SoundDetection()
+
         self.displayName = displayName
         participants = [:]
         participantVideos = []
@@ -67,8 +71,20 @@ class RoomController: ObservableObject {
         isMicEnabled = true
         isCameraEnabled = true
         isScreensharingEnabled = false
+        isSoundDetected = false
+        soundVolumedB = 0
 
         room.add(delegate: self)
+        soundDetection?.setOnSoundDetectedListener { [weak self] detectionResult in
+            DispatchQueue.main.async {
+                self?.isSoundDetected = detectionResult
+            }
+        }
+        soundDetection?.setOnVolumeChangedListener { [weak self] volume in
+            DispatchQueue.main.async {
+                self?.soundVolumedB = volume
+            }
+        }
 
         self.room?.connect(metadata: .init(["displayName": displayName]))
     }
@@ -110,6 +126,14 @@ class RoomController: ObservableObject {
         // HACK: there is a delay when we set the mirror and the camer actually switches
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             localVideo.mirror = localIsFrontCamera
+        }
+    }
+
+    func toggleSoundDetection() {
+        if !self.isMicEnabled {
+            self.soundDetection?.start()
+        } else {
+            self.soundDetection?.stop()
         }
     }
 
