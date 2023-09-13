@@ -29,6 +29,6 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { 'ENABLE_BITCODE' => 'NO' }
 
   s.subspec "Broadcast" do |spec|
-    spec.source_files = "Sources/MembraneRTC/Media/BroadcastSampleSource.swift", "Sources/MembraneRTC/IPC/**/*.{h,m,mm,swift},
+    spec.source_files = "Sources/MembraneRTC/Media/BroadcastSampleSource.swift", "Sources/MembraneRTC/IPC/**/*.{h,m,mm,swift}"
   end
 end
