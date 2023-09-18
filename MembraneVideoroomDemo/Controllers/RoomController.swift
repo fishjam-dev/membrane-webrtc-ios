@@ -35,7 +35,7 @@ class ParticipantVideo: Identifiable, ObservableObject {
 class RoomController: ObservableObject {
     weak var room: MembraneRTC?
 
-    @Published var soundDetection: SoundDetection?
+    var soundDetection: SoundDetection?
     var localVideoTrack: LocalVideoTrack?
     var localAudioTrack: LocalAudioTrack?
     var localScreencastTrack: LocalScreenBroadcastTrack?
@@ -60,13 +60,24 @@ class RoomController: ObservableObject {
     @Published var screencastSimulcastConfig: SimulcastConfig = SimulcastConfig(
         enabled: false, activeEncodings: [])
 
+    func soundDetectionListener(_ detection: Bool) {
+        DispatchQueue.main.async {
+            self.isSoundDetected = detection
+        }
+    }
+    func volumeChangedListener(_ soundVolume: Int) {
+        DispatchQueue.main.async {
+            self.soundVolumedB = soundVolume
+        }
+    }
+
     init(_ room: MembraneRTC, _ displayName: String) {
         self.room = room
-        soundDetection = SoundDetection()
-
-        self.displayName = displayName
-        participants = [:]
-        participantVideos = []
+        do {
+            self.soundDetection = try SoundDetection()
+        } catch let error {
+            print("Error initializing SoundDetection: \(error)")
+        }
 
         isMicEnabled = true
         isCameraEnabled = true
@@ -74,17 +85,13 @@ class RoomController: ObservableObject {
         isSoundDetected = false
         soundVolumedB = 0
 
+        self.displayName = displayName
+        participants = [:]
+        participantVideos = []
+
         room.add(delegate: self)
-        soundDetection?.setOnSoundDetectedListener { [weak self] detectionResult in
-            DispatchQueue.main.async {
-                self?.isSoundDetected = detectionResult
-            }
-        }
-        soundDetection?.setOnVolumeChangedListener { [weak self] volume in
-            DispatchQueue.main.async {
-                self?.soundVolumedB = volume
-            }
-        }
+        self.soundDetection?.setOnVolumeChangedListener(listener: volumeChangedListener)
+        self.soundDetection?.setOnSoundDetectedListener(listener: soundDetectionListener)
 
         self.room?.connect(metadata: .init(["displayName": displayName]))
     }
@@ -131,7 +138,11 @@ class RoomController: ObservableObject {
 
     func toggleSoundDetection() {
         if !self.isMicEnabled {
-            self.soundDetection?.start()
+            do {
+                try self.soundDetection?.start()
+            } catch let error {
+                print("Error starting sound detection: \(error)")
+            }
         } else {
             self.soundDetection?.stop()
         }
