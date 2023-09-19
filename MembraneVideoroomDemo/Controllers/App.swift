@@ -24,7 +24,7 @@ final class AppController: ObservableObject {
         self.displayName = displayName
         let engineUrl = Constants.getRtcEngineUrl().trimmingCharacters(in: CharacterSet(charactersIn: "/"))
 
-        let transportUrl = "\(engineUrl)/socket"
+        let transportUrl = "\(engineUrl)"
 
         let transport = PhoenixTransport(
             url: transportUrl, topic: "room:\(room)", params: [:], channelParams: ["isSimulcastOn": true])

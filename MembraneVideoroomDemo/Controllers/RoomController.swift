@@ -35,6 +35,7 @@ class ParticipantVideo: Identifiable, ObservableObject {
 class RoomController: ObservableObject {
     weak var room: MembraneRTC?
 
+    var soundDetection: SoundDetection?
     var localVideoTrack: LocalVideoTrack?
     var localAudioTrack: LocalAudioTrack?
     var localScreencastTrack: LocalScreenBroadcastTrack?
@@ -43,7 +44,8 @@ class RoomController: ObservableObject {
     @Published var isMicEnabled: Bool
     @Published var isCameraEnabled: Bool
     @Published var isScreensharingEnabled: Bool
-
+    @Published var isSoundDetected: Bool
+    @Published var soundVolumedB: Int
     @Published var primaryVideo: ParticipantVideo?
 
     @Published var participants: [String: Participant]
@@ -58,17 +60,38 @@ class RoomController: ObservableObject {
     @Published var screencastSimulcastConfig: SimulcastConfig = SimulcastConfig(
         enabled: false, activeEncodings: [])
 
+    func soundDetectionListener(_ detection: Bool) {
+        DispatchQueue.main.async {
+            self.isSoundDetected = detection
+        }
+    }
+    func volumeChangedListener(_ soundVolume: Int) {
+        DispatchQueue.main.async {
+            self.soundVolumedB = soundVolume
+        }
+    }
+
     init(_ room: MembraneRTC, _ displayName: String) {
         self.room = room
-        self.displayName = displayName
-        participants = [:]
-        participantVideos = []
+        do {
+            self.soundDetection = try SoundDetection()
+        } catch let error {
+            print("Error initializing SoundDetection: \(error)")
+        }
 
         isMicEnabled = true
         isCameraEnabled = true
         isScreensharingEnabled = false
+        isSoundDetected = false
+        soundVolumedB = 0
+
+        self.displayName = displayName
+        participants = [:]
+        participantVideos = []
 
         room.add(delegate: self)
+        self.soundDetection?.setOnVolumeChangedListener(listener: volumeChangedListener)
+        self.soundDetection?.setOnSoundDetectedListener(listener: soundDetectionListener)
 
         self.room?.connect(metadata: .init(["displayName": displayName]))
     }
@@ -110,6 +133,18 @@ class RoomController: ObservableObject {
         // HACK: there is a delay when we set the mirror and the camer actually switches
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             localVideo.mirror = localIsFrontCamera
+        }
+    }
+
+    func toggleSoundDetection() {
+        if !self.isMicEnabled {
+            do {
+                try self.soundDetection?.start()
+            } catch let error {
+                print("Error starting sound detection: \(error)")
+            }
+        } else {
+            self.soundDetection?.stop()
         }
     }
 
