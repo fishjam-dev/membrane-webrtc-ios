@@ -4,10 +4,10 @@ public struct Endpoint: Codable {
     public let metadata: Metadata
     public let trackIdToMetadata: [String: Metadata]?
 
-    public init(id: String, type: String, metadata: Metadata, trackIdToMetadata: [String: Metadata]?) {
+    public init(id: String, type: String, metadata: Metadata?, trackIdToMetadata: [String: Metadata]?) {
         self.id = id
         self.type = type
-        self.metadata = metadata
+        self.metadata = metadata ?? Metadata()
         self.trackIdToMetadata = trackIdToMetadata
     }
 
@@ -22,9 +22,9 @@ public struct Endpoint: Codable {
         )
     }
 
-    public func withTrack(trackId: String, metadata: Metadata) -> Self {
+    public func withTrack(trackId: String, metadata: Metadata?) -> Self {
         var newTrackIdToMetadata = self.trackIdToMetadata
-        newTrackIdToMetadata?[trackId] = metadata
+        newTrackIdToMetadata?[trackId] = metadata ?? Metadata()
 
         return Endpoint(id: self.id, type: self.type, metadata: self.metadata, trackIdToMetadata: newTrackIdToMetadata)
     }
@@ -44,7 +44,7 @@ public struct Endpoint: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(String.self, forKey: .id)
         self.type = try container.decode(String.self, forKey: .type)
-        self.metadata = try container.decode(Metadata.self, forKey: .metadata)
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: .metadata) ?? Metadata()
         self.trackIdToMetadata = try container.decodeIfPresent(
             [String: Metadata].self, forKey: .trackIdToMetadata)
     }
