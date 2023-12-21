@@ -237,8 +237,10 @@ struct RoomView: View {
                         } else {
                             AdaptiveStack(orientation: self.orientationReceiver.orientation) {
                                 if let primaryVideo = room.primaryVideo {
-                                    ParticipantVideoView(primaryVideo, height: videoFrameHeight, width: videoFrameWidth)
-                                        .padding(.bottom)
+                                    ParticipantVideoView(
+                                        primaryVideo, height: videoFrameHeight, width: videoFrameWidth
+                                    )
+                                    .padding(.bottom)
                                 }
 
                                 VStack {

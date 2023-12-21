@@ -282,7 +282,8 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
                 let duration = it.values["qualityLimitationDurations"] as? [String: Double]
                 let qualityLimitation: QualityLimitationDurations = QualityLimitationDurations(
                     bandwidth: duration?["bandwidth"] ?? 0.0,
-                    cpu: duration?["cpu"] ?? 0.0, none: duration?["none"] ?? 0.0, other: duration?["other"] ?? 0.0)
+                    cpu: duration?["cpu"] ?? 0.0, none: duration?["none"] ?? 0.0,
+                    other: duration?["other"] ?? 0.0)
 
                 let tmp = RTCOutboundStats(
                     kind: it.values["kind"] as? String ?? "",
@@ -342,7 +343,8 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
 
     private func splitBitrate(encodings: [RTCRtpEncodingParameters], bitrate: Int) {
         if encodings.isEmpty {
-            sdkLogger.error("\(#function): Attempted to limit bandwidth of the track that doesn't have any encodings")
+            sdkLogger.error(
+                "\(#function): Attempted to limit bandwidth of the track that doesn't have any encodings")
             return
         }
 
@@ -380,7 +382,8 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
         integratedTurnServers: [OfferDataEvent.TurnServer],
         tracksTypes: [String: Int],
         localTracks: [LocalTrack],
-        onCompletion: @escaping (_ sdp: String?, _ midToTrackId: [String: String]?, _ error: Error?) -> Void
+        onCompletion: @escaping (_ sdp: String?, _ midToTrackId: [String: String]?, _ error: Error?) ->
+            Void
     ) {
         setTurnServers(integratedTurnServers)
 
@@ -470,7 +473,8 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
             localTracks.forEach({ track in
                 if track.rtcTrack().kind == "video"
                     && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.enabled ?? false
-                    && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.activeEncodings.contains(encoding)
+                    && (track as? LocalVideoTrack)?.videoParameters.simulcastConfig.activeEncodings.contains(
+                        encoding)
                         != true
                 {
                     encodingsToDisable.append(encoding.description)
@@ -478,7 +482,8 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
             })
         })
 
-        let sdpWithDisabledEncodings = disableEncodings(sdpAnswer: sdp, encodingsToDisable: encodingsToDisable)
+        let sdpWithDisabledEncodings = disableEncodings(
+            sdpAnswer: sdp, encodingsToDisable: encodingsToDisable)
 
         let description = RTCSessionDescription(type: .answer, sdp: sdpWithDisabledEncodings)
         pc.setRemoteDescription(

@@ -14,10 +14,12 @@ public class LocalScreenBroadcastTrack: LocalVideoTrack, ScreenBroadcastCapturer
 
     internal init(
         appGroup: String, videoParameters: VideoParameters,
-        delegate _: LocalScreenBroadcastTrackDelegate? = nil, peerConnectionFactoryWrapper: PeerConnectionFactoryWrapper
+        delegate _: LocalScreenBroadcastTrackDelegate? = nil,
+        peerConnectionFactoryWrapper: PeerConnectionFactoryWrapper
     ) {
         self.appGroup = appGroup
-        super.init(parameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
+        super.init(
+            parameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
     }
 
     internal func started() {

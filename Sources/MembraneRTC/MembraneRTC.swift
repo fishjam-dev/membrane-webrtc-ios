@@ -25,7 +25,8 @@ internal let pcLogPrefix = "[PeerConnection]"
 /// Once the user created the MembraneRTC client and connected to the server transport layer they can call the `connect` method to initialize joining the session.
 /// After receiving `onConnected` a user will receive notification about various peers joining/leaving the session, new tracks being published and ready for playback
 /// or going inactive.
-public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObject, RTCEngineListener,
+public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObject,
+    RTCEngineListener,
     PeerConnectionListener
 {
     enum State {
@@ -58,7 +59,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     private var localTracks: [LocalTrack] = []
 
-    private var localEndpoint = Endpoint(id: "", type: "webrtc", metadata: .init([:]), trackIdToMetadata: [:])
+    private var localEndpoint = Endpoint(
+        id: "", type: "webrtc", metadata: .init([:]), trackIdToMetadata: [:])
 
     // mapping from peer's id to itself
     private var remoteEndpoints: [String: Endpoint] = [:]
@@ -73,7 +75,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     private lazy var peerConnectionManager: PeerConnectionManager = {
         return PeerConnectionManager(
-            config: self.config, peerConnectionFactory: self.peerConnectionFactoryWrapper, peerConnectionListener: self)
+            config: self.config, peerConnectionFactory: self.peerConnectionFactoryWrapper,
+            peerConnectionListener: self)
     }()
 
     internal init(config: RTCConfiguration, encoder: Encoder) {
@@ -101,7 +104,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
      -  Returns: `MembraneRTC` client instance
      */
-    public static func create(with options: CreateOptions = CreateOptions(), delegate: MembraneRTCDelegate)
+    public static func create(
+        with options: CreateOptions = CreateOptions(), delegate: MembraneRTCDelegate
+    )
         -> MembraneRTC
     {
         DispatchQueue.webRTC.sync {
@@ -173,7 +178,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
    - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
    */
-    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, captureDeviceId: String? = nil)
+    public func createVideoTrack(
+        videoParameters: VideoParameters, metadata: Metadata, captureDeviceId: String? = nil
+    )
         -> LocalVideoTrack
     {
         DispatchQueue.webRTC.sync {
@@ -183,7 +190,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             peerConnectionManager.addTrack(track: videoTrack, localStreamId: localStreamId)
 
-            if let captureDeviceId = captureDeviceId, let videoTrack = videoTrack as? LocalCameraVideoTrack {
+            if let captureDeviceId = captureDeviceId,
+                let videoTrack = videoTrack as? LocalCameraVideoTrack
+            {
                 videoTrack.switchCamera(deviceId: captureDeviceId)
             }
 
@@ -191,7 +200,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             localTracks.append(videoTrack)
 
-            localEndpoint = localEndpoint.withTrack(trackId: videoTrack.rtcTrack().trackId, metadata: metadata)
+            localEndpoint = localEndpoint.withTrack(
+                trackId: videoTrack.rtcTrack().trackId, metadata: metadata)
 
             engineCommunication.renegotiateTracks()
 
@@ -219,7 +229,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             localTracks.append(audioTrack)
 
-            localEndpoint = localEndpoint.withTrack(trackId: audioTrack.rtcTrack().trackId, metadata: metadata)
+            localEndpoint = localEndpoint.withTrack(
+                trackId: audioTrack.rtcTrack().trackId, metadata: metadata)
 
             engineCommunication.renegotiateTracks()
 
@@ -398,7 +409,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
      */
     public func setEncodingBandwidth(trackId: String, encoding: String, bandwidth: BandwidthLimit) {
         DispatchQueue.webRTC.sync {
-            peerConnectionManager.setEncodingBandwidth(trackId: trackId, encoding: encoding, bandwidth: bandwidth)
+            peerConnectionManager.setEncodingBandwidth(
+                trackId: trackId, encoding: encoding, bandwidth: bandwidth)
         }
     }
 
@@ -470,7 +482,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             // initialize peer's track contexts
             endpoint.trackIdToMetadata?.forEach { trackId, metadata in
-                let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: metadata)
+                let context = TrackContext(
+                    track: nil, enpoint: endpoint, trackId: trackId, metadata: metadata)
 
                 self.trackContexts[trackId] = context
 
@@ -551,7 +564,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     func onOfferData(integratedTurnServers: [OfferDataEvent.TurnServer], tracksTypes: [String: Int]) {
         peerConnectionManager.getSdpOffer(
-            integratedTurnServers: integratedTurnServers, tracksTypes: tracksTypes, localTracks: localTracks
+            integratedTurnServers: integratedTurnServers, tracksTypes: tracksTypes,
+            localTracks: localTracks
         ) { sdp, midToTrackId, error in
             if let err = error {
                 sdkLogger.error("Failed to create sdp offer: \(err)")
@@ -568,7 +582,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
 
     func onSdpAnswer(type: String, sdp: String, midToTrackId: [String: String?]) {
-        peerConnectionManager.onSdpAnswer(sdp: sdp, midToTrackId: midToTrackId, localTracks: localTracks)
+        peerConnectionManager.onSdpAnswer(
+            sdp: sdp, midToTrackId: midToTrackId, localTracks: localTracks)
     }
 
     func onRemoteCandidate(candidate: String, sdpMLineIndex: Int32, sdpMid: String?) {
@@ -594,7 +609,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
         // for each track create a corresponding track context
         endpoint.trackIdToMetadata?.forEach { trackId, metadata in
-            let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: metadata)
+            let context = TrackContext(
+                track: nil, enpoint: endpoint, trackId: trackId, metadata: metadata)
 
             self.trackContexts[trackId] = context
 
@@ -638,7 +654,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
     }
 
-    func onTrackEncodingChanged(endpointId: String, trackId: String, encoding: String, encodingReason: String) {
+    func onTrackEncodingChanged(
+        endpointId: String, trackId: String, encoding: String, encodingReason: String
+    ) {
         if let trackEncoding = TrackEncoding.fromString(encoding),
             let trackContext = self.trackContexts[trackId],
             let encodingReasonEnum = EncodingReason(rawValue: encodingReason)

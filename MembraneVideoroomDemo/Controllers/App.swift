@@ -22,7 +22,8 @@ final class AppController: ObservableObject {
 
     public func connect(room: String, displayName: String) {
         self.displayName = displayName
-        let engineUrl = Constants.getRtcEngineUrl().trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let engineUrl = Constants.getRtcEngineUrl().trimmingCharacters(
+            in: CharacterSet(charactersIn: "/"))
 
         let transportUrl = "\(engineUrl)"
 

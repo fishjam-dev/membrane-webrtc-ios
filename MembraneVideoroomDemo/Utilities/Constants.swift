@@ -3,7 +3,8 @@ import Foundation
 /// A bunch of application specific constants
 struct Constants {
     static func getRtcEngineUrl() -> String {
-        return (Bundle.main.infoDictionary?["videoroom_url"] as! String).replacingOccurrences(of: "\\", with: "")
+        return (Bundle.main.infoDictionary?["videoroom_url"] as! String).replacingOccurrences(
+            of: "\\", with: "")
     }
 
     /// App Group used for communicating with `Broadcast Upload Extension`

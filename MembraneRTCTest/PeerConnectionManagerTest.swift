@@ -15,7 +15,9 @@ class PeerConnectionManagerTest: XCTestCase {
                 self.test = test
                 super.init(encoder: encoder)
             }
-            override func createPeerConnection(_ configuration: RTCConfiguration, constraints: RTCMediaConstraints)
+            override func createPeerConnection(
+                _ configuration: RTCConfiguration, constraints: RTCMediaConstraints
+            )
                 -> RTCPeerConnection?
             {
                 test.peerConnection = super.createPeerConnection(configuration, constraints: constraints)
@@ -33,11 +35,13 @@ class PeerConnectionManagerTest: XCTestCase {
 
         let listener = ListenerImpl()
         manager = PeerConnectionManager(
-            config: config, peerConnectionFactory: peerConnectionFactory, peerConnectionListener: listener)
+            config: config, peerConnectionFactory: peerConnectionFactory, peerConnectionListener: listener
+        )
 
         let expectation = XCTestExpectation(description: "Create sdp offer.")
 
-        manager.getSdpOffer(integratedTurnServers: [], tracksTypes: [:], localTracks: []) { sdp, midToTrackId, error in
+        manager.getSdpOffer(integratedTurnServers: [], tracksTypes: [:], localTracks: []) {
+            sdp, midToTrackId, error in
             XCTAssertNotNil(sdp, "Sdp offer wasn't created")
             expectation.fulfill()
         }
@@ -56,7 +60,8 @@ class PeerConnectionManagerTest: XCTestCase {
 
     func testAddVideoTrack() throws {
         let videoTrack = LocalVideoTrack.create(
-            for: .camera, videoParameters: .presetHD43, peerConnectionFactoryWrapper: peerConnectionFactory)
+            for: .camera, videoParameters: .presetHD43,
+            peerConnectionFactoryWrapper: peerConnectionFactory)
 
         manager.addTrack(track: videoTrack, localStreamId: "id")
         XCTAssertFalse(peerConnection.transceivers.isEmpty, "No track added")
@@ -65,9 +70,11 @@ class PeerConnectionManagerTest: XCTestCase {
     func testSimulcastConfig() throws {
         let preset: VideoParameters = .presetHD43
         let videoParameters = VideoParameters(
-            dimensions: preset.dimensions, simulcastConfig: SimulcastConfig(enabled: true, activeEncodings: [.h, .l]))
+            dimensions: preset.dimensions,
+            simulcastConfig: SimulcastConfig(enabled: true, activeEncodings: [.h, .l]))
         let videoTrack = LocalVideoTrack.create(
-            for: .camera, videoParameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactory)
+            for: .camera, videoParameters: videoParameters,
+            peerConnectionFactoryWrapper: peerConnectionFactory)
 
         manager.addTrack(track: videoTrack, localStreamId: "id")
         let encodings = peerConnection.transceivers[0].sender.parameters.encodings
@@ -94,7 +101,8 @@ class PeerConnectionManagerTest: XCTestCase {
             simulcastConfig: SimulcastConfig(enabled: true, activeEncodings: [.h, .m, .l])
         )
         let videoTrack = LocalVideoTrack.create(
-            for: .camera, videoParameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactory)
+            for: .camera, videoParameters: videoParameters,
+            peerConnectionFactoryWrapper: peerConnectionFactory)
 
         manager.addTrack(track: videoTrack, localStreamId: "id")
 
@@ -112,12 +120,14 @@ class PeerConnectionManagerTest: XCTestCase {
             simulcastConfig: SimulcastConfig(enabled: true, activeEncodings: [.h, .m, .l])
         )
         let videoTrack = LocalVideoTrack.create(
-            for: .camera, videoParameters: videoParameters, peerConnectionFactoryWrapper: peerConnectionFactory)
+            for: .camera, videoParameters: videoParameters,
+            peerConnectionFactoryWrapper: peerConnectionFactory)
 
         manager.addTrack(track: videoTrack, localStreamId: "id")
 
         let encodings = peerConnection.transceivers[0].sender.parameters.encodings
-        XCTAssertEqual(1_536_000, encodings[2].maxBitrateBps, "h layer should have correct maxBitrateBps")
+        XCTAssertEqual(
+            1_536_000, encodings[2].maxBitrateBps, "h layer should have correct maxBitrateBps")
         XCTAssertEqual(512000, encodings[1].maxBitrateBps, "m layer should have correct maxBitrateBps")
         XCTAssertEqual(153600, encodings[0].maxBitrateBps, "l layer should have correct maxBitrateBps")
     }

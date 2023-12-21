@@ -32,9 +32,12 @@ internal class RTCEngineCommunication {
         sendEvent(event: LocalCandidateEvent(candidate: sdp, sdpMLineIndex: sdpMLineIndex))
     }
 
-    func sdpOffer(sdp: String, trackIdToTrackMetadata: [String: Metadata], midToTrackId: [String: String]) {
+    func sdpOffer(
+        sdp: String, trackIdToTrackMetadata: [String: Metadata], midToTrackId: [String: String]
+    ) {
         sendEvent(
-            event: SdpOfferEvent(sdp: sdp, trackIdToTrackMetadata: trackIdToTrackMetadata, midToTrackId: midToTrackId))
+            event: SdpOfferEvent(
+                sdp: sdp, trackIdToTrackMetadata: trackIdToTrackMetadata, midToTrackId: midToTrackId))
     }
 
     private func sendEvent(event: SendableEvent) {
@@ -54,12 +57,14 @@ internal class RTCEngineCommunication {
         switch event.type {
         case .Connected:
             let connected = event as! ConnectedEvent
-            engineListener.onConnected(endpointId: connected.data.id, otherEndpoints: connected.data.otherEndpoints)
+            engineListener.onConnected(
+                endpointId: connected.data.id, otherEndpoints: connected.data.otherEndpoints)
         case .EndpointAdded:
             let endpointAdded = event as! EndpointAddedEvent
             engineListener.onEndpointAdded(
                 endpoint: Endpoint(
-                    id: endpointAdded.data.id, type: endpointAdded.data.type, metadata: endpointAdded.data.metadata,
+                    id: endpointAdded.data.id, type: endpointAdded.data.type,
+                    metadata: endpointAdded.data.metadata,
                     trackIdToMetadata: endpointAdded.data.trackIdToMetadata))
         case .EndpointRemoved:
             let endpointRemoved = event as! EndpointRemovedEvent
@@ -71,7 +76,8 @@ internal class RTCEngineCommunication {
         case .OfferData:
             let offerData = event as! OfferDataEvent
             engineListener.onOfferData(
-                integratedTurnServers: offerData.data.integratedTurnServers, tracksTypes: offerData.data.tracksTypes)
+                integratedTurnServers: offerData.data.integratedTurnServers,
+                tracksTypes: offerData.data.tracksTypes)
         case .Candidate:
             let candidate = event as! RemoteCandidateEvent
             engineListener.onRemoteCandidate(
@@ -80,7 +86,8 @@ internal class RTCEngineCommunication {
         case .TracksAdded:
             let tracksAdded = event as! TracksAddedEvent
             engineListener.onTracksAdded(
-                endpointId: tracksAdded.data.endpointId, trackIdToMetadata: tracksAdded.data.trackIdToMetadata)
+                endpointId: tracksAdded.data.endpointId,
+                trackIdToMetadata: tracksAdded.data.trackIdToMetadata)
         case .TracksRemoved:
             let tracksRemoved = event as! TracksRemovedEvent
             engineListener.onTracksRemoved(
@@ -93,7 +100,8 @@ internal class RTCEngineCommunication {
         case .SdpAnswer:
             let sdpAnswer = event as! SdpAnswerEvent
             engineListener.onSdpAnswer(
-                type: sdpAnswer.data.type, sdp: sdpAnswer.data.sdp, midToTrackId: sdpAnswer.data.midToTrackId)
+                type: sdpAnswer.data.type, sdp: sdpAnswer.data.sdp,
+                midToTrackId: sdpAnswer.data.midToTrackId)
         case .EncodingSwitched:
             let encodingSwitched = event as! EncodingSwitchedEvent
             engineListener.onTrackEncodingChanged(
@@ -101,7 +109,8 @@ internal class RTCEngineCommunication {
                 encoding: encodingSwitched.data.encoding, encodingReason: encodingSwitched.data.reason)
         case .VadNotification:
             let vadNotification = event as! VadNotificationEvent
-            engineListener.onVadNotification(trackId: vadNotification.data.trackId, status: vadNotification.data.status)
+            engineListener.onVadNotification(
+                trackId: vadNotification.data.trackId, status: vadNotification.data.status)
         case .BandwidthEstimation:
             let bandwidthEstimation = event as! BandwidthEstimationEvent
             engineListener.onBandwidthEstimation(estimation: Int(bandwidthEstimation.data.estimation))

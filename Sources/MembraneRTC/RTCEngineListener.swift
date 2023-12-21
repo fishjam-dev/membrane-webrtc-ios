@@ -11,7 +11,8 @@ internal protocol RTCEngineListener {
     func onTracksAdded(endpointId: String, trackIdToMetadata: [String: Metadata])
     func onTracksRemoved(endpointId: String, trackIds: [String])
     func onTrackUpdated(endpointId: String, trackId: String, metadata: Metadata)
-    func onTrackEncodingChanged(endpointId: String, trackId: String, encoding: String, encodingReason: String)
+    func onTrackEncodingChanged(
+        endpointId: String, trackId: String, encoding: String, encodingReason: String)
     func onVadNotification(trackId: String, status: String)
     func onBandwidthEstimation(estimation: Int)
 }

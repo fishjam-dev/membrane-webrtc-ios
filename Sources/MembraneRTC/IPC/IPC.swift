@@ -70,7 +70,9 @@ public class IPCServer: IPC {
         port = CFMessagePortCreateLocal(
             nil, name as CFString,
             {
-                (port: CFMessagePort?, id: Int32, data: CFData?, _: UnsafeMutableRawPointer?) -> Unmanaged<CFData>? in
+                (port: CFMessagePort?, id: Int32, data: CFData?, _: UnsafeMutableRawPointer?) -> Unmanaged<
+                    CFData
+                >? in
                 guard let selfObj = port?.associatedSelf() as? IPCServer,
                     let data = data as Data?
                 else {

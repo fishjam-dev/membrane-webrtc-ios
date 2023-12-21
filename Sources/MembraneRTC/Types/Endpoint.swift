@@ -12,7 +12,8 @@ public struct Endpoint: Codable {
     }
 
     public func with(
-        id: String? = nil, type: String? = nil, metadata: Metadata? = nil, trackIdToMetadata: [String: Metadata]? = nil
+        id: String? = nil, type: String? = nil, metadata: Metadata? = nil,
+        trackIdToMetadata: [String: Metadata]? = nil
     ) -> Self {
         return Endpoint(
             id: id ?? self.id,
@@ -26,14 +27,18 @@ public struct Endpoint: Codable {
         var newTrackIdToMetadata = self.trackIdToMetadata
         newTrackIdToMetadata?[trackId] = metadata ?? Metadata()
 
-        return Endpoint(id: self.id, type: self.type, metadata: self.metadata, trackIdToMetadata: newTrackIdToMetadata)
+        return Endpoint(
+            id: self.id, type: self.type, metadata: self.metadata, trackIdToMetadata: newTrackIdToMetadata
+        )
     }
 
     public func withoutTrack(trackId: String) -> Self {
         var newTrackIdToMetadata = self.trackIdToMetadata
         newTrackIdToMetadata?.removeValue(forKey: trackId)
 
-        return Endpoint(id: self.id, type: self.type, metadata: self.metadata, trackIdToMetadata: newTrackIdToMetadata)
+        return Endpoint(
+            id: self.id, type: self.type, metadata: self.metadata, trackIdToMetadata: newTrackIdToMetadata
+        )
     }
 
     enum CodingKeys: String, CodingKey {

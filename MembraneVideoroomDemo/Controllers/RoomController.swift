@@ -18,7 +18,8 @@ class ParticipantVideo: Identifiable, ObservableObject {
     @Published var vadStatus: VadStatus
 
     init(
-        id: String, participant: Participant, videoTrack: VideoTrack? = nil, isScreensharing: Bool = false,
+        id: String, participant: Participant, videoTrack: VideoTrack? = nil,
+        isScreensharing: Bool = false,
         isActive: Bool = false,
         mirror: Bool = false
     ) {
@@ -264,7 +265,9 @@ class RoomController: ObservableObject {
             // set the current primary video
             self.primaryVideo = video
 
-            if video.participant.id != self.localParticipantId && self.primaryVideo?.isScreensharing == false {
+            if video.participant.id != self.localParticipantId
+                && self.primaryVideo?.isScreensharing == false
+            {
                 self.room?.setTargetTrackEncoding(trackId: video.id, encoding: TrackEncoding.h)
             }
         }
@@ -325,7 +328,9 @@ class RoomController: ObservableObject {
         return participantVideos.first(where: { $0.id == id })
     }
 
-    func findParticipantVideoByOwner(participantId: String, isScreencast: Bool = false) -> ParticipantVideo? {
+    func findParticipantVideoByOwner(participantId: String, isScreencast: Bool = false)
+        -> ParticipantVideo?
+    {
         if let primaryVideo = self.primaryVideo, primaryVideo.participant.id == participantId,
             primaryVideo.isScreensharing == isScreencast
         {
@@ -438,9 +443,11 @@ extension RoomController: MembraneRTCDelegate {
         let isScreensharing = ctx.metadata["type"] as? String == "screensharing"
         let video = ParticipantVideo(
             id: ctx.trackId, participant: participant, videoTrack: videoTrack,
-            isScreensharing: isScreensharing, isActive: ctx.metadata["active"] as? Bool == true || isScreensharing)
+            isScreensharing: isScreensharing,
+            isActive: ctx.metadata["active"] as? Bool == true || isScreensharing)
 
-        guard let existingVideo = self.findParticipantVideoByOwner(participantId: ctx.endpoint.id) else {
+        guard let existingVideo = self.findParticipantVideoByOwner(participantId: ctx.endpoint.id)
+        else {
             add(video: video)
 
             if isScreensharing {
@@ -505,7 +512,8 @@ extension RoomController: MembraneRTCDelegate {
                 if ctx.endpoint.id == self.primaryVideo?.participant.id {
                     self.primaryVideo?.participant = p
                 } else {
-                    self.participantVideos.first(where: { $0.participant.id == ctx.endpoint.id })?.participant = p
+                    self.participantVideos.first(where: { $0.participant.id == ctx.endpoint.id })?
+                        .participant = p
                 }
             }
 
@@ -514,9 +522,11 @@ extension RoomController: MembraneRTCDelegate {
 
     func onEndpointAdded(endpoint: Endpoint) {
         self.participants[endpoint.id] = Participant(
-            id: endpoint.id, displayName: endpoint.metadata["displayName"] as? String ?? "", isAudioTrackActive: false)
+            id: endpoint.id, displayName: endpoint.metadata["displayName"] as? String ?? "",
+            isAudioTrackActive: false)
         let pv =
-            ParticipantVideo(id: endpoint.id, participant: participants[endpoint.id]!, videoTrack: nil, isActive: false)
+            ParticipantVideo(
+                id: endpoint.id, participant: participants[endpoint.id]!, videoTrack: nil, isActive: false)
         add(video: pv)
 
     }
