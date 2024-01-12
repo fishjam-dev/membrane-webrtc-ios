@@ -24,6 +24,9 @@ public class TrackContext {
 
     /// The reason of currently selected encoding. Only present for remote tracks.
     public private(set) var encodingReason: EncodingReason? = nil
+    
+    /// Possible encodings that can be requested. Only present for remote tracks.
+    public internal(set) var simulcastConfig: SimulcastConfig? = nil
 
     internal func setEncoding(encoding: TrackEncoding, encodingReason: EncodingReason) {
         self.encoding = encoding
