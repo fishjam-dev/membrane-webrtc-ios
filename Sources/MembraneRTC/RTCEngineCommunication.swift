@@ -67,7 +67,7 @@ internal class RTCEngineCommunication {
         case .EndpointUpdated:
             let endpointUpdated = event as! EndpointUpdatedEvent
             engineListener.onEndpointUpdated(
-                endpointId: endpointUpdated.data.endpointId, metadata: endpointUpdated.data.metadata)
+                endpointId: endpointUpdated.data.endpointId, metadata: endpointUpdated.data.metadata ?? AnyJson())
         case .OfferData:
             let offerData = event as! OfferDataEvent
             engineListener.onOfferData(
@@ -89,7 +89,7 @@ internal class RTCEngineCommunication {
             let tracksUpdated = event as! TracksUpdatedEvent
             engineListener.onTrackUpdated(
                 endpointId: tracksUpdated.data.endpointId, trackId: tracksUpdated.data.trackId,
-                metadata: tracksUpdated.data.metadata)
+                metadata: tracksUpdated.data.metadata ?? AnyJson())
         case .SdpAnswer:
             let sdpAnswer = event as! SdpAnswerEvent
             engineListener.onSdpAnswer(

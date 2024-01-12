@@ -183,7 +183,7 @@ public enum Events {
  Sendable events
  */
 struct ConnectEvent: SendableEvent {
-    let metadata: Metadata
+    let metadata: Metadata?
 
     func serialize() -> Payload {
         return .init([
@@ -195,7 +195,7 @@ struct ConnectEvent: SendableEvent {
 
 struct SdpOfferEvent: SendableEvent {
     let sdp: String
-    let trackIdToTrackMetadata: [String: Metadata]
+    let trackIdToTrackMetadata: [String: Metadata?]
     let midToTrackId: [String: String]
 
     func serialize() -> Payload {
@@ -264,7 +264,7 @@ struct SelectEncodingEvent: SendableEvent {
 }
 
 struct UpdateEndpointMetadata: SendableEvent {
-    let metadata: Metadata
+    let metadata: Metadata?
 
     func serialize() -> Payload {
         return .init([
@@ -276,7 +276,7 @@ struct UpdateEndpointMetadata: SendableEvent {
 
 struct UpdateTrackMetadata: SendableEvent {
     let trackId: String
-    let trackMetadata: Metadata
+    let trackMetadata: Metadata?
 
     func serialize() -> Payload {
         return .init([
@@ -304,7 +304,7 @@ struct EndpointAddedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let id: String
         let type: String
-        let metadata: Metadata
+        let metadata: Metadata?
         let trackIdToMetadata: [String: Metadata]?
     }
 
@@ -324,7 +324,7 @@ struct EndpointRemovedEvent: ReceivableEvent, Codable {
 struct EndpointUpdatedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let endpointId: String
-        let metadata: Metadata
+        let metadata: Metadata?
     }
 
     let type: ReceivableEventType
@@ -373,7 +373,7 @@ struct TracksUpdatedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
         let endpointId: String
         let trackId: String
-        let metadata: Metadata
+        let metadata: Metadata?
     }
 
     let type: ReceivableEventType
