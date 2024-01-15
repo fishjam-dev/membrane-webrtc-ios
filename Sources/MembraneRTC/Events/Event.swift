@@ -351,9 +351,15 @@ struct OfferDataEvent: ReceivableEvent, Codable {
 
 struct TracksAddedEvent: ReceivableEvent, Codable {
     struct Data: Codable {
+        struct TrackData: Codable{
+            let metadata: Metadata
+            let simulcastConfig: SimulcastConfig?
+        }
         let endpointId: String
         let trackIdToMetadata: [String: Metadata]
+        let tracks: [String: TrackData]
     }
+    
 
     let type: ReceivableEventType
     let data: Data
