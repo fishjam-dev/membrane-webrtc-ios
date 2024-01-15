@@ -361,8 +361,8 @@ public struct TracksAddedEvent: ReceivableEvent, Codable {
     }
     
 
-    let type: ReceivableEventType
-    let data: Data
+    public let type: ReceivableEventType
+    public let data: Data
 }
 
 struct TracksRemovedEvent: ReceivableEvent, Codable {
