@@ -594,7 +594,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
         // for each track create a corresponding track context
         endpoint.trackIdToMetadata?.forEach { trackId, metadata in
-            let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: metadata, simulcastConfig: endpoint.tracks?[endpointId]?.simulcastConfig )
+            let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: metadata, simulcastConfig: endpoint.tracks?[trackId]?.simulcastConfig )
 
             self.trackContexts[trackId] = context
 
