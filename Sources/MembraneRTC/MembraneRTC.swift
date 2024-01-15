@@ -129,7 +129,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
                 return
             }
 
-            localEndpoint = localEndpoint.with(metadata: metadata)
+            localEndpoint = localEndpoint.with(metadata: metadata, tracks: [:])
 
             engineCommunication.connect(metadata: metadata)
         }

@@ -5,7 +5,7 @@ public struct Endpoint: Codable {
     public let trackIdToMetadata: [String: Metadata]?
     public let tracks: [String: TracksAddedEvent.Data.TrackData]?
 
-    public init(id: String, type: String, metadata: Metadata?, trackIdToMetadata: [String: Metadata]?, tracks: [String: TracksAddedEvent.Data.TrackData]?) {
+    public init(id: String, type: String, metadata: Metadata?, trackIdToMetadata: [String: Metadata]?, tracks: [String: TracksAddedEvent.Data.TrackData]? = nil) {
         self.id = id
         self.type = type
         self.metadata = metadata ?? Metadata()
@@ -14,7 +14,7 @@ public struct Endpoint: Codable {
     }
 
     public func with(
-        id: String? = nil, type: String? = nil, metadata: Metadata? = nil, trackIdToMetadata: [String: Metadata]? = nil, tracks:  [String: TracksAddedEvent.Data.TrackData]?
+        id: String? = nil, type: String? = nil, metadata: Metadata? = nil, trackIdToMetadata: [String: Metadata]? = nil, tracks:  [String: TracksAddedEvent.Data.TrackData]? = nil
     ) -> Self {
         return Endpoint(
             id: id ?? self.id,
