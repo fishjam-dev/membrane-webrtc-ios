@@ -30,12 +30,12 @@ public protocol ReceivableEvent {
     var type: ReceivableEventType { get }
 }
 
-internal struct ReceivableEventBase: Decodable {
+public struct ReceivableEventBase: Decodable {
     let type: ReceivableEventType
 }
 
 public enum Events {
-    internal static func decodeEvent<T: Decodable>(from data: Data) -> T? {
+    public static func decodeEvent<T: Decodable>(from data: Data) -> T? {
         do {
             return try JSONDecoder().decode(T.self, from: data)
         } catch {
@@ -349,9 +349,9 @@ struct OfferDataEvent: ReceivableEvent, Codable {
     let data: Data
 }
 
-struct TracksAddedEvent: ReceivableEvent, Codable {
-    struct Data: Codable {
-        struct TrackData: Codable{
+public struct TracksAddedEvent: ReceivableEvent, Codable {
+    public struct Data: Codable {
+        public struct TrackData: Codable{
             let metadata: Metadata
             let simulcastConfig: SimulcastConfig?
         }
