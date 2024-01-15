@@ -80,7 +80,7 @@ internal class RTCEngineCommunication {
         case .TracksAdded:
             let tracksAdded = event as! TracksAddedEvent
             engineListener.onTracksAdded(
-                endpointId: tracksAdded.data.endpointId, trackIdToMetadata: tracksAdded.data.trackIdToMetadata)
+                endpointId: tracksAdded.data.endpointId, trackIdToMetadata: tracksAdded.data.trackIdToMetadata, tracks: tracksAdded.data.tracks)
         case .TracksRemoved:
             let tracksRemoved = event as! TracksRemovedEvent
             engineListener.onTracksRemoved(
