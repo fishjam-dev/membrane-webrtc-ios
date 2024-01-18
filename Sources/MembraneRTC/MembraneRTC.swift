@@ -58,7 +58,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
     private var localTracks: [LocalTrack] = []
 
-    private var localEndpoint = Endpoint(id: "", type: "webrtc", metadata: .init([:]), trackIdToMetadata: [:], tracks: [:])
+    private var localEndpoint = Endpoint(id: "", type: "webrtc", metadata: .init([:]), tracks: [:])
 
     // mapping from peer's id to itself
     private var remoteEndpoints: [String: Endpoint] = [:]
@@ -469,8 +469,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
             self.remoteEndpoints[endpoint.id] = endpoint
 
             // initialize peer's track contexts
-            endpoint.trackIdToMetadata?.forEach { trackId, metadata in
-                let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: metadata,simulcastConfig: endpoint.tracks?[trackId]?.simulcastConfig )
+            endpoint.tracks?.forEach { trackId, trackData in
+                let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: trackData.metadata, simulcastConfig: trackData.simulcastConfig)
 
                 self.trackContexts[trackId] = context
 
@@ -512,7 +512,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         remoteEndpoints.removeValue(forKey: endpoint.id)
 
         // for a leaving peer clear his track contexts
-        if let trackIds = endpoint.trackIdToMetadata?.keys {
+        if let trackIds = endpoint.tracks?.keys {
             let contexts = trackIds.compactMap { id in
                 self.trackContexts[id]
             }
@@ -560,7 +560,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             if let sdp = sdp, let midToTrackId = midToTrackId {
                 self.engineCommunication.sdpOffer(
-                    sdp: sdp, trackIdToTrackMetadata: self.localEndpoint.trackIdToMetadata ?? [:],
+                    sdp: sdp, trackIdToTrackMetadata: self.localEndpoint.tracks?.mapValues({ trackData in
+                        trackData.metadata
+                    }) ?? [:],
                     midToTrackId: midToTrackId)
             }
 
@@ -577,7 +579,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         peerConnectionManager.onRemoteCandidate(candidate: candidate)
     }
 
-    func onTracksAdded(endpointId: String, trackIdToMetadata: [String: Metadata], tracks: [String: TracksAddedEvent.Data.TrackData]) {
+    func onTracksAdded(endpointId: String, tracks: [String: TrackData]) {
         // ignore local participant
         guard localEndpoint.id != endpointId else {
             return
@@ -589,12 +591,12 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
         }
 
         // update tracks of the remote peer
-        endpoint = endpoint.with(trackIdToMetadata: trackIdToMetadata, tracks: tracks)
+        endpoint = endpoint.with(tracks: tracks)
         remoteEndpoints[endpoint.id] = endpoint
 
         // for each track create a corresponding track context
-        endpoint.trackIdToMetadata?.forEach { trackId, metadata in
-            let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: metadata, simulcastConfig: endpoint.tracks?[trackId]?.simulcastConfig )
+        endpoint.tracks?.forEach { trackId, trackData in
+            let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: trackData.metadata, simulcastConfig: trackData.simulcastConfig)
 
             self.trackContexts[trackId] = context
 

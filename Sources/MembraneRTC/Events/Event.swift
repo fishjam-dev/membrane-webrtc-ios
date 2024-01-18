@@ -305,7 +305,7 @@ struct EndpointAddedEvent: ReceivableEvent, Codable {
         let id: String
         let type: String
         let metadata: Metadata?
-        let trackIdToMetadata: [String: Metadata]?
+        let tracks: [String: TrackData]?
     }
 
     let type: ReceivableEventType
@@ -351,16 +351,10 @@ struct OfferDataEvent: ReceivableEvent, Codable {
 
 public struct TracksAddedEvent: ReceivableEvent, Codable {
     public struct Data: Codable {
-        public struct TrackData: Codable{
-            let metadata: Metadata
-            let simulcastConfig: SimulcastConfig?
-        }
         let endpointId: String
-        let trackIdToMetadata: [String: Metadata]
         let tracks: [String: TrackData]
     }
     
-
     public let type: ReceivableEventType
     public let data: Data
 }
