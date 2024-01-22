@@ -30,7 +30,7 @@ public protocol ReceivableEvent {
     var type: ReceivableEventType { get }
 }
 
-public struct ReceivableEventBase: Decodable {
+internal struct ReceivableEventBase: Decodable {
     let type: ReceivableEventType
 }
 
@@ -354,7 +354,7 @@ public struct TracksAddedEvent: ReceivableEvent, Codable {
         let endpointId: String
         let tracks: [String: TrackData]
     }
-    
+
     public let type: ReceivableEventType
     public let data: Data
 }
