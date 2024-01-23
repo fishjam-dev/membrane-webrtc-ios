@@ -129,7 +129,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
                 return
             }
 
-            localEndpoint = localEndpoint.with(metadata: metadata, tracks: [:])
+            localEndpoint = localEndpoint.with(metadata: metadata)
 
             engineCommunication.connect(metadata: metadata)
         }
@@ -470,7 +470,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             // initialize peer's track contexts
             endpoint.tracks?.forEach { trackId, trackData in
-                let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: trackData.metadata, simulcastConfig: trackData.simulcastConfig)
+                let context = TrackContext(
+                    track: nil, enpoint: endpoint, trackId: trackId, metadata: trackData.metadata,
+                    simulcastConfig: trackData.simulcastConfig)
 
                 self.trackContexts[trackId] = context
 
@@ -560,7 +562,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             if let sdp = sdp, let midToTrackId = midToTrackId {
                 self.engineCommunication.sdpOffer(
-                    sdp: sdp, trackIdToTrackMetadata: self.localEndpoint.tracks?.mapValues({ trackData in
+                    sdp: sdp,
+                    trackIdToTrackMetadata: self.localEndpoint.tracks?.mapValues({ trackData in
                         trackData.metadata
                     }) ?? [:],
                     midToTrackId: midToTrackId)
@@ -596,7 +599,9 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
         // for each track create a corresponding track context
         endpoint.tracks?.forEach { trackId, trackData in
-            let context = TrackContext(track: nil, enpoint: endpoint, trackId: trackId, metadata: trackData.metadata, simulcastConfig: trackData.simulcastConfig)
+            let context = TrackContext(
+                track: nil, enpoint: endpoint, trackId: trackId, metadata: trackData.metadata,
+                simulcastConfig: trackData.simulcastConfig)
 
             self.trackContexts[trackId] = context
 
