@@ -35,7 +35,7 @@ internal struct ReceivableEventBase: Decodable {
 }
 
 public enum Events {
-    public static func decodeEvent<T: Decodable>(from data: Data) -> T? {
+    internal static func decodeEvent<T: Decodable>(from data: Data) -> T? {
         do {
             return try JSONDecoder().decode(T.self, from: data)
         } catch {
