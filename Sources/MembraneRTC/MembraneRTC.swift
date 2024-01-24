@@ -173,7 +173,10 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
    - Returns: `LocalCameraVideoTrack` instance that user then can use for things such as front / back camera switch.
    */
-    public func createVideoTrack(videoParameters: VideoParameters, metadata: Metadata, captureDeviceId: String? = nil)
+    public func createVideoTrack(
+        videoParameters: VideoParameters, metadata: Metadata, captureDeviceId: String? = nil,
+        simulcastConfig: SimulcastConfig? = nil
+    )
         -> LocalVideoTrack
     {
         DispatchQueue.webRTC.sync {
@@ -191,7 +194,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             localTracks.append(videoTrack)
 
-            localEndpoint = localEndpoint.withTrack(trackId: videoTrack.rtcTrack().trackId, metadata: metadata)
+            localEndpoint = localEndpoint.withTrack(
+                trackId: videoTrack.rtcTrack().trackId, metadata: metadata, simulcastConfig: simulcastConfig)
 
             engineCommunication.renegotiateTracks()
 
@@ -219,7 +223,8 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
 
             localTracks.append(audioTrack)
 
-            localEndpoint = localEndpoint.withTrack(trackId: audioTrack.rtcTrack().trackId, metadata: metadata)
+            localEndpoint = localEndpoint.withTrack(
+                trackId: audioTrack.rtcTrack().trackId, metadata: metadata, simulcastConfig: nil)
 
             engineCommunication.renegotiateTracks()
 
@@ -252,6 +257,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
                 appGroup: appGroup, videoParameters: videoParameters,
                 peerConnectionFactoryWrapper: peerConnectionFactoryWrapper)
             localTracks.append(screensharingTrack)
+            let simulcastConfig = videoParameters.simulcastConfig
 
             broadcastScreenshareReceiver = ScreenBroadcastNotificationReceiver(
                 onStart: { [weak self, weak screensharingTrack] in
@@ -260,7 +266,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
                     }
 
                     DispatchQueue.main.async {
-                        self?.setupScreencastTrack(track: track, metadata: metadata)
+                        self?.setupScreencastTrack(track: track, metadata: metadata, simulcastConfig: simulcastConfig)
                         onStart(track)
                     }
                 },
@@ -369,7 +375,7 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     public func updateTrackMetadata(trackId: String, trackMetadata: Metadata) {
         DispatchQueue.webRTC.sync {
             engineCommunication.updateTrackMetadata(trackId: trackId, trackMetadata: trackMetadata)
-            localEndpoint = localEndpoint.withTrack(trackId: trackId, metadata: trackMetadata)
+            localEndpoint = localEndpoint.withTrack(trackId: trackId, metadata: trackMetadata, simulcastConfig: nil)
         }
     }
 
@@ -403,12 +409,15 @@ public class MembraneRTC: MulticastDelegate<MembraneRTCDelegate>, ObservableObje
     }
 
     /// Adds given broadcast track to the peer connection and forces track renegotiation.
-    private func setupScreencastTrack(track: LocalScreenBroadcastTrack, metadata: Metadata) {
+    private func setupScreencastTrack(
+        track: LocalScreenBroadcastTrack, metadata: Metadata, simulcastConfig: SimulcastConfig?
+    ) {
         let screencastStreamId = UUID().uuidString
 
         peerConnectionManager.addTrack(track: track, localStreamId: screencastStreamId)
 
-        localEndpoint = localEndpoint.withTrack(trackId: track.rtcTrack().trackId, metadata: metadata)
+        localEndpoint = localEndpoint.withTrack(
+            trackId: track.rtcTrack().trackId, metadata: metadata, simulcastConfig: simulcastConfig)
 
         engineCommunication.renegotiateTracks()
     }

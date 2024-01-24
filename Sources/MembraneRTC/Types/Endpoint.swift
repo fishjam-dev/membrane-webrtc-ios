@@ -12,7 +12,7 @@ public struct Endpoint: Codable {
     }
 
     public func with(
-        id: String? = nil, type: String? = nil, metadata: Metadata? = nil, tracks:  [String: TrackData]? = nil
+        id: String? = nil, type: String? = nil, metadata: Metadata? = nil, tracks: [String: TrackData]? = nil
     ) -> Self {
         return Endpoint(
             id: id ?? self.id,
@@ -22,10 +22,11 @@ public struct Endpoint: Codable {
         )
     }
 
-    public func withTrack(trackId: String, metadata: Metadata?) -> Self {
+    public func withTrack(trackId: String, metadata: Metadata?, simulcastConfig: SimulcastConfig?) -> Self {
         var newTracks = self.tracks
-        let simulcastConfig = newTracks?[trackId]?.simulcastConfig
-        newTracks?[trackId] = TrackData(metadata: metadata ?? Metadata(), simulcastConfig: simulcastConfig)
+        let oldSimulcastConfig = newTracks?[trackId]?.simulcastConfig
+        newTracks?[trackId] = TrackData(
+            metadata: metadata ?? Metadata(), simulcastConfig: simulcastConfig ?? oldSimulcastConfig)
 
         return Endpoint(id: self.id, type: self.type, metadata: self.metadata, tracks: newTracks)
     }
