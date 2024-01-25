@@ -2,7 +2,7 @@
 /// `"h"` - original encoding
 /// `"m"` - original encoding scaled down by 2
 /// `"l"` - original encoding scaled down by 4
-public enum TrackEncoding: Int, CustomStringConvertible {
+public enum TrackEncoding: Int, CustomStringConvertible, Codable {
     case l = 0
     case m
     case h
@@ -15,6 +15,10 @@ public enum TrackEncoding: Int, CustomStringConvertible {
         }
     }
 
+    enum TrackEncodingCodingError: Error {
+        case decoding(String)
+    }
+    
     static func fromString(_ s: String) -> TrackEncoding? {
         switch s {
         case "l":
@@ -27,6 +31,28 @@ public enum TrackEncoding: Int, CustomStringConvertible {
             return nil
         }
     }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let encodingString = try container.decode(String.self)
+
+        switch encodingString {
+            case "l":
+                self = .l
+            case "m":
+                self = .m
+            case "h":
+                self = .h
+            default:
+                throw TrackEncodingCodingError.decoding("\(encodingString) is not a valid encoding")
+        }
+    }
+
+    public func encode(to encoder: Swift.Encoder) throws {
+        var container = encoder.singleValueContainer()
+        let encodingString = description
+        try container.encode(encodingString)
+    }
 }
 
 /// Simulcast configuration.
@@ -34,7 +60,7 @@ public enum TrackEncoding: Int, CustomStringConvertible {
 /// At the moment, simulcast track is initialized in three versions - low, medium and high.
 /// High resolution is the original track resolution, while medium and low resolutions
 /// are the original track resolution scaled down by 2 and 4 respectively.
-public struct SimulcastConfig {
+public struct SimulcastConfig: Codable {
     /**
      * Whether to simulcast track or not.
      */

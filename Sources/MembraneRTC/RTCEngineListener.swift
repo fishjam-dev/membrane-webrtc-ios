@@ -8,7 +8,7 @@ internal protocol RTCEngineListener {
     func onOfferData(integratedTurnServers: [OfferDataEvent.TurnServer], tracksTypes: [String: Int])
     func onSdpAnswer(type: String, sdp: String, midToTrackId: [String: String?])
     func onRemoteCandidate(candidate: String, sdpMLineIndex: Int32, sdpMid: String?)
-    func onTracksAdded(endpointId: String, trackIdToMetadata: [String: Metadata])
+    func onTracksAdded(endpointId: String, tracks: [String: TrackData])
     func onTracksRemoved(endpointId: String, trackIds: [String])
     func onTrackUpdated(endpointId: String, trackId: String, metadata: Metadata)
     func onTrackEncodingChanged(endpointId: String, trackId: String, encoding: String, encodingReason: String)
