@@ -361,10 +361,10 @@
 			);
 			mainGroup = 3BCCBEB22795619500A0AD4C;
 			packageReferences = (
-				3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */,
-				3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */,
-				3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */,
-				3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log.git" */,
+				3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises.git" */,
+				3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient.git" */,
+				3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf.git" */,
 			);
 			productRefGroup = 3BCCBEBC2795619500A0AD4C /* Products */;
 			projectDirPath = "";
@@ -801,7 +801,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */ = {
+		3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/davidstump/SwiftPhoenixClient.git";
 			requirement = {
@@ -809,7 +809,7 @@
 				minimumVersion = 4.0.0;
 			};
 		};
-		3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+		3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-protobuf.git";
 			requirement = {
@@ -817,7 +817,7 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */ = {
+		3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-log.git";
 			requirement = {
@@ -825,7 +825,7 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */ = {
+		3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/promises.git";
 			requirement = {
@@ -838,32 +838,32 @@
 /* Begin XCSwiftPackageProductDependency section */
 		3B04D3932798190F00E2B755 /* SwiftPhoenixClient */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient" */;
+			package = 3B04D3922798190F00E2B755 /* XCRemoteSwiftPackageReference "SwiftPhoenixClient.git" */;
 			productName = SwiftPhoenixClient;
 		};
 		3B601C0027ABF88A00668122 /* SwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			package = 3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf.git" */;
 			productName = SwiftProtobuf;
 		};
 		3BA235D627AC10C10070031E /* SwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			package = 3B601BFF27ABF88A00668122 /* XCRemoteSwiftPackageReference "swift-protobuf.git" */;
 			productName = SwiftProtobuf;
 		};
 		3BA235DA27AC1F600070031E /* FBLPromises */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */;
+			package = 3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises.git" */;
 			productName = FBLPromises;
 		};
 		3BCCBEF527956E1500A0AD4C /* Logging */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log" */;
+			package = 3BCCBEF427956E1500A0AD4C /* XCRemoteSwiftPackageReference "swift-log.git" */;
 			productName = Logging;
 		};
 		3BCCBEF82795701600A0AD4C /* Promises */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises" */;
+			package = 3BCCBEF72795701600A0AD4C /* XCRemoteSwiftPackageReference "promises.git" */;
 			productName = Promises;
 		};
 		44788B4D2A27A12C00C43DD4 /* MembraneRTC */ = {
