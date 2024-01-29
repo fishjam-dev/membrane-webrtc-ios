@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'MembraneRTC'
-  s.version          = '5.1.2'
+  s.version          = '5.2.0'
   s.summary          = 'Membrane WebRTC client fully compatible with `Membrane RTC Engine` for iOS.'
 
   s.homepage         = 'https://github.com/membraneframework/membrane-webrtc-ios'
@@ -21,7 +21,6 @@ Pod::Spec.new do |s|
   s.swift_version = '5.0'
 
   s.source_files = 'Sources/MembraneRTC/**/*'
-    #   s.dependency 'WebRTC-SDK', '104.5112.15'
   s.dependency 'JitsiWebRTC', '111.0.0'
   s.dependency 'SwiftProtobuf'
   s.dependency 'PromisesSwift'
