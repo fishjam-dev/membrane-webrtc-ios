@@ -21,10 +21,10 @@
       },
       {
         "package": "WebRTC",
-        "repositoryURL": "https://github.com/webrtc-sdk/Specs.git",
+        "repositoryURL": "https://github.com/jellyfish-dev/ios-webrtc-specs.git",
         "state": {
           "branch": null,
-          "revision": "aaef003e42a5ec34c3ff44abc6c352d18e39a278",
+          "revision": "64919afdbdc80be06cbff916b736c1625c7f628a",
           "version": "104.5112.15"
         }
       },
