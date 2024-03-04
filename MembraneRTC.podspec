@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
   s.swift_version = '5.0'
 
   s.source_files = 'Sources/MembraneRTC/**/*'
-  s.dependency 'WebRTC-SDK', '104.5112.15'
+  s.dependency 'WebRTC-SDK'
   s.dependency 'SwiftProtobuf'
   s.dependency 'PromisesSwift'
   s.dependency 'SwiftPhoenixClient', '~> 4.0.0'
