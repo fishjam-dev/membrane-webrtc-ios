@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "WebRTCMembraneFramework",
-        "repositoryURL": "https://github.com/jellyfish-dev/ios-webrtc-specs.git",
-        "state": {
-          "branch": null,
-          "revision": "9b7ad6d4490e4c517114fdb675696215a5195252",
-          "version": "104.5112.15"
-        }
-      },
-      {
         "package": "Promises",
         "repositoryURL": "https://github.com/google/promises.git",
         "state": {
@@ -26,6 +17,15 @@
           "branch": null,
           "revision": "9dcaa4b333db437b0fbfaf453fad29069044a8b4",
           "version": "6.6.0"
+        }
+      },
+      {
+        "package": "WebRTC",
+        "repositoryURL": "https://github.com/webrtc-sdk/Specs.git",
+        "state": {
+          "branch": null,
+          "revision": "4fa8d6d647fc759cdd0265fd413d2f28ea2e0e08",
+          "version": "114.5735.8"
         }
       },
       {

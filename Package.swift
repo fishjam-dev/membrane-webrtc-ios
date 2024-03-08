@@ -16,9 +16,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(
-            name: "WebRTCMembraneFramework", url: "https://github.com/jellyfish-dev/ios-webrtc-specs.git",
-            .exact("104.5112.15")),
+        .package(name: "WebRTC", url: "https://github.com/webrtc-sdk/Specs.git", .exact("114.5735.08")),
         .package(
             name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git",
             .upToNextMajor(from: "1.18.0")),
@@ -37,7 +35,7 @@ let package = Package(
         .target(
             name: "MembraneRTC",
             dependencies: [
-                "WebRTCMembraneFramework", "SwiftProtobuf", "Promises", "SwiftPhoenixClient",
+                "WebRTC", "SwiftProtobuf", "Promises", "SwiftPhoenixClient",
                 .product(name: "FBLPromises", package: "Promises"),
                 .product(name: "Logging", package: "swift-log"),
             ],
