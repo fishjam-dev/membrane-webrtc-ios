@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 extension RTCRtpEncodingParameters {
     static func create(rid: String, active: Bool, scaleResolutionDownBy: NSNumber)

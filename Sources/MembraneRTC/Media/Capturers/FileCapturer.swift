@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 /// `VideoCapturer` responsible for capturing  video from given file
 class FileCapturer: VideoCapturer {

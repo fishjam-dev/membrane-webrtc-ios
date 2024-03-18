@@ -1,6 +1,6 @@
 import CoreMedia
 import ReplayKit
-import WebRTC
+import WebRTCMembrane
 
 /// A class working as a source of screen broadcast samples.
 ///

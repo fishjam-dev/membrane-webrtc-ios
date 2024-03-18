@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 /// Utility wrapper around a remote `RTCVideoTrack`.
 public class RemoteVideoTrack: VideoTrack, RemoteTrack {

@@ -1,6 +1,6 @@
 import Foundation
 import ReplayKit
-import WebRTC
+import WebRTCMembrane
 
 /// `VideoCapturer` responsible for capturing in-app screen, for device screen capture go see `BroadcastScreenCapture`
 class ScreenCapturer: RTCVideoCapturer, VideoCapturer {

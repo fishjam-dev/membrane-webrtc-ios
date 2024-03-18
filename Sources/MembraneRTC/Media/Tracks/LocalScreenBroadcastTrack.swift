@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 public protocol LocalScreenBroadcastTrackDelegate: AnyObject {
     func started()

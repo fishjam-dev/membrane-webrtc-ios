@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 /// Enum describing possible encoders.
 /// `DEFAULT` - default encoder, most likely software vp8 encoder (libvpx)

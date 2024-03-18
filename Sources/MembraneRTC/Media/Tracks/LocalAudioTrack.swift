@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 /// Utility wrapper around a local `RTCAudioTrack` managing a local audio session.
 public class LocalAudioTrack: AudioTrack, LocalTrack {

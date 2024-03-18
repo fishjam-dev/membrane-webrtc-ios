@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 /// Utility wrapper around a local `RTCVideoTrack` also managing an instance of `VideoCapturer`
 public class LocalVideoTrack: VideoTrack, LocalTrack {

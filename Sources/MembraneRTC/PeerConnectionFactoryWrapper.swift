@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 // class for managing RTCPeerConnection responsible for managing its media sources and
 // handling various kinds of notifications
@@ -11,11 +11,11 @@ internal class PeerConnectionFactoryWrapper {
         let decoderFactory = RTCDefaultVideoDecoderFactory()
         let encoderFactory = getEncoderFactory(from: encoder)
 
-        let simulcastFactory = RTCVideoEncoderFactorySimulcast(
-            primary: encoderFactory, fallback: RTCDefaultVideoEncoderFactory())
+        //        let simulcastFactory = RTCVideoEncoderFactorySimulcast(
+        //            primary: encoderFactory, fallback: RTCDefaultVideoEncoderFactory())
 
         self.factory = RTCPeerConnectionFactory(
-            encoderFactory: simulcastFactory, decoderFactory: decoderFactory)
+            encoderFactory: encoderFactory, decoderFactory: decoderFactory)
     }
 
     func createPeerConnection(_ configuration: RTCConfiguration, constraints: RTCMediaConstraints)

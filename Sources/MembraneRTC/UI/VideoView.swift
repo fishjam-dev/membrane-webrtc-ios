@@ -1,5 +1,5 @@
 import UIKit
-import WebRTC
+import WebRTCMembrane
 
 public protocol VideoViewDelegate: AnyObject {
     func didChange(dimensions: Dimensions)

@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 struct Constants {
     static func simulcastEncodings() -> [RTCRtpEncodingParameters] {

@@ -1,5 +1,5 @@
 import Foundation
-import WebRTC
+import WebRTCMembrane
 
 internal func downscaleResolution(from: Dimensions, to: Dimensions) -> Dimensions {
     if from.height > to.height {

@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 /// `VideoCapturer` responsible for capturing device's camera.
 class CameraCapturer: VideoCapturer {

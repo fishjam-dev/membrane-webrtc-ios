@@ -1,6 +1,6 @@
 import Foundation
 import Logging
-import WebRTC
+import WebRTCMembrane
 
 internal var sdkLogger = Logger(label: "org.membrane.ios")
 internal let pcLogPrefix = "[PeerConnection]"

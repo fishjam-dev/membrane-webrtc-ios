@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 internal protocol PeerConnectionListener {
     func onAddTrack(trackId: String, track: RTCMediaStreamTrack)

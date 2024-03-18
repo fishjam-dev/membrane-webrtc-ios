@@ -1,6 +1,6 @@
 import Foundation
 import Logging
-import WebRTC
+import WebRTCMembrane
 
 internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
     // `RTCPeerConnection` config

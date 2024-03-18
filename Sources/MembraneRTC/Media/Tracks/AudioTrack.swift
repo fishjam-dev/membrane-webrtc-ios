@@ -1,4 +1,4 @@
-import WebRTC
+import WebRTCMembrane
 
 public class AudioTrack: MediaTrackProvider, Equatable {
     func rtcTrack() -> RTCMediaStreamTrack {
