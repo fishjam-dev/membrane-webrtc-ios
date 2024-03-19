@@ -17,7 +17,7 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            name: "WebRTCMembrane", url: "https://github.com/jellyfish-dev/ios-webrtc-specs.git", .exact("114.5735.01")),
+            name: "WebRTCMembrane", url: "https://github.com/jellyfish-dev/ios-webrtc-specs.git", .exact("114.5735.02")),
         .package(
             name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git",
             .upToNextMajor(from: "1.18.0")),
