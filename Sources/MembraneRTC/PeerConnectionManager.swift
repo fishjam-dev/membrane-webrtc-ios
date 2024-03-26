@@ -57,7 +57,6 @@ internal class PeerConnectionManager: NSObject, RTCPeerConnectionDelegate {
         config.sdpSemantics = .unifiedPlan
         config.continualGatheringPolicy = .gatherContinually
         config.candidateNetworkPolicy = .all
-        config.disableIPV6 = true
         config.tcpCandidatePolicy = .disabled
 
         // if ice servers are not empty that probably means we are using turn servers
