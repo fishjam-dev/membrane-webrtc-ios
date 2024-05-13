@@ -2,6 +2,7 @@
 > This repository is now archived.
 >
 > All `membrane-webrtc-ios` functionality is now available as part of [`ios-client-sdk`](https://github.com/jellyfish-dev/ios-client-sdk)
+
 [![Run lint & tests](https://github.com/jellyfish-dev/membrane-webrtc-ios/actions/workflows/run_lint_and_tests.yaml/badge.svg)](https://github.com/jellyfish-dev/membrane-webrtc-ios/actions/workflows/run_lint_and_tests.yaml)
 
 ## Components
